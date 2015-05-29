@@ -31,7 +31,8 @@ or implied, of Rafael Muñoz Salinas.
  *
  *
  *****/
-#include <opencv2/opencv.hpp>
+
+#include <opencv2/highgui/highgui.hpp>
 #include "aruco.h"
 #include <iostream>
 #include "arucofidmarkers.h"

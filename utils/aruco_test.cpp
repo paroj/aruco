@@ -30,6 +30,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <sstream>
 #include "aruco.h"
 #include "cvdrawingutils.h"
+#include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
 
@@ -60,18 +61,27 @@ bool readArguments ( int argc,char **argv )
 {
     if (argc<2) {
         cerr<<"Invalid number of arguments"<<endl;
-        cerr<<"Usage: (in.avi|live) [intrinsics.yml] [size]"<<endl;
+        cerr<<"Usage: (in.avi|live[:idx_cam=0]) [intrinsics.yml] [size]"<<endl;
         return false;
     }
     TheInputVideo=argv[1];
-    if (argc>=3)
-        TheIntrinsicFile=argv[2];
+     if (argc>=3)
+         TheIntrinsicFile=argv[2];
     if (argc>=4)
         TheMarkerSize=atof(argv[3]);
 
     if (argc==3)
         cerr<<"NOTE: You need makersize to see 3d info!!!!"<<endl;
     return true;
+}
+
+int findParam ( std::string param,int argc, char *argv[] )
+{
+    for ( int i=0; i<argc; i++ )
+        if ( string ( argv[i] ) ==param ) return i;
+
+    return -1;
+
 }
 /************************************
  *
@@ -87,10 +97,18 @@ int main(int argc,char **argv)
             return 0;
         }
         //parse arguments
-        ;
+ 
         //read from camera or from  file
-        if (TheInputVideo=="live") {
-            TheVideoCapturer.open(0);
+        if (TheInputVideo.find("live")!=string::npos) {
+	  int vIdx=0;
+	  //check if the :idx is here
+	  char cad[100];
+      if (TheInputVideo.find(":")!=string::npos) {
+          std::replace(TheInputVideo.begin(),TheInputVideo.end(),':',' ');
+         sscanf(TheInputVideo.c_str(),"%s %d",cad,&vIdx);
+      }
+        cout<<"Opening camera index "<<vIdx<<endl;
+            TheVideoCapturer.open(vIdx);
             waitTime=10;
         }
         else  TheVideoCapturer.open(TheInputVideo);
@@ -118,8 +136,8 @@ int main(int argc,char **argv)
 
         cv::namedWindow("thres",1);
         cv::namedWindow("in",1);
-        MDetector.getThresholdParams( ThresParam1,ThresParam2);
-        MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
+        MDetector.getThresholdParams( ThresParam1,ThresParam2);       
+        MDetector.setCornerRefinementMethod(MarkerDetector::SUBPIX);
         iThresParam1=ThresParam1;
         iThresParam2=ThresParam2;
         cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
@@ -140,14 +158,16 @@ int main(int argc,char **argv)
             //chekc the speed by calculating the mean speed of all iterations
             AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
             AvrgTime.second++;
-            cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
+            cout<<"\rTime detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds nmarkers="<<TheMarkers.size()<< std::flush;
 
             //print marker info and draw the markers in image
             TheInputImage.copyTo(TheInputImageCopy);
+	    
             for (unsigned int i=0;i<TheMarkers.size();i++) {
-                cout<<TheMarkers[i]<<endl;
+                cout<<endl<<TheMarkers[i];
                 TheMarkers[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
             }
+            if (TheMarkers.size()!=0)            cout<<endl;
             //print other rectangles that contains no valid markers
        /**     for (unsigned int i=0;i<MDetector.getCandidates().size();i++) {
                 aruco::Marker m( MDetector.getCandidates()[i],999);
@@ -163,7 +183,6 @@ int main(int argc,char **argv)
                     CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheMarkers[i],TheCameraParameters);
                 }
             //DONE! Easy, right?
-            cout<<endl<<endl<<endl;
             //show input with augmented information and  the thresholded image
             cv::imshow("in",TheInputImageCopy);
             cv::imshow("thres",MDetector.getThresholdedImage());

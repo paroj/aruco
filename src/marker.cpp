@@ -29,7 +29,8 @@ or implied, of Rafael Muñoz Salinas.
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <cstdio>
-
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 namespace aruco {
 /**
@@ -246,10 +247,10 @@ void Marker::draw(Mat &in, Scalar color, int lineWidth ,bool writeId)const
 
 /**
  */
-void Marker::calculateExtrinsics(float markerSize,const CameraParameters &CP,bool setYPerperdicular)throw(cv::Exception)
+void Marker::calculateExtrinsics(float markerSize,const CameraParameters &CP,bool setYPerpendicular)throw(cv::Exception)
 {
     if (!CP.isValid()) throw cv::Exception(9004,"!CP.isValid(): invalid camera parameters. It is not possible to calculate extrinsics","calculateExtrinsics",__FILE__,__LINE__);
-    calculateExtrinsics( markerSize,CP.CameraMatrix,CP.Distorsion,setYPerperdicular);
+    calculateExtrinsics( markerSize,CP.CameraMatrix,CP.Distorsion,setYPerpendicular);
 }
 
 void print(cv::Point3f p,string cad){
@@ -257,7 +258,7 @@ void print(cv::Point3f p,string cad){
 }
 /**
  */
-void Marker::calculateExtrinsics(float markerSizeMeters,cv::Mat  camMatrix,cv::Mat distCoeff ,bool setYPerperdicular)throw(cv::Exception)
+void Marker::calculateExtrinsics(float markerSizeMeters,cv::Mat  camMatrix,cv::Mat distCoeff ,bool setYPerpendicular)throw(cv::Exception)
 {
     if (!isValid()) throw cv::Exception(9004,"!isValid(): invalid marker. It is not possible to calculate extrinsics","calculateExtrinsics",__FILE__,__LINE__);
     if (markerSizeMeters<=0)throw cv::Exception(9004,"markerSize<=0: invalid markerSize","calculateExtrinsics",__FILE__,__LINE__);
@@ -283,8 +284,8 @@ void Marker::calculateExtrinsics(float markerSizeMeters,cv::Mat  camMatrix,cv::M
     //Set image points from the marker
     for (int c=0;c<4;c++)
     {
-        ImagePoints.at<float>(c,0)=((*this)[c%4].x);
-        ImagePoints.at<float>(c,1)=((*this)[c%4].y);
+        ImagePoints.at<float>(c,0)=((*this)[c].x);
+        ImagePoints.at<float>(c,1)=((*this)[c].y);
     }
     
     cv::Mat raux,taux;
@@ -292,7 +293,7 @@ void Marker::calculateExtrinsics(float markerSizeMeters,cv::Mat  camMatrix,cv::M
     raux.convertTo(Rvec,CV_32F);
     taux.convertTo(Tvec ,CV_32F);
     //rotate the X axis so that Y is perpendicular to the marker plane
-   if (setYPerperdicular) rotateXAxis(Rvec);
+   if (setYPerpendicular) rotateXAxis(Rvec);
     ssize=markerSizeMeters; 
     cout<<(*this)<<endl;
     

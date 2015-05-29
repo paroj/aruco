@@ -28,6 +28,7 @@ or implied, of Rafael Muñoz Salinas.
 
 */
 #include "arucofidmarkers.h"
+#include <cstdio>
 #include <opencv2/imgproc/imgproc.hpp>
 using namespace cv;
 using namespace std;
@@ -41,7 +42,7 @@ namespace aruco {
  ************************************/
 /**
 */
-Mat FiducidalMarkers::createMarkerImage(int id,int size) throw (cv::Exception)
+Mat FiducidalMarkers::createMarkerImage(int id,int size,bool addWaterMark) throw (cv::Exception)
 {
     Mat marker(size,size, CV_8UC1);
     marker.setTo(Scalar(0));
@@ -61,6 +62,12 @@ Mat FiducidalMarkers::createMarkerImage(int id,int size) throw (cv::Exception)
     }
     else  throw cv::Exception(9004,"id invalid","createMarker",__FILE__,__LINE__);
 
+    if (addWaterMark){
+	char idcad[30];
+	sprintf(idcad,"#%d",id);
+ 	float ax=float(size)/100.;
+	cv::putText(marker,idcad,cv::Point( 0,marker.rows - marker.rows/40),FONT_HERSHEY_TRIPLEX,ax*0.15f,cv::Scalar::all(30));
+    }
     return marker;
 }
 /**

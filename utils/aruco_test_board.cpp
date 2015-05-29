@@ -28,7 +28,8 @@ or implied, of Rafael Muñoz Salinas.
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "aruco.h"
 using namespace cv;
 using namespace aruco;
@@ -148,6 +149,8 @@ int main(int argc,char **argv)
         cv::namedWindow("in",1);
 	TheBoardDetector.setParams(TheBoardConfig,TheCameraParameters,TheMarkerSize);
 	TheBoardDetector.getMarkerDetector().getThresholdParams( ThresParam1,ThresParam2);
+	TheBoardDetector.getMarkerDetector().setCornerRefinementMethod(MarkerDetector::HARRIS);
+	TheBoardDetector.set_repj_err_thres(1.5);
 // 	TheBoardDetector.getMarkerDetector().enableErosion(true);//for chessboards
         iThresParam1=ThresParam1;
         iThresParam2=ThresParam2;
@@ -176,6 +179,7 @@ int main(int argc,char **argv)
              if (TheCameraParameters.isValid()) {
                 if ( probDetect>0.2)   {
                     CvDrawingUtils::draw3dAxis( TheInputImageCopy,TheBoardDetector.getDetectedBoard(),TheCameraParameters);
+// 		    CvDrawingUtils::draw3dCube(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),TheCameraParameters);
                     //draw3dBoardCube( TheInputImageCopy,TheBoardDetected,TheIntriscCameraMatrix,TheDistorsionCameraParams);
                 }
             }

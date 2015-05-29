@@ -25,16 +25,12 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Rafael Muñoz Salinas.
 ********************************/
-/************************************
- *
- *
- *
- *
- ************************************/
+ 
 
 #include <iostream>
 #include "aruco.h"
 #include "cvdrawingutils.h"
+#include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
 int main(int argc,char **argv)

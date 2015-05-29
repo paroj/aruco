@@ -27,8 +27,7 @@ or implied, of Rafael Muñoz Salinas.
 ********************************/
 #include "board.h"
 #include <cstdio>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+#include <opencv2/highgui/highgui.hpp>
 #include "arucofidmarkers.h"
 using namespace std;
 using namespace cv;
@@ -54,11 +53,11 @@ int main(int argc,char **argv)
         aruco::BoardConfiguration BInfo;
         Mat BoardImage;
         if (typeBoard==0)
-            BoardImage=aruco::FiducidalMarkers::createBoardImage(Size(XSize,YSize), pixSize,pixSize*0.2,BInfo);
+            BoardImage=aruco::FiducidalMarkers::createBoardImage(Size(XSize,YSize), pixSize,pixSize*interMarkerDistance,BInfo);
         else if (typeBoard==1)
             BoardImage=aruco::FiducidalMarkers::createBoardImage_ChessBoard(Size(XSize,YSize), pixSize,BInfo);
         else if (typeBoard==2)
-            BoardImage=aruco::FiducidalMarkers::createBoardImage_Frame(Size(XSize,YSize), pixSize,pixSize*0.2,BInfo);
+            BoardImage=aruco::FiducidalMarkers::createBoardImage_Frame(Size(XSize,YSize), pixSize,pixSize*interMarkerDistance,BInfo);
 	  
 	  else {cerr<<"Incorrect board type"<<typeBoard<<endl;return -1;}
 	  

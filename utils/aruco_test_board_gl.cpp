@@ -28,8 +28,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#ifdef __APPLE__
-  #include <OpenGL/gl.h>
+#ifdef __APPLE__ 
   #include <GLUT/glut.h>
 #elif _MSC_VER
   //http://social.msdn.microsoft.com/Forums/eu/vcgeneral/thread/7d6e6fa5-afc2-4370-9a1f-991a76ccb5b7
@@ -41,10 +40,12 @@ or implied, of Rafael Muñoz Salinas.
   #include <GL/glut.h>
 #endif
 
-
+#include <opencv2/highgui/highgui.hpp>
 #include "aruco.h"
 #include "boarddetector.h"
 #include "common.h"
+
+
 using namespace cv;
 using namespace aruco;
 
@@ -52,7 +53,6 @@ string TheInputVideo,TheIntrinsicFile,TheBoardConfigFile;
 bool The3DInfoAvailable=false;
 float TheMarkerSize=-1;
 MarkerDetector MDetector;
-BoardDetector BDetector;
 VideoCapture TheVideoCapturer;
 vector<Marker> TheMarkers;
 //board
@@ -243,10 +243,11 @@ void vDrawScene()
         glLoadIdentity();
         glLoadMatrixd(modelview_matrix);
         glColor3f(0,1,0);
-        glTranslatef(0, TheMarkerSize/2,0);
+	axis(TheMarkerSize);
+        if(TheBoardDetector.isYPerpendicular()) glTranslatef(0,TheMarkerSize/2,0);
+	else glTranslatef(0,0,TheMarkerSize/2);
         glPushMatrix();
         glutWireCube( TheMarkerSize );
-        axis(TheMarkerSize);
         glPopMatrix();
     }
 
@@ -273,7 +274,7 @@ void vIdle()
         //remove distorion in image
         cv::undistort(TheInputImage,TheUndInputImage, TheCameraParams.CameraMatrix,TheCameraParams.Distorsion);
         //detect markers
-        MDetector.detect(TheUndInputImage,TheMarkers,TheCameraParams.CameraMatrix,Mat(),TheMarkerSize);
+        MDetector.detect(TheUndInputImage,TheMarkers);
         //Detection of the board
         TheBoardDetected.second=TheBoardDetector.detect( TheMarkers, TheBoardConfig,TheBoardDetected.first, TheCameraParams,TheMarkerSize);
         //chekc the speed by calculating the mean speed of all iterations

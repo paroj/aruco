@@ -30,12 +30,13 @@ or implied, of Rafael Muñoz Salinas.
 #include <fstream>
 #include <sstream>
 #ifdef __APPLE__
-#include <OpenGL/gl.h>
 #include <GLUT/glut.h>
 #else
 #include <GL/gl.h>
 #include <GL/glut.h>
 #endif
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "aruco.h"
 using namespace cv;
 using namespace aruco;
@@ -218,7 +219,7 @@ void vDrawScene()
         axis(TheMarkerSize);
 
         glColor3f(1,0.4,0.4);
-        glTranslatef(0, TheMarkerSize/2,0);
+        glTranslatef(0, 0, TheMarkerSize/2);
         glPushMatrix();
         glutWireCube( TheMarkerSize );
 
@@ -248,7 +249,7 @@ void vIdle()
         //remove distorion in image
         cv::undistort(TheInputImage,TheUndInputImage, TheCameraParams.CameraMatrix, TheCameraParams.Distorsion);
         //detect markers
-        PPDetector.detect(TheUndInputImage,TheMarkers, TheCameraParams.CameraMatrix,Mat(),TheMarkerSize);
+        PPDetector.detect(TheUndInputImage,TheMarkers, TheCameraParams.CameraMatrix,Mat(),TheMarkerSize,false);
         //resize the image to the size of the GL window
         cv::resize(TheUndInputImage,TheResizedImage,TheGlWindowSize);
     }
