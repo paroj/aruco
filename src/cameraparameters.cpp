@@ -34,8 +34,6 @@ using namespace std;
 namespace aruco {
 
 CameraParameters::CameraParameters() {
-    CameraMatrix = cv::Mat();
-    Distorsion = cv::Mat();
     CamSize = cv::Size(-1, -1);
 }
 /**Creates the object from the info passed
@@ -50,9 +48,7 @@ CameraParameters::CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff
 /**
  */
 CameraParameters::CameraParameters(const CameraParameters& CI) {
-    CI.CameraMatrix.copyTo(CameraMatrix);
-    CI.Distorsion.copyTo(Distorsion);
-    CamSize = CI.CamSize;
+    *this = CI;
 }
 
 /**
@@ -67,41 +63,31 @@ CameraParameters& CameraParameters::operator=(const CameraParameters& CI) {
  */
 void CameraParameters::setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff,
                                  cv::Size size) throw(cv::Exception) {
-    if (cameraMatrix.rows != 3 || cameraMatrix.cols != 3)
-        throw cv::Exception(9000, "invalid input cameraMatrix", "CameraParameters::setParams", __FILE__,
-                            __LINE__);
+    CV_Assert(cameraMatrix.rows == 3 && cameraMatrix.cols == 3);
+    CV_Assert(distorsionCoeff.total() >= 4 && distorsionCoeff.total() < 7);
+
     cameraMatrix.convertTo(CameraMatrix, CV_32FC1);
-    if (distorsionCoeff.total() < 4 || distorsionCoeff.total() >= 7)
-        throw cv::Exception(9000, "invalid input distorsionCoeff", "CameraParameters::setParams", __FILE__,
-                            __LINE__);
-    cv::Mat auxD;
-
     distorsionCoeff.convertTo(Distorsion, CV_32FC1);
-
-    //     Distorsion.create(1,4,CV_32FC1);
-    //     for (int i=0;i<4;i++)
-    //         Distorsion.ptr<float>(0)[i]=auxD.ptr<float>(0)[i];
-
     CamSize = size;
 }
 
 /**
 */
 cv::Point3f CameraParameters::getCameraLocation(cv::Mat Rvec, cv::Mat Tvec) {
-    cv::Mat m33(3, 3, CV_32FC1);
+    cv::Mat_<float> m33(3, 3);
     cv::Rodrigues(Rvec, m33);
 
-    cv::Mat m44 = cv::Mat::eye(4, 4, CV_32FC1);
+    cv::Mat_<float> m44 = cv::Mat_<float>::eye(4, 4);
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
-            m44.at<float>(i, j) = m33.at<float>(i, j);
+            m44(i, j) = m33(i, j);
 
     // now, add translation information
     for (int i = 0; i < 3; i++)
-        m44.at<float>(i, 3) = Tvec.at<float>(0, i);
+        m44(i, 3) = Tvec.at<float>(0, i);
     // invert the matrix
     m44.inv();
-    return cv::Point3f(m44.at<float>(0, 0), m44.at<float>(0, 1), m44.at<float>(0, 2));
+    return cv::Point3f(m44(0, 0), m44(0, 1), m44(0, 2));
 }
 
 /**Reads the camera parameters from file
@@ -123,21 +109,21 @@ void CameraParameters::readFromFile(string path) throw(cv::Exception) {
         if (sscanf(line, "%s = %f", cmd, &fval) == 2) {
             string scmd(cmd);
             if (scmd == "fx")
-                CameraMatrix.at<float>(0, 0) = fval;
+                CameraMatrix(0, 0) = fval;
             else if (scmd == "cx")
-                CameraMatrix.at<float>(0, 2) = fval;
+                CameraMatrix(0, 2) = fval;
             else if (scmd == "fy")
-                CameraMatrix.at<float>(1, 1) = fval;
+                CameraMatrix(1, 1) = fval;
             else if (scmd == "cy")
-                CameraMatrix.at<float>(1, 2) = fval;
+                CameraMatrix(1, 2) = fval;
             else if (scmd == "k1")
-                Distorsion.at<float>(0, 0) = fval;
+                Distorsion(0, 0) = fval;
             else if (scmd == "k2")
-                Distorsion.at<float>(1, 0) = fval;
+                Distorsion(1, 0) = fval;
             else if (scmd == "p1")
-                Distorsion.at<float>(2, 0) = fval;
+                Distorsion(2, 0) = fval;
             else if (scmd == "p2")
-                Distorsion.at<float>(3, 0) = fval;
+                Distorsion(3, 0) = fval;
             else if (scmd == "width")
                 CamSize.width = fval;
             else if (scmd == "height")
@@ -156,14 +142,14 @@ void CameraParameters::saveToFile(string path, bool inXML) throw(cv::Exception) 
             throw cv::Exception(9006, "could not open file:" + path, "CameraParameters::saveToFile",
                                 __FILE__, __LINE__);
         file << "# Aruco 1.0 CameraParameters" << endl;
-        file << "fx = " << CameraMatrix.at<float>(0, 0) << endl;
-        file << "cx = " << CameraMatrix.at<float>(0, 2) << endl;
-        file << "fy = " << CameraMatrix.at<float>(1, 1) << endl;
-        file << "cy = " << CameraMatrix.at<float>(1, 2) << endl;
-        file << "k1 = " << Distorsion.at<float>(0, 0) << endl;
-        file << "k2 = " << Distorsion.at<float>(1, 0) << endl;
-        file << "p1 = " << Distorsion.at<float>(2, 0) << endl;
-        file << "p2 = " << Distorsion.at<float>(3, 0) << endl;
+        file << "fx = " << CameraMatrix(0, 0) << endl;
+        file << "cx = " << CameraMatrix(0, 2) << endl;
+        file << "fy = " << CameraMatrix(1, 1) << endl;
+        file << "cy = " << CameraMatrix(1, 2) << endl;
+        file << "k1 = " << Distorsion(0, 0) << endl;
+        file << "k2 = " << Distorsion(1, 0) << endl;
+        file << "p1 = " << Distorsion(2, 0) << endl;
+        file << "p2 = " << Distorsion(3, 0) << endl;
         file << "width = " << CamSize.width << endl;
         file << "height = " << CamSize.height << endl;
     } else {
@@ -186,10 +172,10 @@ void CameraParameters::resize(cv::Size size) throw(cv::Exception) {
     // resize the camera parameters to fit this image size
     float AxFactor = float(size.width) / float(CamSize.width);
     float AyFactor = float(size.height) / float(CamSize.height);
-    CameraMatrix.at<float>(0, 0) *= AxFactor;
-    CameraMatrix.at<float>(0, 2) *= AxFactor;
-    CameraMatrix.at<float>(1, 1) *= AyFactor;
-    CameraMatrix.at<float>(1, 2) *= AyFactor;
+    CameraMatrix(0, 0) *= AxFactor;
+    CameraMatrix(0, 2) *= AxFactor;
+    CameraMatrix(1, 1) *= AyFactor;
+    CameraMatrix(1, 2) *= AyFactor;
 }
 
 /****
@@ -230,7 +216,7 @@ void CameraParameters::readFromXMLFile(string filePath) throw(cv::Exception) {
     //     for (int i=0;i<4;i++)
     //         Distorsion.ptr<float>(0)[i]=mdist32.ptr<float>(0)[i];
 
-    Distorsion.create(1, 5, CV_32FC1);
+    Distorsion.create(1, 5);
     for (int i = 0; i < 5; i++)
         Distorsion.ptr<float>(0)[i] = mdist32.ptr<float>(0)[i];
     CamSize.width = w;
@@ -252,10 +238,10 @@ void CameraParameters::glGetProjectionMatrix(cv::Size orgImgSize, cv::Size size,
     // Deterime the rsized info
     double Ax = double(size.width) / double(orgImgSize.width);
     double Ay = double(size.height) / double(orgImgSize.height);
-    double _fx = CameraMatrix.at<float>(0, 0) * Ax;
-    double _cx = CameraMatrix.at<float>(0, 2) * Ax;
-    double _fy = CameraMatrix.at<float>(1, 1) * Ay;
-    double _cy = CameraMatrix.at<float>(1, 2) * Ay;
+    double _fx = CameraMatrix(0, 0) * Ax;
+    double _cx = CameraMatrix(0, 2) * Ax;
+    double _fy = CameraMatrix(1, 1) * Ay;
+    double _cy = CameraMatrix(1, 2) * Ay;
     double cparam[3][4] = {{_fx, 0, _cx, 0}, {0, _fy, _cy, 0}, {0, 0, 1, 0}};
 
     argConvGLcpara2(cparam, size.width, size.height, gnear, gfar, proj_matrix, invert);
@@ -455,7 +441,7 @@ cv::Mat CameraParameters::getRTMatrix(const cv::Mat& R_, const cv::Mat& T_, int 
             Matrix.at<double>(i, 3) = T.ptr<double>(0)[i];
         M = Matrix;
     } else if (R.depth() == CV_32F) {
-        cv::Mat Matrix = cv::Mat::eye(4, 4, CV_32FC1);
+        cv::Mat_<float> Matrix = cv::Mat_<float>::eye(4, 4);
         cv::Mat R33 = cv::Mat(Matrix, cv::Rect(0, 0, 3, 3));
         if (R.total() == 3) {
             cv::Rodrigues(R, R33);
@@ -466,7 +452,7 @@ cv::Mat CameraParameters::getRTMatrix(const cv::Mat& R_, const cv::Mat& T_, int 
         }
 
         for (int i = 0; i < 3; i++)
-            Matrix.at<float>(i, 3) = T.ptr<float>(0)[i];
+            Matrix(i, 3) = T.ptr<float>(0)[i];
         M = Matrix;
     }
 

@@ -38,9 +38,9 @@ namespace aruco {
 class ARUCO_EXPORTS CameraParameters {
 public:
     // 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
-    cv::Mat CameraMatrix;
+    cv::Mat_<float> CameraMatrix;
     // 4x1 matrix (k1,k2,p1,p2)
-    cv::Mat Distorsion;
+    cv::Mat_<float> Distorsion;
     // size of the image
     cv::Size CamSize;
 
@@ -66,8 +66,7 @@ public:
     /**Indicates whether this object is valid
      */
     bool isValid() const {
-        return CameraMatrix.rows != 0 && CameraMatrix.cols != 0 && Distorsion.rows != 0 &&
-               Distorsion.cols != 0 && CamSize.width != -1 && CamSize.height != -1;
+        return !CameraMatrix.empty() && !Distorsion.empty() && CamSize.width != -1 && CamSize.height != -1;
     }
     /**Assign operator
     */
