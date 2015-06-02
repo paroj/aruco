@@ -47,8 +47,8 @@ TEST(Aruco, Single) {
         EXPECT_FLOAT_EQ(expected[i].getCenter().y, Markers[i].getCenter().y);
 
         for(auto j = 0; j < 3; j++) {
-            EXPECT_FLOAT_EQ(expected[i].Tvec.at<float>(j), Markers[i].Tvec.at<float>(j));
-            EXPECT_FLOAT_EQ(expected[i].Rvec.at<float>(j), Markers[i].Rvec.at<float>(j));
+            EXPECT_FLOAT_EQ(expected[i].Tvec(j), Markers[i].Tvec(j));
+            EXPECT_FLOAT_EQ(expected[i].Rvec(j), Markers[i].Rvec(j));
         }
     }
 }

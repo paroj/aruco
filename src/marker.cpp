@@ -40,19 +40,8 @@ namespace aruco {
 Marker::Marker() {
     id = -1;
     ssize = -1;
-    Rvec.create(3, 1, CV_32FC1);
-    Tvec.create(3, 1, CV_32FC1);
     for (int i = 0; i < 3; i++)
-        Tvec.at<float>(i, 0) = Rvec.at<float>(i, 0) = -999999;
-}
-/**
- *
- */
-Marker::Marker(const Marker& M) : std::vector<cv::Point2f>(M) {
-    M.Rvec.copyTo(Rvec);
-    M.Tvec.copyTo(Tvec);
-    id = M.id;
-    ssize = M.ssize;
+        Tvec(i) = Rvec(i) = -999999;
 }
 
 /**
@@ -61,10 +50,8 @@ Marker::Marker(const Marker& M) : std::vector<cv::Point2f>(M) {
 Marker::Marker(const std::vector<cv::Point2f>& corners, int _id) : std::vector<cv::Point2f>(corners) {
     id = _id;
     ssize = -1;
-    Rvec.create(3, 1, CV_32FC1);
-    Tvec.create(3, 1, CV_32FC1);
     for (int i = 0; i < 3; i++)
-        Tvec.at<float>(i, 0) = Rvec.at<float>(i, 0) = -999999;
+        Tvec(i) = Rvec(i) = -999999;
 }
 
 /**
@@ -74,25 +61,25 @@ void Marker::glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Excepti
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at<float>(i, 0) != -999999)
+        if (Tvec(i) != -999999)
             invalid |= false;
-        if (Rvec.at<float>(i, 0) != -999999)
+        if (Rvec(i) != -999999)
             invalid |= false;
     }
     if (invalid)
         throw cv::Exception(9003, "extrinsic parameters are not set", "Marker::getModelViewMatrix",
                             __FILE__, __LINE__);
-    Mat Rot(3, 3, CV_32FC1), Jacob;
-    Rodrigues(Rvec, Rot, Jacob);
+    Matx33f Rot;
+    Rodrigues(Rvec, Rot);
 
     double para[3][4];
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
-            para[i][j] = Rot.at<float>(i, j);
+            para[i][j] = Rot(i, j);
     // now, add the translation
-    para[0][3] = Tvec.at<float>(0, 0);
-    para[1][3] = Tvec.at<float>(1, 0);
-    para[2][3] = Tvec.at<float>(2, 0);
+    para[0][3] = Tvec(0);
+    para[1][3] = Tvec(1);
+    para[2][3] = Tvec(2);
     double scale = 1;
 
     modelview_matrix[0 + 0 * 4] = para[0][0];
@@ -129,9 +116,9 @@ void Marker::OgreGetPoseParameters(double position[3], double orientation[4]) th
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at<float>(i, 0) != -999999)
+        if (Tvec(i) != -999999)
             invalid |= false;
-        if (Rvec.at<float>(i, 0) != -999999)
+        if (Rvec(i) != -999999)
             invalid |= false;
     }
     if (invalid)
@@ -139,24 +126,24 @@ void Marker::OgreGetPoseParameters(double position[3], double orientation[4]) th
                             __FILE__, __LINE__);
 
     // calculate position vector
-    position[0] = -Tvec.ptr<float>(0)[0];
-    position[1] = -Tvec.ptr<float>(0)[1];
-    position[2] = +Tvec.ptr<float>(0)[2];
+    position[0] = -Tvec[0];
+    position[1] = -Tvec[1];
+    position[2] = +Tvec[2];
 
     // now calculare orientation quaternion
-    cv::Mat Rot(3, 3, CV_32FC1);
+    cv::Matx33f Rot;
     cv::Rodrigues(Rvec, Rot);
 
     // calculate axes for quaternion
     double stAxes[3][3];
     // x axis
-    stAxes[0][0] = -Rot.at<float>(0, 0);
-    stAxes[0][1] = -Rot.at<float>(1, 0);
-    stAxes[0][2] = +Rot.at<float>(2, 0);
+    stAxes[0][0] = -Rot(0, 0);
+    stAxes[0][1] = -Rot(1, 0);
+    stAxes[0][2] = +Rot(2, 0);
     // y axis
-    stAxes[1][0] = -Rot.at<float>(0, 1);
-    stAxes[1][1] = -Rot.at<float>(1, 1);
-    stAxes[1][2] = +Rot.at<float>(2, 1);
+    stAxes[1][0] = -Rot(0, 1);
+    stAxes[1][1] = -Rot(1, 1);
+    stAxes[1][2] = +Rot(2, 1);
     // for z axis, we use cross product
     stAxes[2][0] = stAxes[0][1] * stAxes[1][2] - stAxes[0][2] * stAxes[1][1];
     stAxes[2][1] = -stAxes[0][0] * stAxes[1][2] + stAxes[0][2] * stAxes[1][0];
@@ -265,26 +252,26 @@ void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::
         throw cv::Exception(9004, "CameraMatrix is empty", "calculateExtrinsics", __FILE__, __LINE__);
 
     double halfSize = markerSizeMeters / 2.;
-    cv::Mat ObjPoints(4, 3, CV_32FC1);
-    ObjPoints.at<float>(1, 0) = -halfSize;
-    ObjPoints.at<float>(1, 1) = halfSize;
-    ObjPoints.at<float>(1, 2) = 0;
-    ObjPoints.at<float>(2, 0) = halfSize;
-    ObjPoints.at<float>(2, 1) = halfSize;
-    ObjPoints.at<float>(2, 2) = 0;
-    ObjPoints.at<float>(3, 0) = halfSize;
-    ObjPoints.at<float>(3, 1) = -halfSize;
-    ObjPoints.at<float>(3, 2) = 0;
-    ObjPoints.at<float>(0, 0) = -halfSize;
-    ObjPoints.at<float>(0, 1) = -halfSize;
-    ObjPoints.at<float>(0, 2) = 0;
+    cv::Matx<float, 4, 3> ObjPoints;
+    ObjPoints(1, 0) = -halfSize;
+    ObjPoints(1, 1) = halfSize;
+    ObjPoints(1, 2) = 0;
+    ObjPoints(2, 0) = halfSize;
+    ObjPoints(2, 1) = halfSize;
+    ObjPoints(2, 2) = 0;
+    ObjPoints(3, 0) = halfSize;
+    ObjPoints(3, 1) = -halfSize;
+    ObjPoints(3, 2) = 0;
+    ObjPoints(0, 0) = -halfSize;
+    ObjPoints(0, 1) = -halfSize;
+    ObjPoints(0, 2) = 0;
 
-    cv::Mat ImagePoints(4, 2, CV_32FC1);
+    cv::Matx<float, 4, 2> ImagePoints;
 
     // Set image points from the marker
     for (int c = 0; c < 4; c++) {
-        ImagePoints.at<float>(c, 0) = ((*this)[c].x);
-        ImagePoints.at<float>(c, 1) = ((*this)[c].y);
+        ImagePoints(c, 0) = ((*this)[c].x);
+        ImagePoints(c, 1) = ((*this)[c].y);
     }
 
     cv::Mat raux, taux;
@@ -301,16 +288,16 @@ void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::
 /**
 */
 
-void Marker::rotateXAxis(Mat& rotation) {
-    cv::Mat R(3, 3, CV_32F);
+void Marker::rotateXAxis(Vec3f& rotation) {
+    cv::Matx33f R;
     Rodrigues(rotation, R);
     // create a rotation matrix for x axis
-    cv::Mat RX = cv::Mat::eye(3, 3, CV_32F);
+    cv::Matx33f RX = cv::Matx33f::eye();
     float angleRad = M_PI / 2;
-    RX.at<float>(1, 1) = cos(angleRad);
-    RX.at<float>(1, 2) = -sin(angleRad);
-    RX.at<float>(2, 1) = sin(angleRad);
-    RX.at<float>(2, 2) = cos(angleRad);
+    RX(1, 1) = cos(angleRad);
+    RX(1, 2) = -sin(angleRad);
+    RX(2, 1) = sin(angleRad);
+    RX(2, 2) = cos(angleRad);
     // now multiply
     R = R * RX;
     // finally, the the rodrigues back

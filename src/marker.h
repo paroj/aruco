@@ -45,20 +45,16 @@ public:
     // size of the markers sides in meters
     float ssize;
     // matrices of rotation and translation respect to the camera
-    cv::Mat Rvec, Tvec;
+    cv::Vec3f Rvec, Tvec;
 
     /**
      */
     Marker();
+
     /**
      */
-    Marker(const Marker& M);
-    /**
-     */
-    Marker(const std::vector<cv::Point2f>& corners, int _id = -1);
-    /**
-     */
-    ~Marker() {}
+    explicit Marker(const std::vector<cv::Point2f>& corners, int _id = -1);
+
     /**Indicates if this object is valid
      */
     bool isValid() const { return id != -1 && size() == 4; }
@@ -124,16 +120,16 @@ public:
             str << "(" << M[i].x << "," << M[i].y << ") ";
         str << "Txyz=";
         for (int i = 0; i < 3; i++)
-            str << M.Tvec.ptr<float>(0)[i] << " ";
+            str << M.Tvec[i] << " ";
         str << "Rxyz=";
         for (int i = 0; i < 3; i++)
-            str << M.Rvec.ptr<float>(0)[i] << " ";
+            str << M.Rvec[i] << " ";
 
         return str;
     }
 
 private:
-    void rotateXAxis(cv::Mat& rotation);
+    void rotateXAxis(cv::Vec3f& rotation);
 };
 }
 #endif
