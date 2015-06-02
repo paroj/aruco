@@ -40,19 +40,19 @@ namespace aruco {
 void CvDrawingUtils::draw3dAxis(cv::Mat& Image, Marker& m, const CameraParameters& CP) {
 
     float size = m.ssize * 3;
-    Mat objectPoints(4, 3, CV_32FC1);
-    objectPoints.at<float>(0, 0) = 0;
-    objectPoints.at<float>(0, 1) = 0;
-    objectPoints.at<float>(0, 2) = 0;
-    objectPoints.at<float>(1, 0) = size;
-    objectPoints.at<float>(1, 1) = 0;
-    objectPoints.at<float>(1, 2) = 0;
-    objectPoints.at<float>(2, 0) = 0;
-    objectPoints.at<float>(2, 1) = size;
-    objectPoints.at<float>(2, 2) = 0;
-    objectPoints.at<float>(3, 0) = 0;
-    objectPoints.at<float>(3, 1) = 0;
-    objectPoints.at<float>(3, 2) = size;
+    Mat_<float> objectPoints(4, 3);
+    objectPoints(0, 0) = 0;
+    objectPoints(0, 1) = 0;
+    objectPoints(0, 2) = 0;
+    objectPoints(1, 0) = size;
+    objectPoints(1, 1) = 0;
+    objectPoints(1, 2) = 0;
+    objectPoints(2, 0) = 0;
+    objectPoints(2, 1) = size;
+    objectPoints(2, 2) = 0;
+    objectPoints(3, 0) = 0;
+    objectPoints(3, 1) = 0;
+    objectPoints(3, 2) = size;
 
     vector<Point2f> imagePoints;
     cv::projectPoints(objectPoints, m.Rvec, m.Tvec, CP.CameraMatrix, CP.Distorsion, imagePoints);
@@ -72,61 +72,61 @@ void CvDrawingUtils::draw3dAxis(cv::Mat& Image, Marker& m, const CameraParameter
  ****/
 void CvDrawingUtils::draw3dCube(cv::Mat& Image, Marker& m, const CameraParameters& CP,
                                 bool setYperpendicular) {
-    Mat objectPoints(8, 3, CV_32FC1);
+    Mat_<float> objectPoints(8, 3);
     double halfSize = m.ssize / 2;
 
     if (setYperpendicular) {
-        objectPoints.at<float>(0, 0) = -halfSize;
-        objectPoints.at<float>(0, 1) = 0;
-        objectPoints.at<float>(0, 2) = -halfSize;
-        objectPoints.at<float>(1, 0) = halfSize;
-        objectPoints.at<float>(1, 1) = 0;
-        objectPoints.at<float>(1, 2) = -halfSize;
-        objectPoints.at<float>(2, 0) = halfSize;
-        objectPoints.at<float>(2, 1) = 0;
-        objectPoints.at<float>(2, 2) = halfSize;
-        objectPoints.at<float>(3, 0) = -halfSize;
-        objectPoints.at<float>(3, 1) = 0;
-        objectPoints.at<float>(3, 2) = halfSize;
+        objectPoints(0, 0) = -halfSize;
+        objectPoints(0, 1) = 0;
+        objectPoints(0, 2) = -halfSize;
+        objectPoints(1, 0) = halfSize;
+        objectPoints(1, 1) = 0;
+        objectPoints(1, 2) = -halfSize;
+        objectPoints(2, 0) = halfSize;
+        objectPoints(2, 1) = 0;
+        objectPoints(2, 2) = halfSize;
+        objectPoints(3, 0) = -halfSize;
+        objectPoints(3, 1) = 0;
+        objectPoints(3, 2) = halfSize;
 
-        objectPoints.at<float>(4, 0) = -halfSize;
-        objectPoints.at<float>(4, 1) = m.ssize;
-        objectPoints.at<float>(4, 2) = -halfSize;
-        objectPoints.at<float>(5, 0) = halfSize;
-        objectPoints.at<float>(5, 1) = m.ssize;
-        objectPoints.at<float>(5, 2) = -halfSize;
-        objectPoints.at<float>(6, 0) = halfSize;
-        objectPoints.at<float>(6, 1) = m.ssize;
-        objectPoints.at<float>(6, 2) = halfSize;
-        objectPoints.at<float>(7, 0) = -halfSize;
-        objectPoints.at<float>(7, 1) = m.ssize;
-        objectPoints.at<float>(7, 2) = halfSize;
+        objectPoints(4, 0) = -halfSize;
+        objectPoints(4, 1) = m.ssize;
+        objectPoints(4, 2) = -halfSize;
+        objectPoints(5, 0) = halfSize;
+        objectPoints(5, 1) = m.ssize;
+        objectPoints(5, 2) = -halfSize;
+        objectPoints(6, 0) = halfSize;
+        objectPoints(6, 1) = m.ssize;
+        objectPoints(6, 2) = halfSize;
+        objectPoints(7, 0) = -halfSize;
+        objectPoints(7, 1) = m.ssize;
+        objectPoints(7, 2) = halfSize;
     } else {
-        objectPoints.at<float>(0, 0) = -halfSize;
-        objectPoints.at<float>(0, 1) = -halfSize;
-        objectPoints.at<float>(0, 2) = 0;
-        objectPoints.at<float>(1, 0) = halfSize;
-        objectPoints.at<float>(1, 1) = -halfSize;
-        objectPoints.at<float>(1, 2) = 0;
-        objectPoints.at<float>(2, 0) = halfSize;
-        objectPoints.at<float>(2, 1) = halfSize;
-        objectPoints.at<float>(2, 2) = 0;
-        objectPoints.at<float>(3, 0) = -halfSize;
-        objectPoints.at<float>(3, 1) = halfSize;
-        objectPoints.at<float>(3, 2) = 0;
+        objectPoints(0, 0) = -halfSize;
+        objectPoints(0, 1) = -halfSize;
+        objectPoints(0, 2) = 0;
+        objectPoints(1, 0) = halfSize;
+        objectPoints(1, 1) = -halfSize;
+        objectPoints(1, 2) = 0;
+        objectPoints(2, 0) = halfSize;
+        objectPoints(2, 1) = halfSize;
+        objectPoints(2, 2) = 0;
+        objectPoints(3, 0) = -halfSize;
+        objectPoints(3, 1) = halfSize;
+        objectPoints(3, 2) = 0;
 
-        objectPoints.at<float>(4, 0) = -halfSize;
-        objectPoints.at<float>(4, 1) = -halfSize;
-        objectPoints.at<float>(4, 2) = m.ssize;
-        objectPoints.at<float>(5, 0) = halfSize;
-        objectPoints.at<float>(5, 1) = -halfSize;
-        objectPoints.at<float>(5, 2) = m.ssize;
-        objectPoints.at<float>(6, 0) = halfSize;
-        objectPoints.at<float>(6, 1) = halfSize;
-        objectPoints.at<float>(6, 2) = m.ssize;
-        objectPoints.at<float>(7, 0) = -halfSize;
-        objectPoints.at<float>(7, 1) = halfSize;
-        objectPoints.at<float>(7, 2) = m.ssize;
+        objectPoints(4, 0) = -halfSize;
+        objectPoints(4, 1) = -halfSize;
+        objectPoints(4, 2) = m.ssize;
+        objectPoints(5, 0) = halfSize;
+        objectPoints(5, 1) = -halfSize;
+        objectPoints(5, 2) = m.ssize;
+        objectPoints(6, 0) = halfSize;
+        objectPoints(6, 1) = halfSize;
+        objectPoints(6, 2) = m.ssize;
+        objectPoints(7, 0) = -halfSize;
+        objectPoints(7, 1) = halfSize;
+        objectPoints(7, 2) = m.ssize;
     }
 
     vector<Point2f> imagePoints;
@@ -148,19 +148,19 @@ void CvDrawingUtils::draw3dCube(cv::Mat& Image, Marker& m, const CameraParameter
  *
  ****/
 void CvDrawingUtils::draw3dAxis(cv::Mat& Image, Board& B, const CameraParameters& CP) {
-    Mat objectPoints(4, 3, CV_32FC1);
-    objectPoints.at<float>(0, 0) = 0;
-    objectPoints.at<float>(0, 1) = 0;
-    objectPoints.at<float>(0, 2) = 0;
-    objectPoints.at<float>(1, 0) = 2 * B[0].ssize;
-    objectPoints.at<float>(1, 1) = 0;
-    objectPoints.at<float>(1, 2) = 0;
-    objectPoints.at<float>(2, 0) = 0;
-    objectPoints.at<float>(2, 1) = 2 * B[0].ssize;
-    objectPoints.at<float>(2, 2) = 0;
-    objectPoints.at<float>(3, 0) = 0;
-    objectPoints.at<float>(3, 1) = 0;
-    objectPoints.at<float>(3, 2) = 2 * B[0].ssize;
+    Mat_<float> objectPoints(4, 3);
+    objectPoints(0, 0) = 0;
+    objectPoints(0, 1) = 0;
+    objectPoints(0, 2) = 0;
+    objectPoints(1, 0) = 2 * B[0].ssize;
+    objectPoints(1, 1) = 0;
+    objectPoints(1, 2) = 0;
+    objectPoints(2, 0) = 0;
+    objectPoints(2, 1) = 2 * B[0].ssize;
+    objectPoints(2, 2) = 0;
+    objectPoints(3, 0) = 0;
+    objectPoints(3, 1) = 0;
+    objectPoints(3, 2) = 2 * B[0].ssize;
 
     vector<Point2f> imagePoints;
     projectPoints(objectPoints, B.Rvec, B.Tvec, CP.CameraMatrix, CP.Distorsion, imagePoints);
@@ -184,60 +184,60 @@ void CvDrawingUtils::draw3dCube(cv::Mat& Image, Board& B, const CameraParameters
 
     float cubeSize = B[0].ssize;
     float txz = -cubeSize / 2;
-    Mat objectPoints(8, 3, CV_32FC1);
+    Mat_<float> objectPoints(8, 3);
 
     if (setYperpendicular) {
-        objectPoints.at<float>(0, 0) = txz;
-        objectPoints.at<float>(0, 1) = 0;
-        objectPoints.at<float>(0, 2) = txz;
-        objectPoints.at<float>(1, 0) = txz + cubeSize;
-        objectPoints.at<float>(1, 1) = 0;
-        objectPoints.at<float>(1, 2) = txz;
-        objectPoints.at<float>(2, 0) = txz + cubeSize;
-        objectPoints.at<float>(2, 1) = cubeSize;
-        objectPoints.at<float>(2, 2) = txz;
-        objectPoints.at<float>(3, 0) = txz;
-        objectPoints.at<float>(3, 1) = cubeSize;
-        objectPoints.at<float>(3, 2) = txz;
+        objectPoints(0, 0) = txz;
+        objectPoints(0, 1) = 0;
+        objectPoints(0, 2) = txz;
+        objectPoints(1, 0) = txz + cubeSize;
+        objectPoints(1, 1) = 0;
+        objectPoints(1, 2) = txz;
+        objectPoints(2, 0) = txz + cubeSize;
+        objectPoints(2, 1) = cubeSize;
+        objectPoints(2, 2) = txz;
+        objectPoints(3, 0) = txz;
+        objectPoints(3, 1) = cubeSize;
+        objectPoints(3, 2) = txz;
 
-        objectPoints.at<float>(4, 0) = txz;
-        objectPoints.at<float>(4, 1) = 0;
-        objectPoints.at<float>(4, 2) = txz + cubeSize;
-        objectPoints.at<float>(5, 0) = txz + cubeSize;
-        objectPoints.at<float>(5, 1) = 0;
-        objectPoints.at<float>(5, 2) = txz + cubeSize;
-        objectPoints.at<float>(6, 0) = txz + cubeSize;
-        objectPoints.at<float>(6, 1) = cubeSize;
-        objectPoints.at<float>(6, 2) = txz + cubeSize;
-        objectPoints.at<float>(7, 0) = txz;
-        objectPoints.at<float>(7, 1) = cubeSize;
-        objectPoints.at<float>(7, 2) = txz + cubeSize;
+        objectPoints(4, 0) = txz;
+        objectPoints(4, 1) = 0;
+        objectPoints(4, 2) = txz + cubeSize;
+        objectPoints(5, 0) = txz + cubeSize;
+        objectPoints(5, 1) = 0;
+        objectPoints(5, 2) = txz + cubeSize;
+        objectPoints(6, 0) = txz + cubeSize;
+        objectPoints(6, 1) = cubeSize;
+        objectPoints(6, 2) = txz + cubeSize;
+        objectPoints(7, 0) = txz;
+        objectPoints(7, 1) = cubeSize;
+        objectPoints(7, 2) = txz + cubeSize;
     } else {
-        objectPoints.at<float>(0, 0) = txz;
-        objectPoints.at<float>(0, 2) = 0;
-        objectPoints.at<float>(0, 1) = txz;
-        objectPoints.at<float>(1, 0) = txz + cubeSize;
-        objectPoints.at<float>(1, 2) = 0;
-        objectPoints.at<float>(1, 1) = txz;
-        objectPoints.at<float>(2, 0) = txz + cubeSize;
-        objectPoints.at<float>(2, 2) = -cubeSize;
-        objectPoints.at<float>(2, 1) = txz;
-        objectPoints.at<float>(3, 0) = txz;
-        objectPoints.at<float>(3, 2) = -cubeSize;
-        objectPoints.at<float>(3, 1) = txz;
+        objectPoints(0, 0) = txz;
+        objectPoints(0, 2) = 0;
+        objectPoints(0, 1) = txz;
+        objectPoints(1, 0) = txz + cubeSize;
+        objectPoints(1, 2) = 0;
+        objectPoints(1, 1) = txz;
+        objectPoints(2, 0) = txz + cubeSize;
+        objectPoints(2, 2) = -cubeSize;
+        objectPoints(2, 1) = txz;
+        objectPoints(3, 0) = txz;
+        objectPoints(3, 2) = -cubeSize;
+        objectPoints(3, 1) = txz;
 
-        objectPoints.at<float>(4, 0) = txz;
-        objectPoints.at<float>(4, 2) = 0;
-        objectPoints.at<float>(4, 1) = txz + cubeSize;
-        objectPoints.at<float>(5, 0) = txz + cubeSize;
-        objectPoints.at<float>(5, 2) = 0;
-        objectPoints.at<float>(5, 1) = txz + cubeSize;
-        objectPoints.at<float>(6, 0) = txz + cubeSize;
-        objectPoints.at<float>(6, 2) = -cubeSize;
-        objectPoints.at<float>(6, 1) = txz + cubeSize;
-        objectPoints.at<float>(7, 0) = txz;
-        objectPoints.at<float>(7, 2) = -cubeSize;
-        objectPoints.at<float>(7, 1) = txz + cubeSize;
+        objectPoints(4, 0) = txz;
+        objectPoints(4, 2) = 0;
+        objectPoints(4, 1) = txz + cubeSize;
+        objectPoints(5, 0) = txz + cubeSize;
+        objectPoints(5, 2) = 0;
+        objectPoints(5, 1) = txz + cubeSize;
+        objectPoints(6, 0) = txz + cubeSize;
+        objectPoints(6, 2) = -cubeSize;
+        objectPoints(6, 1) = txz + cubeSize;
+        objectPoints(7, 0) = txz;
+        objectPoints(7, 2) = -cubeSize;
+        objectPoints(7, 1) = txz + cubeSize;
     }
 
     vector<Point2f> imagePoints;

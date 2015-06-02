@@ -44,6 +44,6 @@ public:
     static void draw3dCube(cv::Mat& Image, Board& m, const CameraParameters& CP,
                            bool setYperpendicular = false);
 };
-};
+}
 
 #endif
