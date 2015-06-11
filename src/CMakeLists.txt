@@ -1,4 +1,3 @@
-INCLUDE_DIRECTORIES(.)
 FILE(GLOB hdrs "*.h*")
 FILE(GLOB srcs "*.c*")
 
@@ -7,7 +6,10 @@ SET(hdrs ${hdrs})
 SET(srcs ${srcs})
 
 
-ADD_LIBRARY(${PROJECT_NAME} ${srcs} ${hdrs})
+ADD_LIBRARY(aruco ${srcs} ${hdrs})
+target_include_directories(aruco PUBLIC ${PROJECT_SOURCE_DIR}/src/ ${OpenCV_INCLUDE_DIRS} ${PROJECT_BINARY_DIR}/src/)
+TARGET_LINK_LIBRARIES(aruco PUBLIC ${REQUIRED_LIBRARIES})
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR} )
 MESSAGE(STATUS "OpenCV_LIB_DIR=${OpenCV_LIB_DIR}")
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES 				# create *nix style library versions + symbolic links
@@ -15,10 +17,8 @@ SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES 				# create *nix style library
 	VERSION ${PROJECT_VERSION}
 	SOVERSION ${PROJECT_SOVERSION}
 	CLEAN_DIRECT_OUTPUT 1 					# allow creating static and shared libs without conflicts
-	OUTPUT_NAME "${PROJECT_NAME}${PROJECT_DLLVERSION}" 	# avoid conflicts between library and binary target names
+	OUTPUT_NAME "aruco${PROJECT_DLLVERSION}" 	# avoid conflicts between library and binary target names
 )
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${REQUIRED_LIBRARIES})
 
 INSTALL(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION bin COMPONENT main			# Install the dll file in bin directory
