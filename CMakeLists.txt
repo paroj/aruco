@@ -275,7 +275,10 @@ IF(BUILD_UTILS)
   ADD_SUBDIRECTORY(utils_hrm)
 ENDIF()
 
-
+OPTION(BUILD_TESTS "build aruco automated tests" TRUE)
+IF(BUILD_TESTS)
+  ADD_SUBDIRECTORY(test)
+ENDIF()
 
 # ----------------------------------------------------------------------------
 # display status message for important variables
