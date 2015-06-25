@@ -1,0 +1,14 @@
+before_script:
+    # for incremental build
+    - SOURCE_DIR=`pwd`
+    - BUILD_DIR=../aruco_build
+    - cmake -E make_directory $BUILD_DIR
+
+ubuntu-14-04:
+    script:
+        - cd $BUILD_DIR
+        - cmake -DCMAKE_PREFIX_PATH=$PRECOMPILED_DIR $SOURCE_DIR
+        - cmake --build . --config Release
+        # execute tests
+        - cd $SOURCE_DIR/test/
+        - $SOURCE_DIR/$BUILD_DIR/test/core_tests
