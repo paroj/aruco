@@ -1,10 +1,3 @@
-/*
- * test_sample.cpp
- *
- *  Created on: 28.05.2015
- *      Author: parojtbe
- */
-
 #include <gtest/gtest.h>
 #include <opencv2/imgcodecs.hpp>
 
@@ -45,7 +38,7 @@ TEST(Aruco, Single) {
     fs["Markers"] >> expected;
 
     // now check the results
-    EXPECT_EQ(expected.size(), Markers.size());
+    ASSERT_EQ(expected.size(), Markers.size());
 
     for (size_t i = 0; i < Markers.size(); i++) {
         EXPECT_EQ(expected[i].id, Markers[i].id);
@@ -206,22 +199,4 @@ TEST(Aruco, HRM_CreateBoard) {
 
 TEST(Aruco, HRM_Single) {
     // use Testdata of Single
-}
-
-TEST(ArucoPerf, Single) {
-    // ATTENTION: finish normal tests first
-    // TODO something like (attention pseudocode):
-    // auto t0 = std::chrono::steady_clock::now();
-    for(int i = 0; i < 1000; i++) {
-        // MDetector.detect(InImage, Markers, CamParam, MarkerSize);
-    }
-    // auto t = std::chrono::steady_clock::now() - t0;
-    // auto first_run = -1;
-    // if(/var/tmp/something.xx exists)
-    //     first_run = read t from /var/tmp/something.xx
-    // if(first_run > 0) {
-    //    EXPECT_LT(t, first_run);
-    // } else {
-    //    write t to file in /var/tmp/something.xx
-    // }
 }
