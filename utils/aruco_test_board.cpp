@@ -37,10 +37,10 @@ using namespace aruco;
 string TheInputVideo;
 string TheIntrinsicFile;
 string TheBoardConfigFile;
-bool The3DInfoAvailable=false;
-float TheMarkerSize=-1;
+bool The3DInfoAvailable = false;
+float TheMarkerSize = -1;
 VideoCapture TheVideoCapturer;
-Mat TheInputImage,TheInputImageCopy;
+Mat TheInputImage, TheInputImageCopy;
 CameraParameters TheCameraParameters;
 BoardConfiguration TheBoardConfig;
 BoardDetector TheBoardDetector;
@@ -48,11 +48,11 @@ BoardDetector TheBoardDetector;
 string TheOutVideoFilePath;
 cv::VideoWriter VWriter;
 
-void cvTackBarEvents(int pos,void*);
-pair<double,double> AvrgTime(0,0) ;//determines the average time required for detection
-double ThresParam1,ThresParam2;
-int iThresParam1,iThresParam2;
-int waitTime=0;
+void cvTackBarEvents(int pos, void *);
+pair< double, double > AvrgTime(0, 0); // determines the average time required for detection
+double ThresParam1, ThresParam2;
+int iThresParam1, iThresParam2;
+int waitTime = 0;
 
 
 
@@ -64,26 +64,25 @@ int waitTime=0;
  *
  ************************************/
 
-bool readArguments ( int argc,char **argv )
-{
+bool readArguments(int argc, char **argv) {
 
-    if (argc<3) {
-        cerr<<"Invalid number of arguments"<<endl;
-        cerr<<"Usage: (in.avi|live) boardConfig.yml [intrinsics.yml] [size] [out]"<<endl;
+    if (argc < 3) {
+        cerr << "Invalid number of arguments" << endl;
+        cerr << "Usage: (in.avi|live) boardConfig.yml [intrinsics.yml] [size] [out]" << endl;
         return false;
     }
-    TheInputVideo=argv[1];
-    TheBoardConfigFile=argv[2];
-    if (argc>=4)
-        TheIntrinsicFile=argv[3];
-    if (argc>=5)
-        TheMarkerSize=atof(argv[4]);
-    if (argc>=6)
-        TheOutVideoFilePath=argv[5];
+    TheInputVideo = argv[1];
+    TheBoardConfigFile = argv[2];
+    if (argc >= 4)
+        TheIntrinsicFile = argv[3];
+    if (argc >= 5)
+        TheMarkerSize = atof(argv[4]);
+    if (argc >= 6)
+        TheOutVideoFilePath = argv[5];
 
 
-    if (argc==4)
-        cerr<<"NOTE: You need makersize to see 3d info!!!!"<<endl;
+    if (argc == 4)
+        cerr << "NOTE: You need makersize to see 3d info!!!!" << endl;
 
     return true;
 }
@@ -91,16 +90,18 @@ bool readArguments ( int argc,char **argv )
 void processKey(char k) {
     switch (k) {
     case 's':
-        if (waitTime==0) waitTime=10;
-        else waitTime=0;
+        if (waitTime == 0)
+            waitTime = 10;
+        else
+            waitTime = 0;
         break;
 
-/*    case 'p':
-        if (MDetector.getCornerRefinementMethod()==MarkerDetector::SUBPIX)
-            MDetector.setCornerRefinementMethod(MarkerDetector::NONE);
-        else
-            MDetector.setCornerRefinementMethod(MarkerDetector::SUBPIX);
-        break;*/
+        /*    case 'p':
+                if (MDetector.getCornerRefinementMethod()==MarkerDetector::SUBPIX)
+                    MDetector.setCornerRefinementMethod(MarkerDetector::NONE);
+                else
+                    MDetector.setCornerRefinementMethod(MarkerDetector::SUBPIX);
+                break;*/
     }
 }
 
@@ -110,110 +111,106 @@ void processKey(char k) {
  *
  *
  ************************************/
-int main(int argc,char **argv)
-{
-    try
-    {
-        if (  readArguments (argc,argv)==false) return 0;
-//parse arguments
+int main(int argc, char **argv) {
+    try {
+        if (readArguments(argc, argv) == false)
+            return 0;
+        // parse arguments
         TheBoardConfig.readFromFile(TheBoardConfigFile);
-        //read from camera or from  file
-        if (TheInputVideo=="live") {
+        // read from camera or from  file
+        if (TheInputVideo == "live") {
             TheVideoCapturer.open(0);
-            waitTime=10;
-        }
-        else TheVideoCapturer.open(TheInputVideo);
-        //check video is open
+            waitTime = 10;
+        } else
+            TheVideoCapturer.open(TheInputVideo);
+        // check video is open
         if (!TheVideoCapturer.isOpened()) {
-            cerr<<"Could not open video"<<endl;
+            cerr << "Could not open video" << endl;
             return -1;
-
         }
 
-        //read first image to get the dimensions
-        TheVideoCapturer>>TheInputImage;
+        // read first image to get the dimensions
+        TheVideoCapturer >> TheInputImage;
 
-        //Open outputvideo
-        if ( TheOutVideoFilePath!="")
-            VWriter.open(TheOutVideoFilePath,CV_FOURCC('M','J','P','G'),15,TheInputImage.size());
+        // Open outputvideo
+        if (TheOutVideoFilePath != "")
+            VWriter.open(TheOutVideoFilePath, CV_FOURCC('M', 'J', 'P', 'G'), 15, TheInputImage.size());
 
-        //read camera parameters if passed
-        if (TheIntrinsicFile!="") {
+        // read camera parameters if passed
+        if (TheIntrinsicFile != "") {
             TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
             TheCameraParameters.resize(TheInputImage.size());
         }
 
-        //Create gui
+        // Create gui
 
-        cv::namedWindow("thres",1);
-        cv::namedWindow("in",1);
-	TheBoardDetector.setParams(TheBoardConfig,TheCameraParameters,TheMarkerSize);
-	TheBoardDetector.getMarkerDetector().getThresholdParams( ThresParam1,ThresParam2);
-	TheBoardDetector.getMarkerDetector().setCornerRefinementMethod(MarkerDetector::HARRIS);
-	TheBoardDetector.set_repj_err_thres(1.5);
-// 	TheBoardDetector.getMarkerDetector().enableErosion(true);//for chessboards
-        iThresParam1=ThresParam1;
-        iThresParam2=ThresParam2;
-        cv::createTrackbar("ThresParam1", "in",&iThresParam1, 13, cvTackBarEvents);
-        cv::createTrackbar("ThresParam2", "in",&iThresParam2, 13, cvTackBarEvents);
-        char key=0;
-        int index=0;
-        //capture until press ESC or until the end of the video
-        do
-        {
-            TheVideoCapturer.retrieve( TheInputImage);
+        cv::namedWindow("thres", 1);
+        cv::namedWindow("in", 1);
+        TheBoardDetector.setParams(TheBoardConfig, TheCameraParameters, TheMarkerSize);
+        TheBoardDetector.getMarkerDetector().getThresholdParams(ThresParam1, ThresParam2);
+        TheBoardDetector.getMarkerDetector().setCornerRefinementMethod(MarkerDetector::HARRIS);
+        TheBoardDetector.set_repj_err_thres(1.5);
+        // 	TheBoardDetector.getMarkerDetector().enableErosion(true);//for chessboards
+        iThresParam1 = ThresParam1;
+        iThresParam2 = ThresParam2;
+        cv::createTrackbar("ThresParam1", "in", &iThresParam1, 13, cvTackBarEvents);
+        cv::createTrackbar("ThresParam2", "in", &iThresParam2, 13, cvTackBarEvents);
+        char key = 0;
+        int index = 0;
+        // capture until press ESC or until the end of the video
+        do {
+            TheVideoCapturer.retrieve(TheInputImage);
             TheInputImage.copyTo(TheInputImageCopy);
-            index++; //number of images captured
-            double tick = (double)getTickCount();//for checking the speed
-            //Detection of the board
-            float probDetect=TheBoardDetector.detect(TheInputImage);
-            //chekc the speed by calculating the mean speed of all iterations
-            AvrgTime.first+=((double)getTickCount()-tick)/getTickFrequency();
+            index++; // number of images captured
+            double tick = (double)getTickCount(); // for checking the speed
+            // Detection of the board
+            float probDetect = TheBoardDetector.detect(TheInputImage);
+            // chekc the speed by calculating the mean speed of all iterations
+            AvrgTime.first += ((double)getTickCount() - tick) / getTickFrequency();
             AvrgTime.second++;
-            cout<<"Time detection="<<1000*AvrgTime.first/AvrgTime.second<<" milliseconds"<<endl;
-            //print marker borders
-            for (unsigned int i=0;i<TheBoardDetector.getDetectedMarkers().size();i++)
-                TheBoardDetector.getDetectedMarkers()[i].draw(TheInputImageCopy,Scalar(0,0,255),1);
+            cout << "Time detection=" << 1000 * AvrgTime.first / AvrgTime.second << " milliseconds" << endl;
+            // print marker borders
+            for (unsigned int i = 0; i < TheBoardDetector.getDetectedMarkers().size(); i++)
+                TheBoardDetector.getDetectedMarkers()[i].draw(TheInputImageCopy, Scalar(0, 0, 255), 1);
 
-            //print board
-             if (TheCameraParameters.isValid()) {
-                if ( probDetect>0.2)   {
-                    CvDrawingUtils::draw3dAxis( TheInputImageCopy,TheBoardDetector.getDetectedBoard(),TheCameraParameters);
-// 		    CvDrawingUtils::draw3dCube(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),TheCameraParameters);
-                    //draw3dBoardCube( TheInputImageCopy,TheBoardDetected,TheIntriscCameraMatrix,TheDistorsionCameraParams);
+            // print board
+            if (TheCameraParameters.isValid()) {
+                if (probDetect > 0.2) {
+                    CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
+                    // 		    CvDrawingUtils::draw3dCube(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),TheCameraParameters);
+                    // draw3dBoardCube( TheInputImageCopy,TheBoardDetected,TheIntriscCameraMatrix,TheDistorsionCameraParams);
                 }
             }
-            //DONE! Easy, right?
+            // DONE! Easy, right?
 
-            //show input with augmented information and  the thresholded image
-            cv::imshow("in",TheInputImageCopy);
-            cv::imshow("thres",TheBoardDetector.getMarkerDetector().getThresholdedImage());
-            //write to video if required
-            if (  TheOutVideoFilePath!="") {
-                //create a beautiful compiosed image showing the thresholded
-                //first create a small version of the thresholded image
+            // show input with augmented information and  the thresholded image
+            cv::imshow("in", TheInputImageCopy);
+            cv::imshow("thres", TheBoardDetector.getMarkerDetector().getThresholdedImage());
+            // write to video if required
+            if (TheOutVideoFilePath != "") {
+                // create a beautiful compiosed image showing the thresholded
+                // first create a small version of the thresholded image
                 cv::Mat smallThres;
-                cv::resize( TheBoardDetector.getMarkerDetector().getThresholdedImage(),smallThres,cvSize(TheInputImageCopy.cols/3,TheInputImageCopy.rows/3));
+                cv::resize(TheBoardDetector.getMarkerDetector().getThresholdedImage(), smallThres,
+                           cvSize(TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                 cv::Mat small3C;
-                cv::cvtColor(smallThres,small3C,CV_GRAY2BGR);
-                cv::Mat roi=TheInputImageCopy(cv::Rect(0,0,TheInputImageCopy.cols/3,TheInputImageCopy.rows/3));
+                cv::cvtColor(smallThres, small3C, CV_GRAY2BGR);
+                cv::Mat roi = TheInputImageCopy(cv::Rect(0, 0, TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                 small3C.copyTo(roi);
-                VWriter<<TheInputImageCopy;
-// 			 cv::imshow("TheInputImageCopy",TheInputImageCopy);
-
+                VWriter << TheInputImageCopy;
+                // 			 cv::imshow("TheInputImageCopy",TheInputImageCopy);
             }
 
-            key=cv::waitKey(waitTime);//wait for key to be pressed
+            key = cv::waitKey(waitTime); // wait for key to be pressed
             processKey(key);
-        }while ( key!=27 && TheVideoCapturer.grab());
+        } while (key != 27 && TheVideoCapturer.grab());
 
 
     } catch (std::exception &ex)
 
     {
-        cout<<"Exception :"<<ex.what()<<endl;
+        cout << "Exception :" << ex.what() << endl;
     }
-
 }
 /************************************
  *
@@ -222,25 +219,24 @@ int main(int argc,char **argv)
  *
  ************************************/
 
-void cvTackBarEvents(int pos,void*)
-{
-    if (iThresParam1<3) iThresParam1=3;
-    if (iThresParam1%2!=1) iThresParam1++;
-    if (ThresParam2<1) ThresParam2=1;
-    ThresParam1=iThresParam1;
-    ThresParam2=iThresParam2;
-     TheBoardDetector.getMarkerDetector().setThresholdParams(ThresParam1,ThresParam2);
-//recompute
-//Detection of the board
-    float probDetect=TheBoardDetector.detect( TheInputImage);
+void cvTackBarEvents(int pos, void *) {
+    if (iThresParam1 < 3)
+        iThresParam1 = 3;
+    if (iThresParam1 % 2 != 1)
+        iThresParam1++;
+    if (ThresParam2 < 1)
+        ThresParam2 = 1;
+    ThresParam1 = iThresParam1;
+    ThresParam2 = iThresParam2;
+    TheBoardDetector.getMarkerDetector().setThresholdParams(ThresParam1, ThresParam2);
+    // recompute
+    // Detection of the board
+    float probDetect = TheBoardDetector.detect(TheInputImage);
     TheInputImage.copyTo(TheInputImageCopy);
-    if (TheCameraParameters.isValid() && probDetect>0.2)
-        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy,TheBoardDetector.getDetectedBoard(),TheCameraParameters);
+    if (TheCameraParameters.isValid() && probDetect > 0.2)
+        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
 
-    
-    cv::imshow("in",TheInputImageCopy);
-    cv::imshow("thres",TheBoardDetector.getMarkerDetector().getThresholdedImage());
+
+    cv::imshow("in", TheInputImageCopy);
+    cv::imshow("thres", TheBoardDetector.getMarkerDetector().getThresholdedImage());
 }
-
-
-

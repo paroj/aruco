@@ -25,7 +25,7 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Rafael Muñoz Salinas.
 ********************************/
- 
+
 
 #include <iostream>
 #include "aruco.h"
@@ -33,72 +33,71 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
-int main(int argc,char **argv)
-{
-    try
-    {
-        if (argc<2) {
-            cerr<<"Usage: (in.jpg|in.avi) [cameraParams.yml] [markerSize] [outImage]"<<endl;
+int main(int argc, char **argv) {
+    try {
+        if (argc < 2) {
+            cerr << "Usage: (in.jpg|in.avi) [cameraParams.yml] [markerSize] [outImage]" << endl;
             exit(0);
         }
 
 
         aruco::CameraParameters CamParam;
         MarkerDetector MDetector;
-        vector<Marker> Markers;
-        float MarkerSize=-1;
-        //read the input image
+        vector< Marker > Markers;
+        float MarkerSize = -1;
+        // read the input image
         cv::Mat InImage;
-        //try opening first as video
+        // try opening first as video
         VideoCapture vreader(argv[1]);
         if (vreader.isOpened()) {
             vreader.grab();
             vreader.retrieve(InImage);
+        } else {
+            InImage = cv::imread(argv[1]);
         }
-        else {
-            InImage=cv::imread(argv[1]);
-        }
-        //at this point, we should have the image in InImage
-        //if empty, exit
-        if (InImage.total()==0) {
-            cerr<<"Could not open input"<<endl;
+        // at this point, we should have the image in InImage
+        // if empty, exit
+        if (InImage.total() == 0) {
+            cerr << "Could not open input" << endl;
             return 0;
         }
 
-	//read camera parameters if specifed
-        if (argc>=3) {
+        // read camera parameters if specifed
+        if (argc >= 3) {
             CamParam.readFromXMLFile(argv[2]);
-            //resizes the parameters to fit the size of the input image
-            CamParam.resize( InImage.size());
+            // resizes the parameters to fit the size of the input image
+            CamParam.resize(InImage.size());
         }
-        //read marker size if specified
-        if (argc>=4) MarkerSize=atof(argv[3]);
-        cv::namedWindow("in",1);
+        // read marker size if specified
+        if (argc >= 4)
+            MarkerSize = atof(argv[3]);
+        cv::namedWindow("in", 1);
 
-	
-	//Ok, let's detect
-        MDetector.detect(InImage,Markers,CamParam,MarkerSize);
-        //for each marker, draw info and its boundaries in the image
-        for (unsigned int i=0;i<Markers.size();i++) {
-            cout<<Markers[i]<<endl;
-            Markers[i].draw(InImage,Scalar(0,0,255),2);
+
+        // Ok, let's detect
+        MDetector.detect(InImage, Markers, CamParam, MarkerSize);
+        // for each marker, draw info and its boundaries in the image
+        for (unsigned int i = 0; i < Markers.size(); i++) {
+            cout << Markers[i] << endl;
+            Markers[i].draw(InImage, Scalar(0, 0, 255), 2);
         }
-        //draw a 3d cube in each marker if there is 3d info
-        if (  CamParam.isValid() && MarkerSize!=-1)
-            for (unsigned int i=0;i<Markers.size();i++) {
-                CvDrawingUtils::draw3dCube(InImage,Markers[i],CamParam);
+        // draw a 3d cube in each marker if there is 3d info
+        if (CamParam.isValid() && MarkerSize != -1)
+            for (unsigned int i = 0; i < Markers.size(); i++) {
+                CvDrawingUtils::draw3dCube(InImage, Markers[i], CamParam);
             }
-        //show input with augmented information
-        cv::imshow("in",InImage);
-	//show also the internal image resulting from the threshold operation
-        cv::imshow("thes", MDetector.getThresholdedImage() );
-        cv::waitKey(0);//wait for key to be pressed
+        // show input with augmented information
+        cv::imshow("in", InImage);
+        // show also the internal image resulting from the threshold operation
+        cv::imshow("thes", MDetector.getThresholdedImage());
+        cv::waitKey(0); // wait for key to be pressed
 
 
-        if (argc>=5) cv::imwrite(argv[4],InImage);
+        if (argc >= 5)
+            cv::imwrite(argv[4], InImage);
     } catch (std::exception &ex)
 
     {
-        cout<<"Exception :"<<ex.what()<<endl;
+        cout << "Exception :" << ex.what() << endl;
     }
 }

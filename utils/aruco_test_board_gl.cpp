@@ -34,7 +34,7 @@ or implied, of Rafael Muñoz Salinas.
   //http://social.msdn.microsoft.com/Forums/eu/vcgeneral/thread/7d6e6fa5-afc2-4370-9a1f-991a76ccb5b7
   #include <windows.h>
   #include <GL/gl.h>
-  #include <glut.h>
+  #include <GL/glut.h>
 #else
   #include <GL/gl.h>
   #include <GL/glut.h>

@@ -1,3 +1,17 @@
+VERSION 1.3
+  - Compatibility with OpenCV 3
+  - In Marker Detector:
+      - Paralelization using OpenMP
+      - Marked as deprecated enableErosion and pyrDown
+      - Added functionality for markers with "locked corners". We refer to marker whose corners are connected
+        either to another marker (formaing a chessboard pattern), or to another black  square. In this mode,
+        the use of subcorner refinement methods is expected to be more precise. See enableLockedCornersMethod()
+      - Added funcionality to search for the first threshold parameter simultaneously in several
+        values. The process is parallelized in multiple threads. See setMultiThresholdSearch()
+  - In HRM markers:
+      - Speed up marker identification process
+      - Improve performance of dictionary generation process.
+  - Added LICENSE file
 
 VERSION 1.2.5
   - New type of markers: highly reliable markers (hrm) including utils to use them

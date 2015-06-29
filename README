@@ -80,7 +80,7 @@ The 'utils_hrm' folder contains some applications to test these markers
  
 \section COMPILING THE LIBRARY:
 
- REQUIREMENTS: OpenCv >= 2.3.1, cmake >= 2.8
+ REQUIREMENTS: OpenCv >= 2.4.9, cmake >= 2.8
  OPTIONAL:   OpenGL for aruco_test_gl and aruco_test_board_gl
 
 \subsection LINUX:
