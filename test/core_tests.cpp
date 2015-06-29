@@ -47,7 +47,7 @@ TEST(Aruco, Single) {
     // now check the results
     EXPECT_EQ(expected.size(), Markers.size());
 
-    for (auto i = 0; i < 6; i++) {
+    for (size_t i = 0; i < Markers.size(); i++) {
         EXPECT_EQ(expected[i].id, Markers[i].id);
 
         EXPECT_FLOAT_EQ(expected[i].getCenter().x, Markers[i].getCenter().x);
@@ -104,9 +104,61 @@ TEST(Aruco, Chessboard) {
 }
 
 TEST(Aruco, GL_Conversion) {
-    // TODO check
-    // TheCameraParams.glGetProjectionMatrix
-    // TheMarkers[m].glGetModelViewMatrix
+    using namespace aruco;
+    aruco::CameraParameters CamParam;
+    MarkerDetector MDetector;
+    vector<Marker> Markers;
+    float MarkerSize = 1;
+    BoardConfiguration TheBoardConfig;
+    BoardDetector TheBoardDetector;
+    Board TheBoardDetected;
+
+    cv::Mat InImage = cv::imread(TESTADATA_PATH "board/image-test.png");
+    TheBoardConfig.readFromFile(TESTADATA_PATH "board/board_pix.yml");
+
+    CamParam.readFromXMLFile(TESTADATA_PATH "board/intrinsics.yml");
+    // resizes the parameters to fit the size of the input image
+    CamParam.resize(InImage.size());
+
+    MDetector.detect(InImage, Markers, CamParam, MarkerSize); // detect markers computing R and T information
+    // Detection of the board
+    TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
+
+    int mode = cv::FileStorage::Mode(generateResults);
+    cv::FileStorage fs(TESTADATA_PATH "board/expected_gl.yml", mode);
+
+    std::vector<cv::Vec<double, 16>> gldata(Markers.size() + 2), expected;
+
+    CamParam.glGetProjectionMatrix(InImage.size(), InImage.size(), gldata[0].val, 0.5, 10);
+    TheBoardDetected.glGetModelViewMatrix(gldata[1].val);
+
+    for(size_t i = 0; i < Markers.size(); i++) {
+        Markers[i].glGetModelViewMatrix(gldata[i + 2].val);
+    }
+
+    if(generateResults) {
+        fs << "gldata" << "[";
+        for(size_t i = 0; i < gldata.size(); i++) {
+            fs << gldata[i];
+        }
+        fs << "]";
+        return;
+    }
+
+    // load results
+    cv::FileNode gls = fs["gldata"];
+    expected.resize(gls.size());
+
+    for(size_t i = 0; i < expected.size(); i++) {
+        gls[i] >> expected[i];
+    }
+
+    // now check the results
+    for(size_t i = 0; i < expected.size(); i++) {
+        for(int j = 0; j < 16; j++) {
+            EXPECT_FLOAT_EQ(expected[i].val[j], gldata[i].val[j]);
+        }
+    }
 }
 
 TEST(Aruco, HRM_CreateDictionary) {
