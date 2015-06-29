@@ -99,8 +99,43 @@ TEST(Aruco, Board) {
     }
 }
 
-TEST(Aruco, Chessboard) {
-    // TODO use single frame from avi
+TEST(Aruco, Multi) {
+    using namespace aruco;
+    aruco::CameraParameters CamParam;
+    MarkerDetector MDetector;
+    vector<Marker> Markers;
+    float MarkerSize = 1;
+    BoardConfiguration TheBoardConfig;
+    BoardDetector TheBoardDetector;
+    Board TheBoardDetected, expected;
+
+    cv::Mat InImage = cv::imread(TESTADATA_PATH "chessboard/chessboard_frame.png");
+    TheBoardConfig.readFromFile(TESTADATA_PATH "chessboard/chessboardinfo_pix.yml");
+
+    CamParam.readFromXMLFile(TESTADATA_PATH "chessboard/intrinsics.yml");
+    // resizes the parameters to fit the size of the input image
+    CamParam.resize(InImage.size());
+
+    MDetector.detect(InImage, Markers); // detect markers without computing R and T information
+    // Detection of the board
+    TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
+
+    int mode = cv::FileStorage::Mode(generateResults);
+    cv::FileStorage fs(TESTADATA_PATH "chessboard/expected.yml", mode);
+
+    if(generateResults) {
+        fs << "Board" << TheBoardDetected;
+        return;
+    }
+
+    fs["Board"] >> expected;
+
+    // now check the results
+    EXPECT_EQ(expected.size(), TheBoardDetected.size());
+    for(int i = 0; i < 3; i++) {
+        EXPECT_FLOAT_EQ(expected.Rvec.at<float>(i), TheBoardDetected.Rvec.at<float>(i));
+        EXPECT_FLOAT_EQ(expected.Tvec.at<float>(i), TheBoardDetected.Tvec.at<float>(i));
+    }
 }
 
 TEST(Aruco, GL_Conversion) {
