@@ -13,8 +13,8 @@ namespace cv {
 inline FileStorage& operator<<(FileStorage& fs, const aruco::Marker& m) {
     fs << "{";
     fs << "id" << m.id;
-    fs << "Tvec" << m.Tvec;
-    fs << "Rvec" << m.Rvec;
+    fs << "Tvec" << Vec3f(m.Tvec);
+    fs << "Rvec" << Vec3f(m.Rvec);
     fs << "corners" << "[:";
 
     for(auto& c : m) {
@@ -59,9 +59,15 @@ inline void read(const FileNode& ms, aruco::Marker& m, const aruco::Marker& defa
         return;
     }
 
+    Vec3f Tvec;
+    Vec3f Rvec;
+
     ms["id"] >> m.id;
-    ms["Tvec"] >> m.Tvec;
-    ms["Rvec"] >> m.Rvec;
+    ms["Tvec"] >> Tvec;
+    ms["Rvec"] >> Rvec;
+
+    m.Rvec = Mat(Rvec);
+    m.Tvec = Mat(Tvec);
 
     const FileNode& corners = ms["corners"];
     m.resize(corners.size());
