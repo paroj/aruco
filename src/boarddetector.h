@@ -62,33 +62,31 @@ namespace aruco {
  *
 */
 class ARUCO_EXPORTS BoardDetector {
-  public:
+public:
     /** See discussion in @see enableRotateXAxis.
      * Do not change unless you know what you are doing
      */
     BoardDetector(bool setYPerpendicular = false);
 
-
     /**
      * Use if you plan to let this class to perform marker detection too
      */
-    void setParams(const BoardConfiguration &bc, const CameraParameters &cp, float markerSizeMeters = -1);
-    void setParams(const BoardConfiguration &bc);
+    void setParams(const BoardConfiguration& bc, const CameraParameters& cp, float markerSizeMeters = -1);
+    void setParams(const BoardConfiguration& bc);
     /**
      * Detect markers, and then, look for the board indicated in setParams()
      * @return value indicating  the  likelihood of having found the marker
      */
-    float detect(const cv::Mat &im) throw(cv::Exception);
+    float detect(const cv::Mat& im) throw(cv::Exception);
     /**Returns a reference to the board detected
      */
-    Board &getDetectedBoard() { return _boardDetected; }
+    Board& getDetectedBoard() { return _boardDetected; }
     /**Returns a reference to the internal marker detector
      */
-    MarkerDetector &getMarkerDetector() { return _mdetector; }
+    MarkerDetector& getMarkerDetector() { return _mdetector; }
     /**Returns the vector of markers detected
      */
-    vector< Marker > &getDetectedMarkers() { return _vmarkers; }
-
+    vector<Marker>& getDetectedMarkers() { return _vmarkers; }
 
     // ALTERNATIVE DETECTION METHOD, BASED ON MARKERS PREVIOUSLY DETECTED
 
@@ -103,19 +101,22 @@ class ARUCO_EXPORTS BoardDetector {
     * @param markerSizeMeters size of the marker sides expressed in meters
     * @return value indicating  the  likelihood of having found the marker
     */
-    float detect(const vector< Marker > &detectedMarkers, const BoardConfiguration &BConf, Board &Bdetected, cv::Mat camMatrix = cv::Mat(),
-                 cv::Mat distCoeff = cv::Mat(), float markerSizeMeters = -1) throw(cv::Exception);
-    float detect(const vector< Marker > &detectedMarkers, const BoardConfiguration &BConf, Board &Bdetected, const CameraParameters &cp,
+    float detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
+                 cv::Mat camMatrix = cv::Mat(), cv::Mat distCoeff = cv::Mat(),
                  float markerSizeMeters = -1) throw(cv::Exception);
+    float detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
+                 const CameraParameters& cp, float markerSizeMeters = -1) throw(cv::Exception);
 
     /**Static version (all in one). Detects the board indicated
    * @param Image input image
    * @param bc the board you want to see if is present
    * @param cp camera parameters
-   * @param markerSizeMeters size of the marker sides expressed in meters (not needed in the board is expressed in meters)
+   * @param markerSizeMeters size of the marker sides expressed in meters (not needed in the board is
+   * expressed in meters)
    * @return Board detected
    */
-    static Board detect(const cv::Mat &Image, const BoardConfiguration &bc, const CameraParameters &cp, float markerSizeMeters = -1);
+    static Board detect(const cv::Mat& Image, const BoardConfiguration& bc, const CameraParameters& cp,
+                        float markerSizeMeters = -1);
 
     /**
      * By default, the Y axis is set to point up. However this is not the default
@@ -133,9 +134,8 @@ class ARUCO_EXPORTS BoardDetector {
     void set_repj_err_thres(float Repj_err_thres) { repj_err_thres = Repj_err_thres; }
     float get_repj_err_thres() const { return repj_err_thres; }
 
-
-  private:
-    void rotateXAxis(cv::Mat &rotation);
+private:
+    void rotateXAxis(cv::Mat& rotation);
     bool _setYPerpendicular;
 
     //-- Functionality to detect markers inside
@@ -145,7 +145,7 @@ class ARUCO_EXPORTS BoardDetector {
     float _markerSize, repj_err_thres;
     CameraParameters _camParams;
     MarkerDetector _mdetector; // internal markerdetector
-    vector< Marker > _vmarkers; // markers detected in the call to : float  detect(const cv::Mat &im);
+    vector<Marker> _vmarkers;  // markers detected in the call to : float  detect(const cv::Mat &im);
 };
 };
 #endif

@@ -26,7 +26,8 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************/
 /****
- * Select the n best markers according to their distance. In other words, selects the n farthert markers in terms of hamming distance
+ * Select the n best markers according to their distance. In other words, selects the n farthert markers in
+ *terms of hamming distance
  *
  *
  *
@@ -40,12 +41,12 @@ or implied, of Rafael Muñoz Salinas.
 using namespace cv;
 using namespace std;
 
-int HammDist_(const cv::Mat &m1, const cv::Mat &m2) {
+int HammDist_(const cv::Mat& m1, const cv::Mat& m2) {
 
     int dist = 0;
     for (int y = 0; y < 5; y++)
         for (int x = 0; x < 5; x++)
-            if (m1.at< uchar >(y, x) != m2.at< uchar >(y, x))
+            if (m1.at<uchar>(y, x) != m2.at<uchar>(y, x))
                 dist++;
     return dist;
 }
@@ -54,16 +55,15 @@ Mat rotate(Mat in) {
     in.copyTo(out);
     for (int i = 0; i < in.rows; i++) {
         for (int j = 0; j < in.cols; j++) {
-            out.at< uchar >(i, j) = in.at< uchar >(in.cols - j - 1, i);
+            out.at<uchar>(i, j) = in.at<uchar>(in.cols - j - 1, i);
         }
     }
     return out;
 }
 
-
-int HammDist(const cv::Mat &m1, const cv::Mat &m2) {
+int HammDist(const cv::Mat& m1, const cv::Mat& m2) {
     cv::Mat mc = m1.clone();
-    int minD = std::numeric_limits< int >::max();
+    int minD = std::numeric_limits<int>::max();
     for (int i = 0; i < 4; i++) {
         int dist = HammDist_(mc, m2);
         if (dist < minD)
@@ -73,9 +73,10 @@ int HammDist(const cv::Mat &m1, const cv::Mat &m2) {
     return minD;
 }
 
-int entropy(const cv::Mat &marker) {
+int entropy(const cv::Mat& marker) {
 
-    // the entropy is calcualte for each bin as the number of elements different from it in its sourroundings
+    // the entropy is calcualte for each bin as the number of elements different from it in its
+    // sourroundings
     int totalEntropy = 0;
     for (int y = 0; y < 5; y++)
         for (int x = 0; x < 5; x++) {
@@ -86,14 +87,14 @@ int entropy(const cv::Mat &marker) {
 
             for (int yy = minY; yy < maxY; yy++)
                 for (int xx = minX; xx < maxX; xx++)
-                    if (marker.at< uchar >(y, x) != marker.at< uchar >(yy, xx))
+                    if (marker.at<uchar>(y, x) != marker.at<uchar>(yy, xx))
                         totalEntropy++;
         }
 
     return totalEntropy;
 }
 // return the index of the param or -1 if not found
-int findParam(std::string param, int argc, char *argv[]) {
+int findParam(std::string param, int argc, char* argv[]) {
     for (int i = 0; i < argc; i++)
         if (string(argv[i]) == param)
             return i;
@@ -101,7 +102,7 @@ int findParam(std::string param, int argc, char *argv[]) {
     return -1;
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (argc < 4) {
 
@@ -116,8 +117,8 @@ int main(int argc, char **argv) {
         int minimimEntropy = 0;
         if (argc >= 5)
             minimimEntropy = atoi(argv[4]);
-        vector< cv::Mat > markers;
-        vector< int > ventropy;
+        vector<cv::Mat> markers;
+        vector<int> ventropy;
         for (int i = 0; i < 1024; i++) {
             markers.push_back(aruco::FiducidalMarkers::getMarkerMat(i));
             ventropy.push_back(entropy(aruco::FiducidalMarkers::getMarkerMat(i)));
@@ -127,16 +128,14 @@ int main(int argc, char **argv) {
         cv::Mat distances = cv::Mat::zeros(1024, 1024, CV_32SC1);
         for (int i = 0; i < 1024; i++)
             for (int j = i + 1; j < 1024; j++)
-                distances.at< int >(i, j) = distances.at< int >(j, i) = HammDist(markers[i], markers[j]);
+                distances.at<int>(i, j) = distances.at<int>(j, i) = HammDist(markers[i], markers[j]);
         cout << "done" << endl;
         //
         int nMarkers = atoi(argv[1]);
         // select the first marker
-        vector< bool > usedMarkers(1024, false);
+        vector<bool> usedMarkers(1024, false);
 
-
-
-        vector< int > selectedMarkers;
+        vector<int> selectedMarkers;
         // select the masker with higher entropy first
         int bestEntr = 0;
         for (size_t i = 0; i < ventropy.size(); i++)
@@ -159,10 +158,10 @@ int main(int argc, char **argv) {
             // select as new marker the one that maximizes mean distance to
             for (int j = 0; j < distances.cols; j++) {
                 if (!usedMarkers[j]) {
-                    int minDist = std::numeric_limits< int >::max();
+                    int minDist = std::numeric_limits<int>::max();
                     for (size_t k = 0; k < selectedMarkers.size(); k++)
-                        if (distances.at< int >(selectedMarkers[k], j) < minDist)
-                            minDist = distances.at< int >(selectedMarkers[k], j);
+                        if (distances.at<int>(selectedMarkers[k], j) < minDist)
+                            minDist = distances.at<int>(selectedMarkers[k], j);
                     // 		    cout<<"j="<<j<<" "<<distSum<<"|"<<flush;
                     if (minDist > shorterDist) {
                         shorterDist = minDist;
@@ -187,23 +186,25 @@ int main(int argc, char **argv) {
             sprintf(name, "%s%d.png", argv[2], selectedMarkers[i]);
             // 	  cout<<"name="<<name<<endl;
             cout << selectedMarkers[i] << " " << flush;
-            Mat markerImage = aruco::FiducidalMarkers::createMarkerImage(selectedMarkers[i], atoi(argv[3]), true, locked);
+            Mat markerImage =
+                aruco::FiducidalMarkers::createMarkerImage(selectedMarkers[i], atoi(argv[3]), true, locked);
             imwrite(name, markerImage);
         }
         cout << endl;
         // print the minimim distance between any two  elements
-        int minDist = std::numeric_limits< int >::max();
+        int minDist = std::numeric_limits<int>::max();
         for (size_t i = 0; i < selectedMarkers.size() - 1; i++)
             for (size_t j = i + 1; j < selectedMarkers.size(); j++) {
-                // 	    cout<<" d=" << selectedMarkers[i]<<" "<<selectedMarkers[j]<<"->"<<distances.at<int> ( selectedMarkers[i], selectedMarkers[j])<<endl;
-                if (distances.at< int >(selectedMarkers[i], selectedMarkers[j]) < minDist)
-                    minDist = distances.at< int >(selectedMarkers[i], selectedMarkers[j]);
+                // 	    cout<<" d=" << selectedMarkers[i]<<"
+                // "<<selectedMarkers[j]<<"->"<<distances.at<int> ( selectedMarkers[i],
+                // selectedMarkers[j])<<endl;
+                if (distances.at<int>(selectedMarkers[i], selectedMarkers[j]) < minDist)
+                    minDist = distances.at<int>(selectedMarkers[i], selectedMarkers[j]);
             }
-
 
         cout << "Min Dist=" << minDist << endl;
 
-    } catch (std::exception &ex) {
+    } catch (std::exception& ex) {
         cout << ex.what() << endl;
     }
 }

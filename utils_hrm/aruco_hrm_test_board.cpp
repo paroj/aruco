@@ -54,11 +54,10 @@ bool chromatic = false;
 string TheOutVideoFilePath;
 cv::VideoWriter VWriter;
 
-void cvTackBarEvents(int pos, void *);
+void cvTackBarEvents(int pos, void*);
 double ThresParam1, ThresParam2;
 int iThresParam1, iThresParam2;
 int waitTime = 10;
-
 
 /************************************
  *
@@ -66,15 +65,14 @@ int waitTime = 10;
  *
  *
  ************************************/
-void getHueImg(const cv::Mat &rgbImg, cv::Mat &hImg) {
+void getHueImg(const cv::Mat& rgbImg, cv::Mat& hImg) {
     cv::Mat hsvImg;
-    vector< cv::Mat > hsvImg_channels;
+    vector<cv::Mat> hsvImg_channels;
     cvtColor(rgbImg, hsvImg, CV_BGR2HSV);
     cv::split(hsvImg, hsvImg_channels);
     hsvImg_channels[0].copyTo(hImg);
 }
 
-
 /************************************
  *
  *
@@ -82,12 +80,13 @@ void getHueImg(const cv::Mat &rgbImg, cv::Mat &hImg) {
  *
  ************************************/
 
-bool readArguments(int argc, char **argv) {
+bool readArguments(int argc, char** argv) {
 
     if (argc < 3) {
         cerr << "Invalid number of arguments" << endl;
 
-        cerr << "Usage: (in.avi|live) dictionary.yml boardConfig.yml [intrinsics.yml] [size] [chromatic] [out.avi] \n \
+        cerr
+            << "Usage: (in.avi|live) dictionary.yml boardConfig.yml [intrinsics.yml] [size] [chromatic] [out.avi] \n \
 	in.avi/live: open videofile or connect to a camera using the OpenCV library \n \
 	dictionary.yml: input marker dictionary used for detection \n \
 	boardConfig.yml: input board configuration file \n \
@@ -129,16 +128,18 @@ void processKey(char k) {
     case 'm':
         if (!chromatic)
             return;
-        float prob = (float)TheBoardDetector.getDetectedBoard().size() / (float)TheBoardDetector.getDetectedBoard().conf.size();
+        float prob = (float)TheBoardDetector.getDetectedBoard().size() /
+                     (float)TheBoardDetector.getDetectedBoard().conf.size();
         // TheChromaticMask.detectBoard( TheInputImageH );
         if (prob > 0.2)
             TheChromaticMask.train(TheInputImageH, TheBoardDetector.getDetectedBoard());
-        // 	if(prob>0.2) TheVisibilityMask.calibrate(TheBoardDetector.getDetectedBoard(), TheInputImageH, TheCameraParameters, TheMarkerSize);
+        // 	if(prob>0.2) TheVisibilityMask.calibrate(TheBoardDetector.getDetectedBoard(),
+        // TheInputImageH, TheCameraParameters, TheMarkerSize);
         break;
     }
 }
 
-pair< double, double > AvrgTime(0, 0);
+pair<double, double> AvrgTime(0, 0);
 
 /************************************
  *
@@ -146,7 +147,7 @@ pair< double, double > AvrgTime(0, 0);
  *
  *
  ************************************/
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (readArguments(argc, argv) == false)
             return 0;
@@ -174,7 +175,8 @@ int main(int argc, char **argv) {
         HighlyReliableMarkers::loadDictionary(D);
 
         if (chromatic)
-            std::cout << "Press 'm' key when board is not occluded to calibrate chromatic mask" << std::endl;
+            std::cout << "Press 'm' key when board is not occluded to calibrate chromatic mask"
+                      << std::endl;
 
         // read first image to get the dimensions
         TheVideoCapturer >> TheDistInputImage;
@@ -192,7 +194,7 @@ int main(int argc, char **argv) {
         }
 
         if (chromatic) {
-            vector< cv::Point3f > corners;
+            vector<cv::Point3f> corners;
             TheChromaticMask.setParams(5, 5, 0.0001, TheCameraParameters, TheBoardConfig, TheMarkerSize);
         }
 
@@ -203,7 +205,8 @@ int main(int argc, char **argv) {
 
         TheBoardDetector.setYPerperdicular(false);
         TheBoardDetector.setParams(TheBoardConfig, TheCameraParameters, TheMarkerSize);
-        TheBoardDetector.getMarkerDetector().setThresholdParams(21, 7); // for blue-green markers, the window size has to be larger
+        TheBoardDetector.getMarkerDetector().setThresholdParams(
+            21, 7); // for blue-green markers, the window size has to be larger
         TheBoardDetector.getMarkerDetector().getThresholdParams(ThresParam1, ThresParam2);
         TheBoardDetector.getMarkerDetector().setMakerDetectorFunction(aruco::HighlyReliableMarkers::detect);
         TheBoardDetector.getMarkerDetector().setCornerRefinementMethod(aruco::MarkerDetector::LINES);
@@ -221,7 +224,8 @@ int main(int argc, char **argv) {
             TheVideoCapturer.retrieve(TheDistInputImage);
             // remove distortion
             if (TheCameraParameters.CameraMatrix.total() != 0)
-                cv::undistort(TheDistInputImage, TheInputImage, TheDistCameraParameters.CameraMatrix, TheDistCameraParameters.Distorsion);
+                cv::undistort(TheDistInputImage, TheInputImage, TheDistCameraParameters.CameraMatrix,
+                              TheDistCameraParameters.Distorsion);
             else
                 TheInputImage = TheDistInputImage;
 
@@ -240,7 +244,7 @@ int main(int argc, char **argv) {
             else
                 probDetect = TheBoardDetector.detect(TheInputImage);
 
-            //std::cout << TheBoardDetector.getDetectedMarkers().size() << std::endl;
+            // std::cout << TheBoardDetector.getDetectedMarkers().size() << std::endl;
 
             // print marker borders
             for (unsigned int i = 0; i < TheBoardDetector.getDetectedBoard().size(); i++)
@@ -249,7 +253,8 @@ int main(int argc, char **argv) {
             // print board
             if (TheCameraParameters.isValid()) {
                 if (probDetect > 0.2) {
-                    CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
+                    CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),
+                                               TheCameraParameters);
                 }
             }
 
@@ -260,9 +265,6 @@ int main(int argc, char **argv) {
             // create mask
             if (chromatic && TheChromaticMask.isValid()) {
 
-
-
-
                 if (probDetect > 0.2) {
 
                     double tick = (double)getTickCount();
@@ -271,7 +273,8 @@ int main(int argc, char **argv) {
 
                     AvrgTime.first += ((double)getTickCount() - tick) / getTickFrequency();
                     AvrgTime.second++;
-                    cout << "Time detection=" << 1000 * AvrgTime.first / AvrgTime.second << " milliseconds" << endl;
+                    cout << "Time detection=" << 1000 * AvrgTime.first / AvrgTime.second << " milliseconds"
+                         << endl;
 
                     if (index % 200 == 0) {
                         cout << "Updating Mask" << endl;
@@ -291,10 +294,12 @@ int main(int argc, char **argv) {
                 // first create a small version of the mask image
                 if (TheChromaticMask.isValid()) {
                     cv::Mat smallMask;
-                    cv::resize(TheChromaticMask.getMask() * 255, smallMask, cvSize(TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
+                    cv::resize(TheChromaticMask.getMask() * 255, smallMask,
+                               cvSize(TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                     cv::Mat small3C;
                     cv::cvtColor(smallMask, small3C, CV_GRAY2BGR);
-                    cv::Mat roi = TheInputImageCopy(cv::Rect(0, 0, TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
+                    cv::Mat roi = TheInputImageCopy(
+                        cv::Rect(0, 0, TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                     small3C.copyTo(roi);
                 }
                 VWriter << TheInputImageCopy;
@@ -305,8 +310,7 @@ int main(int argc, char **argv) {
 
         } while (key != 27 && TheVideoCapturer.grab());
 
-
-    } catch (std::exception &ex)
+    } catch (std::exception& ex)
 
     {
         cout << "Exception :" << ex.what() << endl;
@@ -319,7 +323,7 @@ int main(int argc, char **argv) {
  *
  ************************************/
 
-void cvTackBarEvents(int pos, void *) {
+void cvTackBarEvents(int pos, void*) {
     if (iThresParam1 < 3)
         iThresParam1 = 3;
     if (iThresParam1 % 2 != 1)
@@ -334,8 +338,8 @@ void cvTackBarEvents(int pos, void *) {
     float probDetect = TheBoardDetector.detect(TheInputImage);
     TheInputImage.copyTo(TheInputImageCopy);
     if (TheCameraParameters.isValid() && probDetect > 0.2)
-        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
-
+        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),
+                                          TheCameraParameters);
 
     cv::imshow("in", TheInputImageCopy);
     cv::imshow("thres", TheBoardDetector.getMarkerDetector().getThresholdedImage());

@@ -31,10 +31,11 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 #include "board.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     if (argc < 6) {
         cerr << "Invalid number of arguments" << endl;
-        cerr << "Usage: dictionary.yml outputboard.yml outputimage.png height width [chromatic=0] [outdictionary.yml] \n \
+        cerr
+            << "Usage: dictionary.yml outputboard.yml outputimage.png height width [chromatic=0] [outdictionary.yml] \n \
       dictionary.yml: input dictionary from where markers are taken to create the board \n \
       outputboard.yml: output board configuration file in aruco format \n \
       outputimage.png: output image for the created board \n \
@@ -85,7 +86,9 @@ int main(int argc, char **argv) {
     for (int y = 0; y < gridSize.height; y++)
         for (int x = 0; x < gridSize.width; x++, idp += 1) {
             // create image
-            cv::Mat subrect(tableImage, cv::Rect(x * (MarkerDistance + MarkerSize), y * (MarkerDistance + MarkerSize), MarkerSize, MarkerSize));
+            cv::Mat subrect(tableImage,
+                            cv::Rect(x * (MarkerDistance + MarkerSize), y * (MarkerDistance + MarkerSize),
+                                     MarkerSize, MarkerSize));
             cv::Mat marker = D[idp].getImg(MarkerSize);
             marker.copyTo(subrect);
             outD.push_back(D[idp]);
@@ -122,18 +125,18 @@ int main(int argc, char **argv) {
         cv::Vec3b color2Vec3b = cv::Vec3b(0, 255, 0); // store as a Vec3b to assign easily to the image
 
         // create new image with border and with color 1
-        cv::Mat chromaticImg(tableImage.rows + 2 * MarkerDistance, tableImage.cols + 2 * MarkerDistance, CV_8UC3, color1);
+        cv::Mat chromaticImg(tableImage.rows + 2 * MarkerDistance, tableImage.cols + 2 * MarkerDistance,
+                             CV_8UC3, color1);
 
         // now use color2 in black pixels
         for (unsigned int i = 0; i < tableImage.rows; i++) {
             for (unsigned int j = 0; j < tableImage.cols; j++) {
-                if (tableImage.at< uchar >(i, j) == 0)
-                    chromaticImg.at< cv::Vec3b >(MarkerDistance + i, MarkerDistance + j) = color2Vec3b;
+                if (tableImage.at<uchar>(i, j) == 0)
+                    chromaticImg.at<cv::Vec3b>(MarkerDistance + i, MarkerDistance + j) = color2Vec3b;
             }
         }
         tableImage = chromaticImg;
     }
-
 
     cv::imshow("Board", tableImage);
     cv::waitKey(0);

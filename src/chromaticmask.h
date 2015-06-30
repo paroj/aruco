@@ -40,9 +40,8 @@ or implied, of Rafael Muñoz Salinas.
 #include "boarddetector.h"
 #include "cvdrawingutils.h"
 
-
 class ARUCO_EXPORTS EMClassifier {
-  public:
+public:
     EMClassifier(unsigned int nelements = 200);
     void addSample(uchar s) { _samples.push_back(s); };
     void clearSamples() { _samples.clear(); };
@@ -54,13 +53,13 @@ class ARUCO_EXPORTS EMClassifier {
 
     //   double probConj[256];
 
-  private:
+private:
 #ifdef OPENCV_VERSION_3
-    cv::Ptr< cv::ml::EM > _classifier;
+    cv::Ptr<cv::ml::EM> _classifier;
 #else
     cv::EM _classifier;
 #endif
-    vector< uchar > _samples;
+    vector<uchar> _samples;
     bool _inside[256];
     double _prob[256];
     double _histogram[256];
@@ -68,44 +67,43 @@ class ARUCO_EXPORTS EMClassifier {
     double _threshProb;
 };
 
-
 class ARUCO_EXPORTS ChromaticMask {
-  public:
+public:
     ChromaticMask() : _cellSize(20) { _isValid = false; };
 
-    void setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP, aruco::BoardConfiguration BC,
-                   vector< cv::Point3f > corners);
-    void setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP, aruco::BoardConfiguration BC, float markersize = -1.);
+    void setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP,
+                   aruco::BoardConfiguration BC, vector<cv::Point3f> corners);
+    void setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP,
+                   aruco::BoardConfiguration BC, float markersize = -1.);
 
-    void calculateGridImage(const aruco::Board &board);
+    void calculateGridImage(const aruco::Board& board);
 
     cv::Mat getCellMap() { return _cellMap; };
     cv::Mat getMask() { return _mask; };
 
-    void train(const cv::Mat &in, const aruco::Board &board);
-    void classify(const cv::Mat &in, const aruco::Board &board);
-    void classify2(const cv::Mat &in, const aruco::Board &board);
-    void update(const cv::Mat &in);
+    void train(const cv::Mat& in, const aruco::Board& board);
+    void classify(const cv::Mat& in, const aruco::Board& board);
+    void classify2(const cv::Mat& in, const aruco::Board& board);
+    void update(const cv::Mat& in);
 
     bool isValid() { return _isValid; };
     void resetMask();
 
-  private:
+private:
     double getDistance(cv::Point2d pixel, unsigned int classifier) {
-        cv::Vec2b canPos = _canonicalPos.at< cv::Vec2b >(pixel.y, pixel.x)[0];
+        cv::Vec2b canPos = _canonicalPos.at<cv::Vec2b>(pixel.y, pixel.x)[0];
         return norm(_cellCenters[classifier] - cv::Point2f(canPos[0], canPos[1]));
     }
 
-    vector< cv::Point2f > _imgCornerPoints;
-    vector< cv::Point3f > _objCornerPoints;
+    vector<cv::Point2f> _imgCornerPoints;
+    vector<cv::Point3f> _objCornerPoints;
     cv::Mat _perpTrans;
-    vector< EMClassifier > _classifiers;
-    vector< cv::Point2f > _centers;
-    vector< cv::Point2f > _pixelsVector;
-    vector< cv::Point2f > _cellCenters;
-    vector< vector< size_t > > _cell_neighbours;
+    vector<EMClassifier> _classifiers;
+    vector<cv::Point2f> _centers;
+    vector<cv::Point2f> _pixelsVector;
+    vector<cv::Point2f> _cellCenters;
+    vector<vector<size_t> > _cell_neighbours;
     const float _cellSize;
-
 
     unsigned int _mc, _nc;
     aruco::BoardDetector _BD;

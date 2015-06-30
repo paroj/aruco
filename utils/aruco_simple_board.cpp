@@ -41,7 +41,7 @@ using namespace aruco;
  *
  *
  ************************************/
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (argc < 3) {
             cerr << "Usage: image  boardConfig.yml [cameraParams.yml] [markerSize]  [outImage]" << endl;
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
         }
         aruco::CameraParameters CamParam;
         MarkerDetector MDetector;
-        vector< Marker > Markers;
+        vector<Marker> Markers;
         float MarkerSize = -1;
         BoardConfiguration TheBoardConfig;
         BoardDetector TheBoardDetector;
@@ -69,7 +69,8 @@ int main(int argc, char **argv) {
         cv::namedWindow("in", 1);
         MDetector.detect(InImage, Markers); // detect markers without computing R and T information
         // Detection of the board
-        float probDetect = TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
+        float probDetect =
+            TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
 
         // for each marker, draw info and its boundaries in the image
         for (unsigned int i = 0; i < Markers.size(); i++) {
@@ -94,7 +95,7 @@ int main(int argc, char **argv) {
         if (argc >= 6)
             cv::imwrite(argv[5], InImage);
 
-    } catch (std::exception &ex)
+    } catch (std::exception& ex)
 
     {
         cout << "Exception :" << ex.what() << endl;

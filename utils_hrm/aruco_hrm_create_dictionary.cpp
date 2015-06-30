@@ -34,20 +34,17 @@ or implied, of Rafael Muñoz Salinas.
 
 using namespace std;
 
-typedef std::vector< int > Word;
-
-
-
+typedef std::vector<int> Word;
 
 class MarkerGenerator {
 
-  private:
+private:
     int _nTransitions;
-    std::vector< int > _transitionsWeigth;
+    std::vector<int> _transitionsWeigth;
     int _totalWeigth;
     int _n;
 
-  public:
+public:
     MarkerGenerator(int n) {
         _n = n;
         _nTransitions = n - 1;
@@ -73,12 +70,12 @@ class MarkerGenerator {
                     break;
                 }
             }
-            std::vector< int > transitionsIndexes(_nTransitions);
+            std::vector<int> transitionsIndexes(_nTransitions);
             for (int i = 0; i < _nTransitions; i++)
                 transitionsIndexes[i] = i;
             std::random_shuffle(transitionsIndexes.begin(), transitionsIndexes.end());
 
-            std::vector< int > selectedIndexes;
+            std::vector<int> selectedIndexes;
             for (int k = 0; k < currentNTransitions; k++)
                 selectedIndexes.push_back(transitionsIndexes[k]);
             std::sort(selectedIndexes.begin(), selectedIndexes.end());
@@ -86,7 +83,8 @@ class MarkerGenerator {
             int currSelectedIndexesIdx = 0;
             for (int k = 0; k < _n; k++) {
                 currentWord[k] = currBit;
-                if (currSelectedIndexesIdx < selectedIndexes.size() && k == selectedIndexes[currSelectedIndexesIdx]) {
+                if (currSelectedIndexesIdx < selectedIndexes.size() &&
+                    k == selectedIndexes[currSelectedIndexesIdx]) {
                     currBit = 1 - currBit;
                     currSelectedIndexesIdx++;
                 }
@@ -100,10 +98,7 @@ class MarkerGenerator {
     }
 };
 
-
-
-
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     if (argc < 4) {
         cerr << "Invalid number of arguments" << endl;
         cerr << "Usage: outputfile.yml dictSize n  \n \
@@ -144,7 +139,8 @@ int main(int argc, char **argv) {
                 countUnproductive = 0;
                 std::cout << "Reducing Tau to: " << tau << std::endl;
                 if (tau == 0) {
-                    std::cerr << "Error: Tau=0. Small marker size for too high number of markers. Stop" << std::endl;
+                    std::cerr << "Error: Tau=0. Small marker size for too high number of markers. Stop"
+                              << std::endl;
                     break;
                 }
                 if (D.size() >= 2)

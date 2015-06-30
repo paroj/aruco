@@ -31,11 +31,12 @@ or implied, of Rafael Muñoz Salinas.
 #include "board.h"
 using namespace std;
 using namespace aruco;
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
 
         if (argc < 4) {
-            cerr << "Usage:  in_boardConfiguration.yml markerSize_meters out_boardConfiguration.yml" << endl;
+            cerr << "Usage:  in_boardConfiguration.yml markerSize_meters out_boardConfiguration.yml"
+                 << endl;
             return -1;
         }
         aruco::BoardConfiguration BInfo;
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
             }
         // save to file
         BInfo.saveToFile(argv[3]);
-    } catch (std::exception &ex) {
+    } catch (std::exception& ex) {
         cout << ex.what() << endl;
     }
 }

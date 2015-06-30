@@ -45,12 +45,11 @@ double SubPixelCorner::pointDist(cv::Point2f estimate_corner, cv::Point2f curr_c
     return dist;
 }
 
-
 void SubPixelCorner::generateMask() {
 
     double coeff = 1. / (_winSize * _winSize);
-    float *maskX = (float *)calloc(1, (_winSize * sizeof(float)));
-    float *maskY = (float *)calloc(1, (_winSize * sizeof(float)));
+    float* maskX = (float*)calloc(1, (_winSize * sizeof(float)));
+    float* maskY = (float*)calloc(1, (_winSize * sizeof(float)));
     mask.create(_winSize, _winSize, CV_32FC(1));
     /* calculate mask */
     int k = 0;
@@ -61,14 +60,14 @@ void SubPixelCorner::generateMask() {
     maskY = maskX;
 
     for (int i = 0; i < _winSize; i++) {
-        float *mask_ptr = mask.ptr< float >(i);
+        float* mask_ptr = mask.ptr<float>(i);
         for (int j = 0; j < _winSize; j++) {
             mask_ptr[j] = maskX[j] * maskY[i];
         }
     }
 }
 
-void SubPixelCorner::RefineCorner(cv::Mat image, std::vector< cv::Point2f > &corners) {
+void SubPixelCorner::RefineCorner(cv::Mat image, std::vector<cv::Point2f>& corners) {
 
     if (enable == false)
         return;
@@ -83,7 +82,8 @@ void SubPixelCorner::RefineCorner(cv::Mat image, std::vector< cv::Point2f > &cor
 
         // cerr << 'SSS" << corners[k].x <<":" << corners[k].y << endl;
 
-        if (estimate_corner.x < 0 || estimate_corner.y < 0 || estimate_corner.y > image.rows || estimate_corner.y > image.cols)
+        if (estimate_corner.x < 0 || estimate_corner.y < 0 || estimate_corner.y > image.rows ||
+            estimate_corner.y > image.cols)
             continue;
         int iter = 0;
         double dist = TermCriteria::EPS;
@@ -118,9 +118,9 @@ void SubPixelCorner::RefineCorner(cv::Mat image, std::vector< cv::Point2f > &cor
     */
 
             Mat local;
-            cv::getRectSubPix(image, Size(_winSize + 2 * (_apertureSize / 2), _winSize + 2 * (_apertureSize / 2)), curr_corner, local);
-
-
+            cv::getRectSubPix(image,
+                              Size(_winSize + 2 * (_apertureSize / 2), _winSize + 2 * (_apertureSize / 2)),
+                              curr_corner, local);
 
             cv::Mat Dx, Dy;
             // extracing image ROI about the corner point
@@ -134,11 +134,11 @@ void SubPixelCorner::RefineCorner(cv::Mat image, std::vector< cv::Point2f > &cor
             int lx = 0, ly = 0;
             for (int i = _apertureSize / 2; i <= _winSize; i++) {
 
-                float *dx_ptr = Dx.ptr< float >(i);
-                float *dy_ptr = Dy.ptr< float >(i);
+                float* dx_ptr = Dx.ptr<float>(i);
+                float* dy_ptr = Dy.ptr<float>(i);
                 ly = i - _winSize / 2 - _apertureSize / 2;
 
-                float *mask_ptr = mask.ptr< float >(ly + _winSize / 2);
+                float* mask_ptr = mask.ptr<float>(ly + _winSize / 2);
 
                 for (int j = _apertureSize / 2; j <= _winSize; j++) {
 
@@ -171,11 +171,11 @@ void SubPixelCorner::RefineCorner(cv::Mat image, std::vector< cv::Point2f > &cor
 
             dist = pointDist(estimate_corner, curr_corner);
 
-
         } while (iter < _max_iters && dist > eps);
 
         // double dist=pointDist(corners[k],estimate_corner);
-        if (fabs(corners[k].x - estimate_corner.x) > _winSize || fabs(corners[k].y - estimate_corner.y) > _winSize) {
+        if (fabs(corners[k].x - estimate_corner.x) > _winSize ||
+            fabs(corners[k].y - estimate_corner.y) > _winSize) {
             estimate_corner.x = corners[k].x;
             estimate_corner.y = corners[k].y;
         }

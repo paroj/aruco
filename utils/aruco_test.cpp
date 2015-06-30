@@ -40,13 +40,13 @@ float TheMarkerSize = -1;
 int ThePyrDownLevel;
 MarkerDetector MDetector;
 VideoCapture TheVideoCapturer;
-vector< Marker > TheMarkers;
+vector<Marker> TheMarkers;
 Mat TheInputImage, TheInputImageCopy;
 CameraParameters TheCameraParameters;
-void cvTackBarEvents(int pos, void *);
-bool readCameraParameters(string TheIntrinsicFile, CameraParameters &CP, Size size);
+void cvTackBarEvents(int pos, void*);
+bool readCameraParameters(string TheIntrinsicFile, CameraParameters& CP, Size size);
 
-pair< double, double > AvrgTime(0, 0); // determines the average time required for detection
+pair<double, double> AvrgTime(0, 0); // determines the average time required for detection
 double ThresParam1, ThresParam2;
 int iThresParam1, iThresParam2;
 int waitTime = 0;
@@ -57,7 +57,7 @@ int waitTime = 0;
  *
  *
  ************************************/
-bool readArguments(int argc, char **argv) {
+bool readArguments(int argc, char** argv) {
     if (argc < 2) {
         cerr << "Invalid number of arguments" << endl;
         cerr << "Usage: (in.avi|live[:idx_cam=0]) [intrinsics.yml] [size]" << endl;
@@ -74,7 +74,7 @@ bool readArguments(int argc, char **argv) {
     return true;
 }
 
-int findParam(std::string param, int argc, char *argv[]) {
+int findParam(std::string param, int argc, char* argv[]) {
     for (int i = 0; i < argc; i++)
         if (string(argv[i]) == param)
             return i;
@@ -87,7 +87,7 @@ int findParam(std::string param, int argc, char *argv[]) {
  *
  *
  ************************************/
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (readArguments(argc, argv) == false) {
             return 0;
@@ -128,7 +128,6 @@ int main(int argc, char **argv) {
         if (ThePyrDownLevel > 0)
             MDetector.pyrDown(ThePyrDownLevel);
 
-
         // Create gui
 
         cv::namedWindow("thres", 1);
@@ -153,20 +152,22 @@ int main(int argc, char **argv) {
 
             // copy image
 
-            index++; // number of images captured
+            index++;                              // number of images captured
             double tick = (double)getTickCount(); // for checking the speed
             // Detection of markers in the image passed
             MDetector.detect(TheInputImage, TheMarkers, TheCameraParameters, TheMarkerSize);
             // chekc the speed by calculating the mean speed of all iterations
             AvrgTime.first += ((double)getTickCount() - tick) / getTickFrequency();
             AvrgTime.second++;
-            cout << "\rTime detection=" << 1000 * AvrgTime.first / AvrgTime.second << " milliseconds nmarkers=" << TheMarkers.size() << std::flush;
+            cout << "\rTime detection=" << 1000 * AvrgTime.first / AvrgTime.second
+                 << " milliseconds nmarkers=" << TheMarkers.size() << std::flush;
 
             // print marker info and draw the markers in image
             TheInputImage.copyTo(TheInputImageCopy);
 
             for (unsigned int i = 0; i < TheMarkers.size(); i++) {
-                cout << endl << TheMarkers[i];
+                cout << endl
+                     << TheMarkers[i];
                 TheMarkers[i].draw(TheInputImageCopy, Scalar(0, 0, 255), 1);
             }
             if (TheMarkers.size() != 0)
@@ -176,8 +177,6 @@ int main(int argc, char **argv) {
                      aruco::Marker m( MDetector.getCandidates()[i],999);
                      m.draw(TheInputImageCopy,cv::Scalar(255,0,0));
                  }*/
-
-
 
             // draw a 3d cube in each marker if there is 3d info
             if (TheCameraParameters.isValid())
@@ -196,7 +195,7 @@ int main(int argc, char **argv) {
 
         } while (key != 27 && (TheVideoCapturer.grab() || !isVideoFile));
 
-    } catch (std::exception &ex)
+    } catch (std::exception& ex)
 
     {
         cout << "Exception :" << ex.what() << endl;
@@ -209,7 +208,7 @@ int main(int argc, char **argv) {
  *
  ************************************/
 
-void cvTackBarEvents(int pos, void *) {
+void cvTackBarEvents(int pos, void*) {
     if (iThresParam1 < 3)
         iThresParam1 = 3;
     if (iThresParam1 % 2 != 1)

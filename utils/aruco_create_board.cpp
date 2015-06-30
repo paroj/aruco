@@ -31,10 +31,11 @@ or implied, of Rafael Muñoz Salinas.
 #include "arucofidmarkers.h"
 using namespace std;
 using namespace cv;
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (argc < 4) {
-            cerr << "Usage: X:Y boardImage.png boardConfiguration.yml [pixSize] [Type(0: panel,1: chessboard, 2: frame)] [interMarkerDistance(0,1)]" << endl;
+            cerr << "Usage: X:Y boardImage.png boardConfiguration.yml [pixSize] [Type(0: panel,1: "
+                    "chessboard, 2: frame)] [interMarkerDistance(0,1)]" << endl;
             return -1;
         }
         int XSize, YSize;
@@ -53,17 +54,21 @@ int main(int argc, char **argv) {
         if (argc >= 7)
             interMarkerDistance = atof(argv[6]);
         if ((interMarkerDistance > 1.f) || (interMarkerDistance < 0.f)) {
-            cerr << "Incorrect interMarkerDistance '" << interMarkerDistance << "' -- needs to be [0,1]" << endl;
+            cerr << "Incorrect interMarkerDistance '" << interMarkerDistance << "' -- needs to be [0,1]"
+                 << endl;
             return -1;
         }
         aruco::BoardConfiguration BInfo;
         Mat BoardImage;
         if (typeBoard == 0)
-            BoardImage = aruco::FiducidalMarkers::createBoardImage(Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, BInfo);
+            BoardImage = aruco::FiducidalMarkers::createBoardImage(Size(XSize, YSize), pixSize,
+                                                                   pixSize * interMarkerDistance, BInfo);
         else if (typeBoard == 1)
-            BoardImage = aruco::FiducidalMarkers::createBoardImage_ChessBoard(Size(XSize, YSize), pixSize, BInfo);
+            BoardImage =
+                aruco::FiducidalMarkers::createBoardImage_ChessBoard(Size(XSize, YSize), pixSize, BInfo);
         else if (typeBoard == 2)
-            BoardImage = aruco::FiducidalMarkers::createBoardImage_Frame(Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, BInfo);
+            BoardImage = aruco::FiducidalMarkers::createBoardImage_Frame(
+                Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, BInfo);
 
         else {
             cerr << "Incorrect board type" << typeBoard << endl;
@@ -73,7 +78,7 @@ int main(int argc, char **argv) {
         imwrite(argv[2], BoardImage);
         BInfo.saveToFile(argv[3]);
 
-    } catch (std::exception &ex) {
+    } catch (std::exception& ex) {
         cout << ex.what() << endl;
     }
 }

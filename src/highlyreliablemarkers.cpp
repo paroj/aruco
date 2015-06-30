@@ -35,9 +35,9 @@ namespace aruco {
 // static variables from HighlyReliableMarkers. Need to be here to avoid linking errors
 Dictionary HighlyReliableMarkers::_D;
 HighlyReliableMarkers::BalancedBinaryTree HighlyReliableMarkers::_binaryTree;
-unsigned int HighlyReliableMarkers::_n, HighlyReliableMarkers::_ncellsBorder, HighlyReliableMarkers::_correctionDistance;
+unsigned int HighlyReliableMarkers::_n, HighlyReliableMarkers::_ncellsBorder,
+    HighlyReliableMarkers::_correctionDistance;
 int HighlyReliableMarkers::_swidth;
-
 
 /**
 */
@@ -52,18 +52,15 @@ MarkerCode::MarkerCode(unsigned int n) {
     _n = n;
 };
 
-
 /**
  */
-MarkerCode::MarkerCode(const MarkerCode &MC) {
+MarkerCode::MarkerCode(const MarkerCode& MC) {
     for (unsigned int i = 0; i < 4; i++) {
         _bits[i] = MC._bits[i];
         _ids[i] = MC._ids[i];
     }
     _n = MC._n;
 }
-
-
 
 /**
  */
@@ -88,7 +85,7 @@ void MarkerCode::set(unsigned int pos, bool val, bool updateIds) {
             unsigned int rotPos = y * n() + x; // calculate position in the unidimensional string
             _bits[i][rotPos] = val;            // modify value
                                                // update identifier in that rotation
-            if(updateIds) {
+            if (updateIds) {
                 if (val == true)
                     _ids[i] += (unsigned int)pow(float(2), float(rotPos)); // if 1, add 2^pos
                 else
@@ -98,10 +95,9 @@ void MarkerCode::set(unsigned int pos, bool val, bool updateIds) {
     }
 }
 
-
 /**
  */
-unsigned int MarkerCode::selfDistance(unsigned int &minRot) const {
+unsigned int MarkerCode::selfDistance(unsigned int& minRot) const {
     unsigned int res = _bits[0].size();    // init to n*n (max value)
     for (unsigned int i = 1; i < 4; i++) { // self distance is not calculated for rotation 0
         unsigned int hammdist = hammingDistance(_bits[0], _bits[i]);
@@ -113,10 +109,9 @@ unsigned int MarkerCode::selfDistance(unsigned int &minRot) const {
     return res;
 }
 
-
 /**
  */
-unsigned int MarkerCode::distance(const MarkerCode &m, unsigned int &minRot) const {
+unsigned int MarkerCode::distance(const MarkerCode& m, unsigned int& minRot) const {
     unsigned int res = _bits[0].size(); // init to n*n (max value)
     for (unsigned int i = 0; i < 4; i++) {
         unsigned int hammdist = hammingDistance(_bits[0], m.getRotation(i));
@@ -127,7 +122,6 @@ unsigned int MarkerCode::distance(const MarkerCode &m, unsigned int &minRot) con
     }
     return res;
 };
-
 
 /**
  */
@@ -154,7 +148,6 @@ std::string MarkerCode::toString() const {
     return s;
 }
 
-
 /**
  */
 cv::Mat MarkerCode::getImg(unsigned int pixSize) const {
@@ -171,7 +164,8 @@ cv::Mat MarkerCode::getImg(unsigned int pixSize) const {
                                               // double for to go over all the pixels in the cell
                 for (unsigned int k = 0; k < cellSize; k++) {
                     for (unsigned int l = 0; l < cellSize; l++) {
-                        img.at< uchar >((i + borderSize) * cellSize + k, (j + borderSize) * cellSize + l) = 255;
+                        img.at<uchar>((i + borderSize) * cellSize + k, (j + borderSize) * cellSize + l) =
+                            255;
                     }
                 }
             }
@@ -180,19 +174,15 @@ cv::Mat MarkerCode::getImg(unsigned int pixSize) const {
     return img;
 }
 
-
 /**
  */
-unsigned int MarkerCode::hammingDistance(const std::vector< bool > &m1, const std::vector< bool > &m2) const {
+unsigned int MarkerCode::hammingDistance(const std::vector<bool>& m1, const std::vector<bool>& m2) const {
     unsigned int res = 0;
     for (unsigned int i = 0; i < m1.size(); i++)
         if (m1[i] != m2[i])
             res++;
     return res;
 }
-
-
-
 
 /**
 */
@@ -201,8 +191,8 @@ bool Dictionary::fromFile(std::string filename) {
     int nmarkers, markersize;
 
     // read number of markers
-    fs["nmarkers"] >> nmarkers;                     // cardinal of D
-    fs["markersize"] >> markersize;                 // n
+    fs["nmarkers"] >> nmarkers;     // cardinal of D
+    fs["markersize"] >> markersize; // n
     fs["tau0"] >> tau0;
 
     // read each marker info
@@ -222,9 +212,9 @@ bool Dictionary::fromFile(std::string filename) {
 bool Dictionary::toFile(std::string filename) {
     cv::FileStorage fs(filename, cv::FileStorage::WRITE);
     // save number of markers
-    fs << "nmarkers" << (int)size();                               // cardinal of D
-    fs << "markersize" << (int)((*this)[0].n());                   // n
-    fs << "tau0" << (int)(this->tau0); // n
+    fs << "nmarkers" << (int)size();             // cardinal of D
+    fs << "markersize" << (int)((*this)[0].n()); // n
+    fs << "tau0" << (int)(this->tau0);           // n
     // save each marker code
     for (unsigned int i = 0; i < size(); i++) {
         std::string s = ((*this)[i]).toString();
@@ -236,7 +226,7 @@ bool Dictionary::toFile(std::string filename) {
 
 /**
  */
-unsigned int Dictionary::distance(const MarkerCode &m, unsigned int &minMarker, unsigned int &minRot) {
+unsigned int Dictionary::distance(const MarkerCode& m, unsigned int& minMarker, unsigned int& minRot) {
     unsigned int res = m.size();
     for (unsigned int i = 0; i < size(); i++) {
         unsigned int minRotAux;
@@ -249,7 +239,6 @@ unsigned int Dictionary::distance(const MarkerCode &m, unsigned int &minMarker, 
     }
     return res;
 }
-
 
 /**
  */
@@ -270,9 +259,6 @@ unsigned int Dictionary::minimunDistance() {
     return minDist;
 }
 
-
-
-
 /**
  */
 bool HighlyReliableMarkers::loadDictionary(Dictionary D, float correctionDistanceRate) {
@@ -281,7 +267,7 @@ bool HighlyReliableMarkers::loadDictionary(Dictionary D, float correctionDistanc
     _D = D;
     _n = _D[0].n();
     _ncellsBorder = (_D[0].n() + 2);
-    _correctionDistance = correctionDistanceRate * ((D.tau0-1)/2);
+    _correctionDistance = correctionDistanceRate * ((D.tau0 - 1) / 2);
     cerr << "aruco :: _correctionDistance = " << _correctionDistance << endl;
     _binaryTree.loadDictionary(&D);
     return true;
@@ -293,10 +279,9 @@ bool HighlyReliableMarkers::loadDictionary(std::string filename, float correctio
     return loadDictionary(D, correctionDistance);
 }
 
-
 /**
  */
-int HighlyReliableMarkers::detect(const cv::Mat &in, int &nRotations) {
+int HighlyReliableMarkers::detect(const cv::Mat& in, int& nRotations) {
 
     assert(in.rows == in.cols);
     cv::Mat grey;
@@ -346,7 +331,6 @@ int HighlyReliableMarkers::detect(const cv::Mat &in, int &nRotations) {
     return -1;
 }
 
-
 /**
  */
 bool HighlyReliableMarkers::checkBorders(cv::Mat grey) {
@@ -369,7 +353,7 @@ bool HighlyReliableMarkers::checkBorders(cv::Mat grey) {
 
 /**
  */
-MarkerCode HighlyReliableMarkers::getMarkerCode(const cv::Mat &grey) {
+MarkerCode HighlyReliableMarkers::getMarkerCode(const cv::Mat& grey) {
     MarkerCode candidate(_n);
     for (int y = 0; y < _n; y++) {
         for (int x = 0; x < _n; x++) {
@@ -384,15 +368,13 @@ MarkerCode HighlyReliableMarkers::getMarkerCode(const cv::Mat &grey) {
     return candidate;
 }
 
-
-
 /**
  */
-void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary *D) {
+void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary* D) {
     // create _orderD wich is a sorted version of D
     _orderD.clear();
     for (unsigned int i = 0; i < D->size(); i++) {
-        _orderD.push_back(std::pair< unsigned int, unsigned int >((*D)[i].getId(), i));
+        _orderD.push_back(std::pair<unsigned int, unsigned int>((*D)[i].getId(), i));
     }
     std::sort(_orderD.begin(), _orderD.end());
 
@@ -403,7 +385,7 @@ void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary *D) {
     //       levels-=1; // only count full levels
 
     // auxiliar vector to know which elements are already in the tree
-    std::vector< bool > visited;
+    std::vector<bool> visited;
     visited.resize(_orderD.size(), false);
 
     // calculate position of the root element
@@ -414,16 +396,17 @@ void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary *D) {
     //    for(int i=0; i<visited.size(); i++) std::cout << visited[i] << std::endl;
 
     // auxiliar vector to store the ids intervals (max and min) during the creation of the tree
-    std::vector< std::pair< unsigned int, unsigned int > > intervals;
+    std::vector<std::pair<unsigned int, unsigned int> > intervals;
     // first, add the two intervals at each side of root element
-    intervals.push_back(std::pair< unsigned int, unsigned int >(0, rootIdx));
-    intervals.push_back(std::pair< unsigned int, unsigned int >(rootIdx, _orderD.size()));
+    intervals.push_back(std::pair<unsigned int, unsigned int>(0, rootIdx));
+    intervals.push_back(std::pair<unsigned int, unsigned int>(rootIdx, _orderD.size()));
 
     // init the tree
     _binaryTree.clear();
     _binaryTree.resize(_orderD.size());
 
-    // add root information to the tree (make sure child do not coincide with self root for small sizes of D)
+    // add root information to the tree (make sure child do not coincide with self root for small sizes of
+    // D)
     if (!visited[(0 + rootIdx) / 2])
         _binaryTree[rootIdx].first = (0 + rootIdx) / 2;
     else
@@ -458,14 +441,17 @@ void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary *D) {
 
             // if not visited (lower child)
             if (!visited[lowerChild]) {
-                intervals.insert(intervals.begin(), std::pair< unsigned int, unsigned int >(lowerBound, center)); // add the interval to analyze later
-                _binaryTree[center].first = lowerChild;                                                           // add as a child in the tree
+                intervals.insert(intervals.begin(),
+                                 std::pair<unsigned int, unsigned int>(
+                                     lowerBound, center)); // add the interval to analyze later
+                _binaryTree[center].first = lowerChild;    // add as a child in the tree
             } else
                 _binaryTree[center].first = -1; // if not, mark as no child
 
             // (higher child, same as lower child)
             if (!visited[higherChild]) {
-                intervals.insert(intervals.begin(), std::pair< unsigned int, unsigned int >(center, higherBound));
+                intervals.insert(intervals.begin(),
+                                 std::pair<unsigned int, unsigned int>(center, higherBound));
                 _binaryTree[center].second = higherChild;
             } else
                 _binaryTree[center].second = -1;
@@ -473,17 +459,17 @@ void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary *D) {
     }
 
     // print tree
-    //     for(uint i=0; i<_binaryTree.size(); i++) std::cout << _binaryTree[i].first << " " << _binaryTree[i].second << std::endl;
+    //     for(uint i=0; i<_binaryTree.size(); i++) std::cout << _binaryTree[i].first << " " <<
+    //     _binaryTree[i].second << std::endl;
     //     std::cout << std::endl;
 }
-
 
 int count = 0;
 int idc = 11;
 
 /**
  */
-bool HighlyReliableMarkers::BalancedBinaryTree::findId(unsigned int id, unsigned int &orgPos) {
+bool HighlyReliableMarkers::BalancedBinaryTree::findId(unsigned int id, unsigned int& orgPos) {
     int pos = _root;                             // first position is root
     while (pos != -1) {                          // while having a valid position
         unsigned int posId = _orderD[pos].first; // calculate id of the node

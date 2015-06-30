@@ -49,7 +49,7 @@ BoardConfiguration::BoardConfiguration(string filePath) throw(cv::Exception) {
 *
 *
 */
-BoardConfiguration::BoardConfiguration(const BoardConfiguration &T) : vector< MarkerInfo >(T) {
+BoardConfiguration::BoardConfiguration(const BoardConfiguration& T) : vector<MarkerInfo>(T) {
     //     MarkersInfo=T.MarkersInfo;
     mInfoType = T.mInfoType;
 }
@@ -58,9 +58,9 @@ BoardConfiguration::BoardConfiguration(const BoardConfiguration &T) : vector< Ma
 *
 *
 */
-BoardConfiguration &BoardConfiguration::operator=(const BoardConfiguration &T) {
+BoardConfiguration& BoardConfiguration::operator=(const BoardConfiguration& T) {
     //     MarkersInfo=T.MarkersInfo;
-    vector< MarkerInfo >::operator=(T);
+    vector<MarkerInfo>::operator=(T);
     mInfoType = T.mInfoType;
     return *this;
 }
@@ -75,7 +75,7 @@ void BoardConfiguration::saveToFile(string sfile) throw(cv::Exception) {
 }
 /**Saves the board info to a file
 */
-void BoardConfiguration::saveToFile(cv::FileStorage &fs) throw(cv::Exception) {
+void BoardConfiguration::saveToFile(cv::FileStorage& fs) throw(cv::Exception) {
     fs << "aruco_bc_nmarkers" << (int)size();
     fs << "aruco_bc_mInfoType" << (int)mInfoType;
     fs << "aruco_bc_markers"
@@ -102,19 +102,20 @@ void BoardConfiguration::readFromFile(string sfile) throw(cv::Exception) {
     try {
         cv::FileStorage fs(sfile, cv::FileStorage::READ);
         readFromFile(fs);
-    } catch (std::exception &ex) {
-        throw cv::Exception(81818, "BoardConfiguration::readFromFile", ex.what() + string(" file=)") + sfile, __FILE__, __LINE__);
+    } catch (std::exception& ex) {
+        throw cv::Exception(81818, "BoardConfiguration::readFromFile",
+                            ex.what() + string(" file=)") + sfile, __FILE__, __LINE__);
     }
 }
 
-
 /**Reads board info from a file
 */
-void BoardConfiguration::readFromFile(cv::FileStorage &fs) throw(cv::Exception) {
+void BoardConfiguration::readFromFile(cv::FileStorage& fs) throw(cv::Exception) {
     int aux = 0;
     // look for the nmarkers
     if (fs["aruco_bc_nmarkers"].name() != "aruco_bc_nmarkers")
-        throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type", __FILE__, __LINE__);
+        throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type", __FILE__,
+                            __LINE__);
     fs["aruco_bc_nmarkers"] >> aux;
     resize(aux);
     fs["aruco_bc_mInfoType"] >> mInfoType;
@@ -124,10 +125,11 @@ void BoardConfiguration::readFromFile(cv::FileStorage &fs) throw(cv::Exception) 
         at(i).id = (*it)["id"];
         FileNode FnCorners = (*it)["corners"];
         for (FileNodeIterator itc = FnCorners.begin(); itc != FnCorners.end(); ++itc) {
-            vector< float > coordinates3d;
+            vector<float> coordinates3d;
             (*itc) >> coordinates3d;
             if (coordinates3d.size() != 3)
-                throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type 3", __FILE__, __LINE__);
+                throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type 3",
+                                    __FILE__, __LINE__);
             cv::Point3f point(coordinates3d[0], coordinates3d[1], coordinates3d[2]);
             at(i).push_back(point);
         }
@@ -146,13 +148,13 @@ int BoardConfiguration::getIndexOfMarkerId(int id) const {
 
 /**
  */
-const MarkerInfo &BoardConfiguration::getMarkerInfo(int id) const throw(cv::Exception) {
+const MarkerInfo& BoardConfiguration::getMarkerInfo(int id) const throw(cv::Exception) {
     for (size_t i = 0; i < size(); i++)
         if (at(i).id == id)
             return at(i);
-    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found", __FILE__, __LINE__);
+    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",
+                        __FILE__, __LINE__);
 }
-
 
 /**
  */
@@ -160,24 +162,25 @@ void Board::glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exceptio
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at< float >(i, 0) != -999999)
+        if (Tvec.at<float>(i, 0) != -999999)
             invalid |= false;
-        if (Rvec.at< float >(i, 0) != -999999)
+        if (Rvec.at<float>(i, 0) != -999999)
             invalid |= false;
     }
     if (invalid)
-        throw cv::Exception(9002, "extrinsic parameters are not set", "Marker::getModelViewMatrix", __FILE__, __LINE__);
+        throw cv::Exception(9002, "extrinsic parameters are not set", "Marker::getModelViewMatrix",
+                            __FILE__, __LINE__);
     Mat Rot(3, 3, CV_32FC1), Jacob;
     Rodrigues(Rvec, Rot, Jacob);
 
     double para[3][4];
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
-            para[i][j] = Rot.at< float >(i, j);
+            para[i][j] = Rot.at<float>(i, j);
     // now, add the translation
-    para[0][3] = Tvec.at< float >(0, 0);
-    para[1][3] = Tvec.at< float >(1, 0);
-    para[2][3] = Tvec.at< float >(2, 0);
+    para[0][3] = Tvec.at<float>(0, 0);
+    para[1][3] = Tvec.at<float>(1, 0);
+    para[2][3] = Tvec.at<float>(2, 0);
     double scale = 1;
 
     modelview_matrix[0 + 0 * 4] = para[0][0];
@@ -206,7 +209,6 @@ void Board::glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exceptio
     }
 }
 
-
 /****
  *
  */
@@ -214,18 +216,19 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at< float >(i, 0) != -999999)
+        if (Tvec.at<float>(i, 0) != -999999)
             invalid |= false;
-        if (Rvec.at< float >(i, 0) != -999999)
+        if (Rvec.at<float>(i, 0) != -999999)
             invalid |= false;
     }
     if (invalid)
-        throw cv::Exception(9003, "extrinsic parameters are not set", "Marker::getModelViewMatrix", __FILE__, __LINE__);
+        throw cv::Exception(9003, "extrinsic parameters are not set", "Marker::getModelViewMatrix",
+                            __FILE__, __LINE__);
 
     // calculate position vector
-    position[0] = -Tvec.ptr< float >(0)[0];
-    position[1] = -Tvec.ptr< float >(0)[1];
-    position[2] = +Tvec.ptr< float >(0)[2];
+    position[0] = -Tvec.ptr<float>(0)[0];
+    position[1] = -Tvec.ptr<float>(0)[1];
+    position[2] = +Tvec.ptr<float>(0)[2];
 
     // now calculare orientation quaternion
     cv::Mat Rot(3, 3, CV_32FC1);
@@ -234,13 +237,13 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
     // calculate axes for quaternion
     double stAxes[3][3];
     // x axis
-    stAxes[0][0] = -Rot.at< float >(0, 0);
-    stAxes[0][1] = -Rot.at< float >(1, 0);
-    stAxes[0][2] = +Rot.at< float >(2, 0);
+    stAxes[0][0] = -Rot.at<float>(0, 0);
+    stAxes[0][1] = -Rot.at<float>(1, 0);
+    stAxes[0][2] = +Rot.at<float>(2, 0);
     // y axis
-    stAxes[1][0] = -Rot.at< float >(0, 1);
-    stAxes[1][1] = -Rot.at< float >(1, 1);
-    stAxes[1][2] = +Rot.at< float >(2, 1);
+    stAxes[1][0] = -Rot.at<float>(0, 1);
+    stAxes[1][1] = -Rot.at<float>(1, 1);
+    stAxes[1][2] = +Rot.at<float>(2, 1);
     // for z axis, we use cross product
     stAxes[2][0] = stAxes[0][1] * stAxes[1][2] - stAxes[0][2] * stAxes[1][1];
     stAxes[2][1] = -stAxes[0][0] * stAxes[1][2] + stAxes[0][2] * stAxes[1][0];
@@ -285,7 +288,7 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
         unsigned int k = s_iNext[j];
 
         fRoot = sqrt(axes[i][i] - axes[j][j] - axes[k][k] + 1.0);
-        double *apkQuat[3] = {&orientation[1], &orientation[2], &orientation[3]};
+        double* apkQuat[3] = {&orientation[1], &orientation[2], &orientation[3]};
         *apkQuat[i] = 0.5 * fRoot;
         fRoot = 0.5 / fRoot;
         orientation[0] = (axes[k][j] - axes[j][k]) * fRoot;
@@ -296,7 +299,7 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
 
 /**
  */
-void Board::draw(cv::Mat &im, cv::Scalar color, int lineWidth, bool writeId) {
+void Board::draw(cv::Mat& im, cv::Scalar color, int lineWidth, bool writeId) {
     for (size_t i = 0; i < size(); i++) {
         at(i).draw(im, color, lineWidth, writeId);
     }
@@ -327,8 +330,6 @@ void Board::saveToFile(string filePath) throw(cv::Exception) {
     // save configuration file
     conf.saveToFile(fs);
 
-
-
     //  readFromFile(fs);
 }
 /**Read  this from a file
@@ -337,8 +338,6 @@ void Board::readFromFile(string filePath) throw(cv::Exception) {
     cv::FileStorage fs(filePath, cv::FileStorage::READ);
     if (fs["aruco_bo_nmarkers"].name() != "aruco_bo_nmarkers")
         throw cv::Exception(81818, "Board::readFromFile", "invalid file type:", __FILE__, __LINE__);
-
-
 
     int aux = 0;
     // look for the nmarkers
@@ -356,10 +355,11 @@ void Board::readFromFile(string filePath) throw(cv::Exception) {
         FileNode FnCorners = (*it)["corners"];
         int c = 0;
         for (FileNodeIterator itc = FnCorners.begin(); itc != FnCorners.end(); ++itc, c++) {
-            vector< float > coordinates2d;
+            vector<float> coordinates2d;
             (*itc) >> coordinates2d;
             if (coordinates2d.size() != 2)
-                throw cv::Exception(81818, "Board::readFromFile", "invalid file type 2", __FILE__, __LINE__);
+                throw cv::Exception(81818, "Board::readFromFile", "invalid file type 2", __FILE__,
+                                    __LINE__);
             cv::Point2f point;
             point.x = coordinates2d[0];
             point.y = coordinates2d[1];
@@ -372,7 +372,7 @@ void Board::readFromFile(string filePath) throw(cv::Exception) {
 
 /**
 */
-void BoardConfiguration::getIdList(std::vector< int > &ids, bool append) const {
+void BoardConfiguration::getIdList(std::vector<int>& ids, bool append) const {
     if (!append)
         ids.clear();
     for (size_t i = 0; i < size(); i++)

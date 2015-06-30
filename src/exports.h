@@ -26,8 +26,6 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************/
 
-
-
 #ifndef __OPENARUCO_CORE_TYPES_H__
 #define __OPENARUCO_CORE_TYPES_H__
 
@@ -35,12 +33,10 @@ or implied, of Rafael Muñoz Salinas.
 #define _CRT_SECURE_NO_DEPRECATE /* to avoid multiple Visual Studio 2005 warnings */
 #endif
 
-
 #if (defined WIN32 || defined _WIN32 || defined WINCE) && defined DSO_EXPORTS
 #define ARUCO_EXPORTS __declspec(dllexport)
 #else
 #define ARUCO_EXPORTS
 #endif
-
 
 #endif

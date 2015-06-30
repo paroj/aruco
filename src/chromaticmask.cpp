@@ -30,7 +30,6 @@ or implied, of Rafael Muñoz Salinas.
 #include <set>
 // #include <omp.h>
 
-
 /**
  */
 EMClassifier::EMClassifier(unsigned int nelements) {
@@ -40,15 +39,14 @@ EMClassifier::EMClassifier(unsigned int nelements) {
     _classifier->setClustersNumber(2);
     _classifier->setCovarianceMatrixType(cv::ml::EM::COV_MAT_DIAGONAL);
 #else
-    _classifier = cv::EM(2, cv::EM::COV_MAT_DIAGONAL, cv::TermCriteria(cv::TermCriteria::COUNT , 4, FLT_EPSILON));
+    _classifier =
+        cv::EM(2, cv::EM::COV_MAT_DIAGONAL, cv::TermCriteria(cv::TermCriteria::COUNT, 4, FLT_EPSILON));
 #endif
     _nelem = nelements;
     _threshProb = 0.0001;
     for (unsigned int i = 0; i < 256; i++)
         _prob[i] = 0.5;
 }
-
-
 
 /**
  */
@@ -78,7 +76,6 @@ void EMClassifier::train() {
     for (unsigned int i = 0; i < 256; i++)
         _histogram[i] /= sum;
 
-
     // discretize histogram to speed up training
     unsigned int histCount[256];
     int n = 0;
@@ -92,7 +89,7 @@ void EMClassifier::train() {
     unsigned int idx = 0;
     for (unsigned int i = 0; i < 256; i++) {
         for (unsigned int j = 0; j < histCount[i]; j++) {
-            samples.ptr< double >(0)[idx] = i;
+            samples.ptr<double>(0)[idx] = i;
             idx++;
         }
     }
@@ -105,7 +102,7 @@ void EMClassifier::train() {
 
     cv::Mat sampleAux(1, 1, CV_64FC1);
     for (unsigned int i = 0; i < 256; i++) {
-        sampleAux.ptr< double >(0)[0] = i;
+        sampleAux.ptr<double>(0)[0] = i;
         cv::Mat probs;
 #ifdef OPENCV_VERSION_3
         cv::Vec2f r = _classifier->predict2(sampleAux, probs);
@@ -120,9 +117,9 @@ void EMClassifier::train() {
     }
 }
 
-
-void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP, aruco::BoardConfiguration BC, float markersize) {
-    if (BC.mInfoType!=aruco::BoardConfiguration::METERS && markersize == -1) {
+void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshProb,
+                              aruco::CameraParameters CP, aruco::BoardConfiguration BC, float markersize) {
+    if (BC.mInfoType != aruco::BoardConfiguration::METERS && markersize == -1) {
         std::cerr << "Invalid markersize in ChromaticMask::setParams" << std::endl;
         return;
     }
@@ -132,8 +129,8 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
         return;
     }
 
-    if(BC.mInfoType==aruco::BoardConfiguration::METERS) {
-        markersize = cv::norm(BC[0][0]-BC[0][1]);
+    if (BC.mInfoType == aruco::BoardConfiguration::METERS) {
+        markersize = cv::norm(BC[0][0] - BC[0][1]);
     }
 
     // calculate corners from min and max in BC
@@ -154,7 +151,7 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
     max.y *= pixSize;
 
     // calculate border corners coordinates
-    vector< cv::Point3f > corners;
+    vector<cv::Point3f> corners;
     corners.push_back(min);
     corners.push_back(cv::Point3f(min.x, max.y, 0));
     corners.push_back(max);
@@ -163,12 +160,11 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
     setParams(mc, nc, threshProb, CP, BC, corners);
 }
 
-
-
 /**
  */
-void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshProb, aruco::CameraParameters CP, aruco::BoardConfiguration BC,
-                              vector< cv::Point3f > corners) {
+void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshProb,
+                              aruco::CameraParameters CP, aruco::BoardConfiguration BC,
+                              vector<cv::Point3f> corners) {
     _classifiers.resize(mc * nc);
     for (unsigned int i = 0; i < _classifiers.size(); i++)
         _classifiers[i].setProb(threshProb);
@@ -218,14 +214,15 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
     }
 }
 
-pair< double, double > AvrgTime(0, 0);
+pair<double, double> AvrgTime(0, 0);
 
 /**
  */
-void ChromaticMask::calculateGridImage(const aruco::Board &board) {
+void ChromaticMask::calculateGridImage(const aruco::Board& board) {
 
     // project corner points to image
-    cv::projectPoints(_objCornerPoints, board.Rvec, board.Tvec, _CP.CameraMatrix, _CP.Distorsion, _imgCornerPoints);
+    cv::projectPoints(_objCornerPoints, board.Rvec, board.Tvec, _CP.CameraMatrix, _CP.Distorsion,
+                      _imgCornerPoints);
 
     // obtain the perspective transform
     cv::Point2f pointsRes[4], pointsIn[4];
@@ -239,40 +236,38 @@ void ChromaticMask::calculateGridImage(const aruco::Board &board) {
 
     double tick = (double)cv::getTickCount();
 
-    vector< cv::Point2f > transformedPixels;
+    vector<cv::Point2f> transformedPixels;
     cv::perspectiveTransform(_pixelsVector, transformedPixels, _perpTrans);
 
     AvrgTime.first += ((double)cv::getTickCount() - tick) / cv::getTickFrequency();
     AvrgTime.second++;
     cout << "Time cc detection=" << 1000 * AvrgTime.first / AvrgTime.second << " milliseconds" << endl;
 
-
-
     cv::Rect cellRect(0, 0, _mc, _nc);
     for (unsigned int i = 0; i < transformedPixels.size(); i++) {
-        //_canonicalPos.at<cv::Vec2b>(_pixelsVector[i].y, _pixelsVector[i].x) = cv::Vec2b(transformedPixels[i].x, transformedPixels[i].y);
+        //_canonicalPos.at<cv::Vec2b>(_pixelsVector[i].y, _pixelsVector[i].x) =
+        //cv::Vec2b(transformedPixels[i].x, transformedPixels[i].y);
         transformedPixels[i].x /= _cellSize;
         transformedPixels[i].y /= _cellSize;
         if (!transformedPixels[i].inside(cellRect)) {
-            _cellMap.at< uchar >(_pixelsVector[i].y, _pixelsVector[i].x) = 0;
-            _cellMap.at< uchar >(_pixelsVector[i].y + 1, _pixelsVector[i].x) = 0;
-            _cellMap.at< uchar >(_pixelsVector[i].y, _pixelsVector[i].x + 1) = 0;
-            _cellMap.at< uchar >(_pixelsVector[i].y + 1, _pixelsVector[i].x + 1) = 0;
+            _cellMap.at<uchar>(_pixelsVector[i].y, _pixelsVector[i].x) = 0;
+            _cellMap.at<uchar>(_pixelsVector[i].y + 1, _pixelsVector[i].x) = 0;
+            _cellMap.at<uchar>(_pixelsVector[i].y, _pixelsVector[i].x + 1) = 0;
+            _cellMap.at<uchar>(_pixelsVector[i].y + 1, _pixelsVector[i].x + 1) = 0;
         } else {
-            uchar cellNum = (unsigned int)transformedPixels[i].y * _nc + (unsigned int)transformedPixels[i].x;
-            _cellMap.at< uchar >(_pixelsVector[i].y, _pixelsVector[i].x) = 1 + cellNum;
-            _cellMap.at< uchar >(_pixelsVector[i].y + 1, _pixelsVector[i].x) = 1 + cellNum;
-            _cellMap.at< uchar >(_pixelsVector[i].y, _pixelsVector[i].x + 1) = 1 + cellNum;
-            _cellMap.at< uchar >(_pixelsVector[i].y + 1, _pixelsVector[i].x + 1) = 1 + cellNum;
+            uchar cellNum =
+                (unsigned int)transformedPixels[i].y * _nc + (unsigned int)transformedPixels[i].x;
+            _cellMap.at<uchar>(_pixelsVector[i].y, _pixelsVector[i].x) = 1 + cellNum;
+            _cellMap.at<uchar>(_pixelsVector[i].y + 1, _pixelsVector[i].x) = 1 + cellNum;
+            _cellMap.at<uchar>(_pixelsVector[i].y, _pixelsVector[i].x + 1) = 1 + cellNum;
+            _cellMap.at<uchar>(_pixelsVector[i].y + 1, _pixelsVector[i].x + 1) = 1 + cellNum;
         }
     }
 }
 
-
-
 /**
  */
-void ChromaticMask::train(const cv::Mat &in, const aruco::Board &board) {
+void ChromaticMask::train(const cv::Mat& in, const aruco::Board& board) {
     calculateGridImage(board);
 
     for (unsigned int i = 0; i < _classifiers.size(); i++)
@@ -280,15 +275,14 @@ void ChromaticMask::train(const cv::Mat &in, const aruco::Board &board) {
 
     for (unsigned int i = 0; i < in.rows; i++) {
         for (unsigned int j = 0; j < in.cols; j++) {
-            uchar idx = _cellMap.at< uchar >(i, j);
+            uchar idx = _cellMap.at<uchar>(i, j);
             if (idx != 0)
-                _classifiers[idx - 1].addSample(in.at< uchar >(i, j));
+                _classifiers[idx - 1].addSample(in.at<uchar>(i, j));
         }
     }
 
     for (unsigned int i = 0; i < _classifiers.size(); i++)
         _classifiers[i].train();
-
 
     //   for(uint i=0; i<_mc; i++) {
     //     for(uint j=0; j<_nc; j++) {
@@ -317,17 +311,16 @@ void ChromaticMask::train(const cv::Mat &in, const aruco::Board &board) {
     _isValid = true;
 }
 
-
 /**
  */
-void ChromaticMask::classify(const cv::Mat &in, const aruco::Board &board) {
+void ChromaticMask::classify(const cv::Mat& in, const aruco::Board& board) {
     calculateGridImage(board);
 
     resetMask();
 
     for (unsigned int i = 0; i < in.rows; i++) {
-        const uchar *in_ptr = in.ptr< uchar >(i);
-        const uchar *_cellMap_ptr = _cellMap.ptr< uchar >(i);
+        const uchar* in_ptr = in.ptr<uchar>(i);
+        const uchar* _cellMap_ptr = _cellMap.ptr<uchar>(i);
         for (unsigned int j = 0; j < in.cols; j++) {
             uchar idx = _cellMap_ptr[j];
             if (idx != 0) {
@@ -345,9 +338,10 @@ void ChromaticMask::classify(const cv::Mat &in, const aruco::Board &board) {
                 // 	if(prob > _threshProb) _mask.at<uchar>(i,j)=1;
 
                 // not considering neighbours
-                if (_classifiers[idx - 1].classify(in.at< uchar >(i, j)))
-                    _mask.at< uchar >(i, j) = 1;
-                // 	if(_classifiers[idx-1].probConj[ in.at<uchar>(i,j)]>_threshProb ) _mask.at<uchar>(i,j)=1;
+                if (_classifiers[idx - 1].classify(in.at<uchar>(i, j)))
+                    _mask.at<uchar>(i, j) = 1;
+                // 	if(_classifiers[idx-1].probConj[ in.at<uchar>(i,j)]>_threshProb )
+                // _mask.at<uchar>(i,j)=1;
             }
         }
     }
@@ -374,13 +368,14 @@ cv::Rect fitRectToSize(cv::Rect r, cv::Size size) {
 
 /**
  */
-void ChromaticMask::classify2(const cv::Mat &in, const aruco::Board &board) {
+void ChromaticMask::classify2(const cv::Mat& in, const aruco::Board& board) {
 
     _mask.create(_CP.CamSize.height, _CP.CamSize.width, CV_8UC1);
     _maskAux.create(_CP.CamSize.height, _CP.CamSize.width, CV_8UC1);
     _maskAux.setTo(cv::Scalar::all(0));
 
-    cv::projectPoints(_objCornerPoints, board.Rvec, board.Tvec, _CP.CameraMatrix, _CP.Distorsion, _imgCornerPoints);
+    cv::projectPoints(_objCornerPoints, board.Rvec, board.Tvec, _CP.CameraMatrix, _CP.Distorsion,
+                      _imgCornerPoints);
     // obtain the perspective transform
     cv::Point2f pointsRes[4], pointsIn[4];
     for (int i = 0; i < 4; i++)
@@ -399,12 +394,12 @@ void ChromaticMask::classify2(const cv::Mat &in, const aruco::Board &board) {
 
     cv::Rect r = cv::boundingRect(_imgCornerPoints);
     r = fitRectToSize(r, in.size()); // fit rectangle to image limits
-    float *H = pT_32.ptr< float >(0);
+    float* H = pT_32.ptr<float>(0);
     // #pragma omp parallel for
     int ny = 0;
     for (unsigned int y = r.y; y < r.y + r.height; y += 2, ny++) {
-        const uchar *in_ptr = in.ptr< uchar >(y);
-        uchar *_mask_ptr = _maskAux.ptr< uchar >(y);
+        const uchar* in_ptr = in.ptr<uchar>(y);
+        uchar* _mask_ptr = _maskAux.ptr<uchar>(y);
         int startx = r.x + ny % 2; // alternate starting point
         for (unsigned int x = startx; x < r.x + r.width; x += 2) {
             cv::Point2f point;
@@ -423,7 +418,8 @@ void ChromaticMask::classify2(const cv::Mat &in, const aruco::Board &board) {
                 dist = fabs(point.x - _centers[k].x) + fabs(point.y - _centers[k].y);
                 w = (2 - dist);
                 w *= w;
-                // 	    w=1/(1- sqrt( (point.x-_centers[k].x)*(point.x-_centers[k].x) + (point.y-_centers[k].y)*(point.y-_centers[k].y));
+                // 	    w=1/(1- sqrt( (point.x-_centers[k].x)*(point.x-_centers[k].x) +
+                // (point.y-_centers[k].y)*(point.y-_centers[k].y));
                 totalW += w;
                 prob += w * _classifiers[_cell_neighbours[cell_idx][k]].getProb(in_ptr[x]);
             }
@@ -440,9 +436,7 @@ void ChromaticMask::classify2(const cv::Mat &in, const aruco::Board &board) {
     cv::morphologyEx(_maskAux, _mask, CV_MOP_CLOSE, element);
 }
 
-
-
-void ChromaticMask::update(const cv::Mat &in) {
+void ChromaticMask::update(const cv::Mat& in) {
     cv::Mat maskCells;
     maskCells = _cellMap.mul(_mask);
 
@@ -450,8 +444,8 @@ void ChromaticMask::update(const cv::Mat &in) {
         _classifiers[i].clearSamples();
 
     for (unsigned int i = 0; i < maskCells.rows; i++) {
-        uchar *maskCells_ptr = maskCells.ptr< uchar >(i);
-        const uchar *in_ptr = in.ptr< uchar >(i);
+        uchar* maskCells_ptr = maskCells.ptr<uchar>(i);
+        const uchar* in_ptr = in.ptr<uchar>(i);
         for (unsigned int j = 0; j < maskCells.cols; j++) {
             if (maskCells_ptr[j] != 0)
                 _classifiers[maskCells_ptr[j] - 1].addSample(in_ptr[j]);
@@ -463,8 +457,6 @@ void ChromaticMask::update(const cv::Mat &in) {
             _classifiers[i].train();
         }
 }
-
-
 
 void ChromaticMask::resetMask() {
 

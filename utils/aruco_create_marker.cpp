@@ -32,12 +32,13 @@ or implied, of Rafael Muñoz Salinas.
 using namespace cv;
 using namespace std;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (argc < 3) {
 
             // You can also use ids 2000-2007 but it is not safe since there are a lot of false positives.
-            cerr << "Usage: <makerid(0:1023)> outfile.(jpg|png|ppm|bmp) [sizeInPixels:500 default] [locked (0,1) : 0 default]" << endl;
+            cerr << "Usage: <makerid(0:1023)> outfile.(jpg|png|ppm|bmp) [sizeInPixels:500 default] [locked "
+                    "(0,1) : 0 default]" << endl;
             return -1;
         }
         int pixSize = 500;
@@ -51,7 +52,7 @@ int main(int argc, char **argv) {
 
         cv::imwrite(argv[2], marker);
 
-    } catch (std::exception &ex) {
+    } catch (std::exception& ex) {
         cout << ex.what() << endl;
     }
 }

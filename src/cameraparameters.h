@@ -36,7 +36,7 @@ namespace aruco {
  */
 
 class ARUCO_EXPORTS CameraParameters {
-  public:
+public:
     // 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
     cv::Mat CameraMatrix;
     // 4x1 matrix (k1,k2,p1,p2)
@@ -61,16 +61,17 @@ class ARUCO_EXPORTS CameraParameters {
     void setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) throw(cv::Exception);
     /**Copy constructor
      */
-    CameraParameters(const CameraParameters &CI);
+    CameraParameters(const CameraParameters& CI);
 
     /**Indicates whether this object is valid
      */
     bool isValid() const {
-        return CameraMatrix.rows != 0 && CameraMatrix.cols != 0 && Distorsion.rows != 0 && Distorsion.cols != 0 && CamSize.width != -1 && CamSize.height != -1;
+        return CameraMatrix.rows != 0 && CameraMatrix.cols != 0 && Distorsion.rows != 0 &&
+               Distorsion.cols != 0 && CamSize.width != -1 && CamSize.height != -1;
     }
     /**Assign operator
     */
-    CameraParameters &operator=(const CameraParameters &CI);
+    CameraParameters& operator=(const CameraParameters& CI);
     /**Reads the camera parameters from a file generated using saveToFile.
      */
     void readFromFile(string path) throw(cv::Exception);
@@ -86,23 +87,28 @@ class ARUCO_EXPORTS CameraParameters {
      */
     void resize(cv::Size size) throw(cv::Exception);
 
-    /**Returns the location of the camera in the reference system given by the rotation and translation vectors passed
+    /**Returns the location of the camera in the reference system given by the rotation and translation
+     * vectors passed
      * NOT TESTED
     */
     static cv::Point3f getCameraLocation(cv::Mat Rvec, cv::Mat Tvec);
 
     /**Given the intrinsic camera parameters returns the GL_PROJECTION matrix for opengl.
-    * PLease NOTE that when using OpenGL, it is assumed no camera distorsion! So, if it is not true, you should have
+    * PLease NOTE that when using OpenGL, it is assumed no camera distorsion! So, if it is not true, you
+    *should have
     * undistor image
     *
     * @param orgImgSize size of the original image
-    * @param size of the image/window where to render (can be different from the real camera image). Please not that it must be related to CamMatrix
+    * @param size of the image/window where to render (can be different from the real camera image). Please
+    *not that it must be related to CamMatrix
     * @param proj_matrix output projection matrix to give to opengl
     * @param gnear,gfar: visible rendering range
-    * @param invert: indicates if the output projection matrix has to yield a horizontally inverted image because image data has not been stored in the order of
+    * @param invert: indicates if the output projection matrix has to yield a horizontally inverted image
+    *because image data has not been stored in the order of
     *glDrawPixels: bottom-to-top.
     */
-    void glGetProjectionMatrix(cv::Size orgImgSize, cv::Size size, double proj_matrix[16], double gnear, double gfar, bool invert = false) throw(cv::Exception);
+    void glGetProjectionMatrix(cv::Size orgImgSize, cv::Size size, double proj_matrix[16], double gnear,
+                               double gfar, bool invert = false) throw(cv::Exception);
 
     /**
      * setup camera for an Ogre project.
@@ -114,19 +120,20 @@ class ARUCO_EXPORTS CameraParameters {
      * ...
      * As in OpenGL, it assumes no camera distorsion
      */
-    void OgreGetProjectionMatrix(cv::Size orgImgSize, cv::Size size, double proj_matrix[16], double gnear, double gfar,
-                                 bool invert = false) throw(cv::Exception);
-
+    void OgreGetProjectionMatrix(cv::Size orgImgSize, cv::Size size, double proj_matrix[16], double gnear,
+                                 double gfar, bool invert = false) throw(cv::Exception);
 
     /**Returns the 4x4 homogeneous transform matrix from the R and T vectors computed
      */
-    static cv::Mat getRTMatrix(const cv::Mat &R_, const cv::Mat &T_, int forceType);
+    static cv::Mat getRTMatrix(const cv::Mat& R_, const cv::Mat& T_, int forceType);
 
-  private:
+private:
     // GL routines
 
-    static void argConvGLcpara2(double cparam[3][4], int width, int height, double gnear, double gfar, double m[16], bool invert) throw(cv::Exception);
-    static int arParamDecompMat(double source[3][4], double cpara[3][4], double trans[3][4]) throw(cv::Exception);
+    static void argConvGLcpara2(double cparam[3][4], int width, int height, double gnear, double gfar,
+                                double m[16], bool invert) throw(cv::Exception);
+    static int arParamDecompMat(double source[3][4], double cpara[3][4],
+                                double trans[3][4]) throw(cv::Exception);
     static double norm(double a, double b, double c);
     static double dot(double a1, double a2, double a3, double b1, double b2, double b3);
 };

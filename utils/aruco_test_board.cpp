@@ -48,14 +48,11 @@ BoardDetector TheBoardDetector;
 string TheOutVideoFilePath;
 cv::VideoWriter VWriter;
 
-void cvTackBarEvents(int pos, void *);
-pair< double, double > AvrgTime(0, 0); // determines the average time required for detection
+void cvTackBarEvents(int pos, void*);
+pair<double, double> AvrgTime(0, 0); // determines the average time required for detection
 double ThresParam1, ThresParam2;
 int iThresParam1, iThresParam2;
 int waitTime = 0;
-
-
-
 
 /************************************
  *
@@ -64,7 +61,7 @@ int waitTime = 0;
  *
  ************************************/
 
-bool readArguments(int argc, char **argv) {
+bool readArguments(int argc, char** argv) {
 
     if (argc < 3) {
         cerr << "Invalid number of arguments" << endl;
@@ -79,7 +76,6 @@ bool readArguments(int argc, char **argv) {
         TheMarkerSize = atof(argv[4]);
     if (argc >= 6)
         TheOutVideoFilePath = argv[5];
-
 
     if (argc == 4)
         cerr << "NOTE: You need makersize to see 3d info!!!!" << endl;
@@ -111,7 +107,7 @@ void processKey(char k) {
  *
  *
  ************************************/
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (readArguments(argc, argv) == false)
             return 0;
@@ -161,7 +157,7 @@ int main(int argc, char **argv) {
         do {
             TheVideoCapturer.retrieve(TheInputImage);
             TheInputImage.copyTo(TheInputImageCopy);
-            index++; // number of images captured
+            index++;                              // number of images captured
             double tick = (double)getTickCount(); // for checking the speed
             // Detection of the board
             float probDetect = TheBoardDetector.detect(TheInputImage);
@@ -176,9 +172,12 @@ int main(int argc, char **argv) {
             // print board
             if (TheCameraParameters.isValid()) {
                 if (probDetect > 0.2) {
-                    CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
-                    // 		    CvDrawingUtils::draw3dCube(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),TheCameraParameters);
-                    // draw3dBoardCube( TheInputImageCopy,TheBoardDetected,TheIntriscCameraMatrix,TheDistorsionCameraParams);
+                    CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),
+                                               TheCameraParameters);
+                    // 		    CvDrawingUtils::draw3dCube(TheInputImageCopy,
+                    // TheBoardDetector.getDetectedBoard(),TheCameraParameters);
+                    // draw3dBoardCube(
+                    // TheInputImageCopy,TheBoardDetected,TheIntriscCameraMatrix,TheDistorsionCameraParams);
                 }
             }
             // DONE! Easy, right?
@@ -195,7 +194,8 @@ int main(int argc, char **argv) {
                            cvSize(TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                 cv::Mat small3C;
                 cv::cvtColor(smallThres, small3C, CV_GRAY2BGR);
-                cv::Mat roi = TheInputImageCopy(cv::Rect(0, 0, TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
+                cv::Mat roi = TheInputImageCopy(
+                    cv::Rect(0, 0, TheInputImageCopy.cols / 3, TheInputImageCopy.rows / 3));
                 small3C.copyTo(roi);
                 VWriter << TheInputImageCopy;
                 // 			 cv::imshow("TheInputImageCopy",TheInputImageCopy);
@@ -205,8 +205,7 @@ int main(int argc, char **argv) {
             processKey(key);
         } while (key != 27 && TheVideoCapturer.grab());
 
-
-    } catch (std::exception &ex)
+    } catch (std::exception& ex)
 
     {
         cout << "Exception :" << ex.what() << endl;
@@ -219,7 +218,7 @@ int main(int argc, char **argv) {
  *
  ************************************/
 
-void cvTackBarEvents(int pos, void *) {
+void cvTackBarEvents(int pos, void*) {
     if (iThresParam1 < 3)
         iThresParam1 = 3;
     if (iThresParam1 % 2 != 1)
@@ -234,8 +233,8 @@ void cvTackBarEvents(int pos, void *) {
     float probDetect = TheBoardDetector.detect(TheInputImage);
     TheInputImage.copyTo(TheInputImageCopy);
     if (TheCameraParameters.isValid() && probDetect > 0.2)
-        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(), TheCameraParameters);
-
+        aruco::CvDrawingUtils::draw3dAxis(TheInputImageCopy, TheBoardDetector.getDetectedBoard(),
+                                          TheCameraParameters);
 
     cv::imshow("in", TheInputImageCopy);
     cv::imshow("thres", TheBoardDetector.getMarkerDetector().getThresholdedImage());

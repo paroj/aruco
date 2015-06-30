@@ -26,24 +26,22 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************/
 
-
 #include <iostream>
 #include "aruco.h"
 #include "cvdrawingutils.h"
 #include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     try {
         if (argc < 2) {
             cerr << "Usage: (in.jpg|in.avi) [cameraParams.yml] [markerSize] [outImage]" << endl;
             exit(0);
         }
 
-
         aruco::CameraParameters CamParam;
         MarkerDetector MDetector;
-        vector< Marker > Markers;
+        vector<Marker> Markers;
         float MarkerSize = -1;
         // read the input image
         cv::Mat InImage;
@@ -73,7 +71,6 @@ int main(int argc, char **argv) {
             MarkerSize = atof(argv[3]);
         cv::namedWindow("in", 1);
 
-
         // Ok, let's detect
         MDetector.detect(InImage, Markers, CamParam, MarkerSize);
         // for each marker, draw info and its boundaries in the image
@@ -92,10 +89,9 @@ int main(int argc, char **argv) {
         cv::imshow("thes", MDetector.getThresholdedImage());
         cv::waitKey(0); // wait for key to be pressed
 
-
         if (argc >= 5)
             cv::imwrite(argv[4], InImage);
-    } catch (std::exception &ex)
+    } catch (std::exception& ex)
 
     {
         cout << "Exception :" << ex.what() << endl;

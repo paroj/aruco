@@ -37,12 +37,12 @@ namespace aruco {
 /**
  * 3d representation of a marker
  */
-struct ARUCO_EXPORTS MarkerInfo : public vector< cv::Point3f > {
+struct ARUCO_EXPORTS MarkerInfo : public vector<cv::Point3f> {
     MarkerInfo() {}
     MarkerInfo(int _id) { id = _id; }
-    MarkerInfo(const MarkerInfo &MI) : vector< cv::Point3f >(MI) { id = MI.id; }
-    MarkerInfo &operator=(const MarkerInfo &MI) {
-        vector< cv::Point3f >::operator=(MI);
+    MarkerInfo(const MarkerInfo& MI) : vector<cv::Point3f>(MI) { id = MI.id; }
+    MarkerInfo& operator=(const MarkerInfo& MI) {
+        vector<cv::Point3f>::operator=(MI);
         id = MI.id;
         return *this;
     }
@@ -56,26 +56,30 @@ struct ARUCO_EXPORTS MarkerInfo : public vector< cv::Point3f > {
  * of the id of the markers along with the position of their corners.
  *
  * The position of the corners can be specified either in pixels (in a non-specific size) or in meters.
- * The first is the typical case in which you generate the image of  board  and the print it. Since you do not know in advance the real
- * size of the markers, their corners are specified in pixels, and then, the translation to meters can be made once you know the real size.
+ * The first is the typical case in which you generate the image of  board  and the print it. Since you do
+ *not know in advance the real
+ * size of the markers, their corners are specified in pixels, and then, the translation to meters can be
+ *made once you know the real size.
  *
- * On the other hand, you may want to have the information of your boards in meters. The BoardConfiguration allows you to do so.
+ * On the other hand, you may want to have the information of your boards in meters. The BoardConfiguration
+ *allows you to do so.
  *
  * The point is in the mInfoType variable. It can be either PIX or METERS according to your needs.
  *
 */
 
-
-class ARUCO_EXPORTS BoardConfiguration : public vector< MarkerInfo > {
+class ARUCO_EXPORTS BoardConfiguration : public vector<MarkerInfo> {
     friend class Board;
 
-  public:
+public:
     enum MarkerInfoType {
         NONE = -1,
         PIX = 0,
         METERS = 1
-    }; // indicates if the data in MakersInfo is expressed in meters or in pixels so as to do conversion internally
-    // variable indicates if the data in MakersInfo is expressed in meters or in pixels so as to do conversion internally
+    }; // indicates if the data in MakersInfo is expressed in meters or in pixels so as to do conversion
+       // internally
+    // variable indicates if the data in MakersInfo is expressed in meters or in pixels so as to do
+    // conversion internally
     int mInfoType;
     /**
      */
@@ -87,11 +91,11 @@ class ARUCO_EXPORTS BoardConfiguration : public vector< MarkerInfo > {
 
     /**
     */
-    BoardConfiguration(const BoardConfiguration &T);
+    BoardConfiguration(const BoardConfiguration& T);
 
     /**
     */
-    BoardConfiguration &operator=(const BoardConfiguration &T);
+    BoardConfiguration& operator=(const BoardConfiguration& T);
     /**Saves the board info to a file
     */
     void saveToFile(string sfile) throw(cv::Exception);
@@ -109,25 +113,25 @@ class ARUCO_EXPORTS BoardConfiguration : public vector< MarkerInfo > {
     int getIndexOfMarkerId(int id) const;
     /**Returns the Info of the marker with id specified. If not in the set, throws exception
      */
-    const MarkerInfo &getMarkerInfo(int id) const throw(cv::Exception);
+    const MarkerInfo& getMarkerInfo(int id) const throw(cv::Exception);
     /**Set in the list passed the set of the ids
      */
-    void getIdList(vector< int > &ids, bool append = true) const;
+    void getIdList(vector<int>& ids, bool append = true) const;
 
-  private:
+private:
     /**Saves the board info to a file
     */
-    void saveToFile(cv::FileStorage &fs) throw(cv::Exception);
+    void saveToFile(cv::FileStorage& fs) throw(cv::Exception);
     /**Reads board info from a file
     */
-    void readFromFile(cv::FileStorage &fs) throw(cv::Exception);
+    void readFromFile(cv::FileStorage& fs) throw(cv::Exception);
 };
 
 /**
 */
-class ARUCO_EXPORTS Board : public vector< Marker > {
+class ARUCO_EXPORTS Board : public vector<Marker> {
 
-  public:
+public:
     BoardConfiguration conf;
     // matrices of rotation and translation respect to the camera
     cv::Mat Rvec, Tvec;
@@ -137,7 +141,7 @@ class ARUCO_EXPORTS Board : public vector< Marker > {
         Rvec.create(3, 1, CV_32FC1);
         Tvec.create(3, 1, CV_32FC1);
         for (int i = 0; i < 3; i++)
-            Tvec.at< float >(i, 0) = Rvec.at< float >(i, 0) = -999999;
+            Tvec.at<float>(i, 0) = Rvec.at<float>(i, 0) = -999999;
     }
 
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
@@ -157,7 +161,6 @@ class ARUCO_EXPORTS Board : public vector< Marker > {
      */
     void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception);
 
-
     /**Save this from a file
      */
     void saveToFile(string filePath) throw(cv::Exception);
@@ -167,7 +170,7 @@ class ARUCO_EXPORTS Board : public vector< Marker > {
 
     /**Draws the detected markers
      */
-    void draw(cv::Mat &im, cv::Scalar color, int lineWidth = 1, bool writeId = true);
+    void draw(cv::Mat& im, cv::Scalar color, int lineWidth = 1, bool writeId = true);
 };
 }
 
