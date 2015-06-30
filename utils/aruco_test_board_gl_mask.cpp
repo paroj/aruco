@@ -41,6 +41,7 @@ or implied, of Rafael Muñoz Salinas.
 #endif
 
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "aruco.h"
 #include "boarddetector.h"
 #include "common.h"
