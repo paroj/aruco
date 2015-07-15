@@ -1,13 +1,20 @@
 project(aruco-test)
 
+option(PERFORMANCE_TEST "Set to ON to generate performance resuls" ON)
+if(PERFORMANCE_TEST)
+    add_definitions(-DTEST_MODE)
+endif()
+
+add_definitions(-DOPENCV_VERSION="${OpenCV_VERSION}"
+                -DARUCO_VERSION="${PROJECT_VERSION}")
+
 include(ExternalProject)
 ExternalProject_Add(googletest
   URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
   SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/gtest
   BUILD_IN_SOURCE TRUE
   CMAKE_ARGS -DBUILD_SHARED_LIBS=TRUE
-  INSTALL_COMMAND ""
-)
+  INSTALL_COMMAND "" )
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/gtest/)
 
