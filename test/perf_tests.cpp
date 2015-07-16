@@ -3,6 +3,7 @@
 #include <aruco.h>
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
 #define PERF_RUNS_DEFAULT 1000
 #define TESTDATA_PATH "../testdata/"
@@ -31,6 +32,8 @@ TEST( ArucoPerf, Single ){
     CameraParameters camParams;
 
     testFrame = imread( TESTDATA_PATH "single/image-test.png" );
+    // color conversion should not be part of performance test
+    cvtColor(testFrame, testFrame, COLOR_BGR2GRAY);
 
     camParams.readFromXMLFile( TESTDATA_PATH "single/intrinsics.yml" );
     camParams.resize( testFrame.size()) ;
@@ -65,6 +68,7 @@ TEST( ArucoPerf, Board ){
     BoardDetector boardDetector;
 
     testFrame = imread( TESTDATA_PATH "board/image-test.png" );
+    cvtColor(testFrame, testFrame, COLOR_BGR2GRAY);
 
     boardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
 
@@ -101,6 +105,7 @@ TEST( ArucoPerf, Multi ) {
     BoardDetector boardDetector;
 
     cv::Mat currentFrame = cv::imread(TESTDATA_PATH "chessboard/chessboard_frame.png");
+    cvtColor(currentFrame, currentFrame, COLOR_BGR2GRAY);
 
     camParams.readFromXMLFile( TESTDATA_PATH "chessboard/intrinsics.yml" );
     camParams.resize( currentFrame.size() );
