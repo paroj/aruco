@@ -162,10 +162,10 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
         // 		cout<<objPoints[i]<<" "<<imagePoints[i]<<endl;
         // 	    }
         // 	    cout<<"cam="<<camMatrix<<" "<<distCoeff<<endl;
-        cv::Mat rvec, tvec;
+        cv::Vec3d rvec, tvec;
         cv::solvePnP(objPoints, imagePoints, camMatrix, distCoeff, rvec, tvec);
-        rvec.convertTo(Bdetected.Rvec, CV_32FC1);
-        tvec.convertTo(Bdetected.Tvec, CV_32FC1);
+        Bdetected.Rvec = rvec;
+        Bdetected.Tvec = tvec;
         //             cout<<rvec<< " "<<tvec<<" _setYPerpendicular="<<_setYPerpendicular<<endl;
 
         {
@@ -202,8 +202,8 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
             }
 
             cv::solvePnP(objPoints_filtered, imagePoints_filtered, camMatrix, distCoeff, rvec, tvec);
-            rvec.convertTo(Bdetected.Rvec, CV_32FC1);
-            tvec.convertTo(Bdetected.Tvec, CV_32FC1);
+            Bdetected.Rvec = rvec;
+            Bdetected.Tvec = tvec;
         }
 
         // now, rotate 90 deg in X so that Y axis points up

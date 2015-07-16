@@ -274,10 +274,10 @@ void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::
         ImagePoints(c, 1) = ((*this)[c].y);
     }
 
-    cv::Mat raux, taux;
+    cv::Vec3d raux, taux;
     cv::solvePnP(ObjPoints, ImagePoints, camMatrix, distCoeff, raux, taux);
-    raux.convertTo(Rvec, CV_32F);
-    taux.convertTo(Tvec, CV_32F);
+    Rvec = raux;
+    Tvec = taux;
     // rotate the X axis so that Y is perpendicular to the marker plane
     if (setYPerpendicular)
         rotateXAxis(Rvec);
