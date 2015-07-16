@@ -39,8 +39,8 @@ inline FileStorage& operator<<(FileStorage& fs, const std::vector<aruco::Marker>
 
 inline FileStorage& operator<<(FileStorage& fs, const aruco::Board& b) {
     fs << "{";
-    fs << "Tvec" << b.Tvec;
-    fs << "Rvec" << b.Rvec;
+    fs << "Tvec" << Vec3f(b.Tvec);
+    fs << "Rvec" << Vec3f(b.Rvec);
     fs << "Markers" << "[";
 
     for(auto& m : b) {
@@ -83,8 +83,14 @@ inline void read(const FileNode& bs, aruco::Board& b, const aruco::Board& defaul
         return;
     }
 
-    bs["Tvec"] >> b.Tvec;
-    bs["Rvec"] >> b.Rvec;
+    Vec3f Tvec;
+    Vec3f Rvec;
+
+    bs["Tvec"] >> Tvec;
+    bs["Rvec"] >> Rvec;
+
+    b.Rvec = Mat(Rvec);
+    b.Tvec = Mat(Tvec);
 
     const FileNode& markers = bs["Markers"];
     b.resize(markers.size());
