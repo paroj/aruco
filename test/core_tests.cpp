@@ -4,7 +4,7 @@
 #include <aruco.h>
 #include "filestorage_adapter.h"
 
-#define TESTADATA_PATH "../testdata/"
+#define TESTDATA_PATH "../testdata/"
 
 static bool generateResults = false;
 
@@ -17,10 +17,10 @@ TEST(Aruco, Single) {
     float MarkerSize = 1;
 
     // read the input image
-    cv::Mat InImage = cv::imread(TESTADATA_PATH "single/image-test.png");
+    cv::Mat InImage = cv::imread(TESTDATA_PATH "single/image-test.png");
 
     // read camera parameters if specifed
-    CamParam.readFromXMLFile(TESTADATA_PATH "single/intrinsics.yml");
+    CamParam.readFromXMLFile(TESTDATA_PATH "single/intrinsics.yml");
     // resizes the parameters to fit the size of the input image
     CamParam.resize(InImage.size());
 
@@ -28,7 +28,7 @@ TEST(Aruco, Single) {
     MDetector.detect(InImage, Markers, CamParam, MarkerSize);
 
     int mode = cv::FileStorage::Mode(generateResults);
-    cv::FileStorage fs(TESTADATA_PATH "single/expected.yml", mode);
+    cv::FileStorage fs(TESTDATA_PATH "single/expected.yml", mode);
 
     if(generateResults) {
         fs << "Markers" << Markers;
@@ -63,10 +63,10 @@ TEST(Aruco, Board) {
     BoardDetector TheBoardDetector;
     Board TheBoardDetected, expected;
 
-    cv::Mat InImage = cv::imread(TESTADATA_PATH "board/image-test.png");
-    TheBoardConfig.readFromFile(TESTADATA_PATH "board/board_pix.yml");
+    cv::Mat InImage = cv::imread(TESTDATA_PATH "board/image-test.png");
+    TheBoardConfig.readFromFile(TESTDATA_PATH "board/board_pix.yml");
 
-    CamParam.readFromXMLFile(TESTADATA_PATH "board/intrinsics.yml");
+    CamParam.readFromXMLFile(TESTDATA_PATH "board/intrinsics.yml");
     // resizes the parameters to fit the size of the input image
     CamParam.resize(InImage.size());
 
@@ -75,7 +75,7 @@ TEST(Aruco, Board) {
     TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
 
     int mode = cv::FileStorage::Mode(generateResults);
-    cv::FileStorage fs(TESTADATA_PATH "board/expected.yml", mode);
+    cv::FileStorage fs(TESTDATA_PATH "board/expected.yml", mode);
 
     if(generateResults) {
         fs << "Board" << TheBoardDetected;
@@ -102,10 +102,10 @@ TEST(Aruco, Multi) {
     BoardDetector TheBoardDetector;
     Board TheBoardDetected, expected;
 
-    cv::Mat InImage = cv::imread(TESTADATA_PATH "chessboard/chessboard_frame.png");
-    TheBoardConfig.readFromFile(TESTADATA_PATH "chessboard/chessboardinfo_pix.yml");
+    cv::Mat InImage = cv::imread(TESTDATA_PATH "chessboard/chessboard_frame.png");
+    TheBoardConfig.readFromFile(TESTDATA_PATH "chessboard/chessboardinfo_pix.yml");
 
-    CamParam.readFromXMLFile(TESTADATA_PATH "chessboard/intrinsics.yml");
+    CamParam.readFromXMLFile(TESTDATA_PATH "chessboard/intrinsics.yml");
     // resizes the parameters to fit the size of the input image
     CamParam.resize(InImage.size());
 
@@ -114,7 +114,7 @@ TEST(Aruco, Multi) {
     TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
 
     int mode = cv::FileStorage::Mode(generateResults);
-    cv::FileStorage fs(TESTADATA_PATH "chessboard/expected.yml", mode);
+    cv::FileStorage fs(TESTDATA_PATH "chessboard/expected.yml", mode);
 
     if(generateResults) {
         fs << "Board" << TheBoardDetected;
@@ -141,10 +141,10 @@ TEST(Aruco, GL_Conversion) {
     BoardDetector TheBoardDetector;
     Board TheBoardDetected;
 
-    cv::Mat InImage = cv::imread(TESTADATA_PATH "board/image-test.png");
-    TheBoardConfig.readFromFile(TESTADATA_PATH "board/board_pix.yml");
+    cv::Mat InImage = cv::imread(TESTDATA_PATH "board/image-test.png");
+    TheBoardConfig.readFromFile(TESTDATA_PATH "board/board_pix.yml");
 
-    CamParam.readFromXMLFile(TESTADATA_PATH "board/intrinsics.yml");
+    CamParam.readFromXMLFile(TESTDATA_PATH "board/intrinsics.yml");
     // resizes the parameters to fit the size of the input image
     CamParam.resize(InImage.size());
 
@@ -153,9 +153,11 @@ TEST(Aruco, GL_Conversion) {
     TheBoardDetector.detect(Markers, TheBoardConfig, TheBoardDetected, CamParam, MarkerSize);
 
     int mode = cv::FileStorage::Mode(generateResults);
-    cv::FileStorage fs(TESTADATA_PATH "board/expected_gl.yml", mode);
+    cv::FileStorage fs(TESTDATA_PATH "board/expected_gl.yml", mode);
 
     std::vector<cv::Vec<double, 16>> gldata(Markers.size() + 2), expected;
+
+    CamParam.Distorsion.setTo(0); // silence cerr spam
 
     CamParam.glGetProjectionMatrix(InImage.size(), InImage.size(), gldata[0].val, 0.5, 10);
     TheBoardDetected.glGetModelViewMatrix(gldata[1].val);
