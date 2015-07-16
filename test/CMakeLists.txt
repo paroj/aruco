@@ -6,8 +6,7 @@ ExternalProject_Add(googletest
   SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/gtest
   BUILD_IN_SOURCE TRUE
   CMAKE_ARGS -DBUILD_SHARED_LIBS=TRUE
-  INSTALL_COMMAND ""
-)
+  INSTALL_COMMAND "" )
 
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/gtest/)
 
@@ -19,6 +18,10 @@ target_link_libraries(core_tests PRIVATE aruco gtest_main gtest)
 
 add_executable(perf_tests perf_tests.cpp)
 add_dependencies(perf_tests googletest)
-target_compile_options(perf_tests PRIVATE -std=c++11)
+target_compile_options(perf_tests PRIVATE 
+    -std=c++11 
+    -DOPENCV_VERSION="${OpenCV_VERSION}" 
+    -DARUCO_VERSION="${PROJECT_VERSION}")
+    
 target_include_directories(perf_tests PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gtest/include)
 target_link_libraries(perf_tests PRIVATE aruco gtest_main gtest)

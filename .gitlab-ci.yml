@@ -12,3 +12,5 @@ ubuntu-14-04:
         # execute tests
         - cd $SOURCE_DIR/test/
         - $SOURCE_DIR/$BUILD_DIR/test/core_tests
+        - $SOURCE_DIR/$BUILD_DIR/test/perf_tests
+        - cat /tmp/benchmark.yml
