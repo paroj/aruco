@@ -30,7 +30,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <vector>
 #include <iostream>
 #include <opencv2/core/core.hpp>
-#include "exports.h"
+#include <aruco_export.h>
 #include "cameraparameters.h"
 using namespace std;
 namespace aruco {

@@ -27,7 +27,7 @@ or implied, of Rafael Muñoz Salinas.
 ********************************/
 #ifndef _Aruco_CameraParameters_H
 #define _Aruco_CameraParameters_H
-#include "exports.h"
+#include <aruco_export.h>
 #include <opencv2/core/core.hpp>
 #include <string>
 using namespace std;

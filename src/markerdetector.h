@@ -31,7 +31,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <cstdio>
 #include <iostream>
 #include "cameraparameters.h"
-#include "exports.h"
+#include <aruco_export.h>
 #include "marker.h"
 using namespace std;
 

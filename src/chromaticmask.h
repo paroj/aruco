@@ -35,7 +35,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/ml/ml.hpp>
-#include "exports.h"
+#include <aruco_export.h>
 #include "board.h"
 #include "boarddetector.h"
 #include "cvdrawingutils.h"
