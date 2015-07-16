@@ -87,8 +87,8 @@ TEST(Aruco, Board) {
     // now check the results
     EXPECT_EQ(expected.size(), TheBoardDetected.size());
     for(int i = 0; i < 3; i++) {
-        EXPECT_FLOAT_EQ(expected.Rvec.at<float>(i), TheBoardDetected.Rvec.at<float>(i));
-        EXPECT_FLOAT_EQ(expected.Tvec.at<float>(i), TheBoardDetected.Tvec.at<float>(i));
+        EXPECT_FLOAT_EQ(expected.Rvec(i), TheBoardDetected.Rvec(i));
+        EXPECT_FLOAT_EQ(expected.Tvec(i), TheBoardDetected.Tvec(i));
     }
 }
 
@@ -126,8 +126,8 @@ TEST(Aruco, Multi) {
     // now check the results
     EXPECT_EQ(expected.size(), TheBoardDetected.size());
     for(int i = 0; i < 3; i++) {
-        EXPECT_FLOAT_EQ(expected.Rvec.at<float>(i), TheBoardDetected.Rvec.at<float>(i));
-        EXPECT_FLOAT_EQ(expected.Tvec.at<float>(i), TheBoardDetected.Tvec.at<float>(i));
+        EXPECT_FLOAT_EQ(expected.Rvec(i), TheBoardDetected.Rvec(i));
+        EXPECT_FLOAT_EQ(expected.Tvec(i), TheBoardDetected.Tvec(i));
     }
 }
 

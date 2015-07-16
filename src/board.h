@@ -134,14 +134,11 @@ class ARUCO_EXPORTS Board : public vector<Marker> {
 public:
     BoardConfiguration conf;
     // matrices of rotation and translation respect to the camera
-    cv::Mat Rvec, Tvec;
+    cv::Vec3f Rvec, Tvec;
     /**
     */
     Board() {
-        Rvec.create(3, 1, CV_32FC1);
-        Tvec.create(3, 1, CV_32FC1);
-        for (int i = 0; i < 3; i++)
-            Tvec.at<float>(i, 0) = Rvec.at<float>(i, 0) = -999999;
+        Tvec = Rvec = cv::Vec3f::all(-999999);
     }
 
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.

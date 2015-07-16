@@ -135,7 +135,7 @@ public:
     float get_repj_err_thres() const { return repj_err_thres; }
 
 private:
-    void rotateXAxis(cv::Mat& rotation);
+    void rotateXAxis(cv::Vec3f& rotation);
     bool _setYPerpendicular;
 
     //-- Functionality to detect markers inside

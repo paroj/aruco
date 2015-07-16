@@ -162,25 +162,26 @@ void Board::glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exceptio
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at<float>(i, 0) != -999999)
+        if (Tvec(i) != -999999)
             invalid |= false;
-        if (Rvec.at<float>(i, 0) != -999999)
+        if (Rvec(i) != -999999)
             invalid |= false;
     }
     if (invalid)
         throw cv::Exception(9002, "extrinsic parameters are not set", "Marker::getModelViewMatrix",
                             __FILE__, __LINE__);
-    Mat Rot(3, 3, CV_32FC1), Jacob;
-    Rodrigues(Rvec, Rot, Jacob);
+
+    Mat Rot(3, 3, CV_32FC1);
+    Rodrigues(Rvec, Rot);
 
     double para[3][4];
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
             para[i][j] = Rot.at<float>(i, j);
     // now, add the translation
-    para[0][3] = Tvec.at<float>(0, 0);
-    para[1][3] = Tvec.at<float>(1, 0);
-    para[2][3] = Tvec.at<float>(2, 0);
+    para[0][3] = Tvec(0);
+    para[1][3] = Tvec(1);
+    para[2][3] = Tvec(2);
     double scale = 1;
 
     modelview_matrix[0 + 0 * 4] = para[0][0];
@@ -216,9 +217,9 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec.at<float>(i, 0) != -999999)
+        if (Tvec(i) != -999999)
             invalid |= false;
-        if (Rvec.at<float>(i, 0) != -999999)
+        if (Rvec(i) != -999999)
             invalid |= false;
     }
     if (invalid)
@@ -226,9 +227,9 @@ void Board::OgreGetPoseParameters(double position[3], double orientation[4]) thr
                             __FILE__, __LINE__);
 
     // calculate position vector
-    position[0] = -Tvec.ptr<float>(0)[0];
-    position[1] = -Tvec.ptr<float>(0)[1];
-    position[2] = +Tvec.ptr<float>(0)[2];
+    position[0] = -Tvec[0];
+    position[1] = -Tvec[1];
+    position[2] = +Tvec[2];
 
     // now calculare orientation quaternion
     cv::Mat Rot(3, 3, CV_32FC1);

@@ -219,16 +219,16 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
     return prob;
 }
 
-void BoardDetector::rotateXAxis(Mat& rotation) {
-    cv::Mat R(3, 3, CV_32FC1);
+void BoardDetector::rotateXAxis(Vec3f& rotation) {
+    cv::Matx33f R;
     Rodrigues(rotation, R);
     // create a rotation matrix for x axis
-    cv::Mat RX = cv::Mat::eye(3, 3, CV_32FC1);
-    float angleRad = -M_PI / 2;
-    RX.at<float>(1, 1) = cos(angleRad);
-    RX.at<float>(1, 2) = -sin(angleRad);
-    RX.at<float>(2, 1) = sin(angleRad);
-    RX.at<float>(2, 2) = cos(angleRad);
+    cv::Matx33f RX = cv::Matx33f::eye();
+    float angleRad = M_PI / 2;
+    RX(1, 1) = cos(angleRad);
+    RX(1, 2) = -sin(angleRad);
+    RX(2, 1) = sin(angleRad);
+    RX(2, 2) = cos(angleRad);
     // now multiply
     R = R * RX;
     // finally, the the rodrigues back
