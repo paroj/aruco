@@ -26,8 +26,7 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************/
 #include "boarddetector.h"
-#define _USE_MATH_DEFINES
-#include <math.h>
+
 #include <cstdlib>
 #include <ctime>
 #include <cassert>
@@ -217,22 +216,6 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
 
     float prob = float(Bdetected.size()) / double(Bdetected.conf.size());
     return prob;
-}
-
-void BoardDetector::rotateXAxis(Vec3f& rotation) {
-    cv::Matx33f R;
-    Rodrigues(rotation, R);
-    // create a rotation matrix for x axis
-    cv::Matx33f RX = cv::Matx33f::eye();
-    float angleRad = M_PI / 2;
-    RX(1, 1) = cos(angleRad);
-    RX(1, 2) = -sin(angleRad);
-    RX(2, 1) = sin(angleRad);
-    RX(2, 2) = cos(angleRad);
-    // now multiply
-    R = R * RX;
-    // finally, the the rodrigues back
-    Rodrigues(R, rotation);
 }
 
 /**Static version (all in one)

@@ -74,15 +74,6 @@ bool isInto(Mat& contour, vector<Point2f>& b) {
             return true;
     return false;
 }
-
-int perimeter(vector<Point2f>& a) {
-    int sum = 0;
-    for (size_t i = 0; i < a.size(); i++) {
-        size_t i2 = (i + 1) % a.size();
-        sum += norm(a[i] - a[i2]);
-    }
-    return sum;
-}
 }
 
 namespace aruco {

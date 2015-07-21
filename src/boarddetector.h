@@ -135,7 +135,6 @@ public:
     float get_repj_err_thres() const { return repj_err_thres; }
 
 private:
-    void rotateXAxis(cv::Vec3f& rotation);
     bool _setYPerpendicular;
 
     //-- Functionality to detect markers inside
@@ -147,5 +146,5 @@ private:
     MarkerDetector _mdetector; // internal markerdetector
     vector<Marker> _vmarkers;  // markers detected in the call to : float  detect(const cv::Mat &im);
 };
-};
+}
 #endif

@@ -30,8 +30,11 @@ or implied, of Rafael Muñoz Salinas.
 #include <vector>
 #include <iostream>
 #include <opencv2/core/core.hpp>
+
 #include <aruco_export.h>
 #include "cameraparameters.h"
+#include "utils.h"
+
 using namespace std;
 namespace aruco {
 /**\brief This class represents a marker. It is a vector of the fours corners ot the marker
@@ -84,7 +87,9 @@ public:
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
      * Setting this matrix, the reference coordinate system will be set in this marker
      */
-    void glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exception);
+    void glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exception) {
+        GetGLModelViewMatrix(Rvec, Tvec, modelview_matrix);
+    }
 
     /**
      * Returns position vector and orientation quaternion for an Ogre scene node or entity.
@@ -96,14 +101,21 @@ public:
      * mySceneNode->setOrientation( ogreOrient  );
      * ...
      */
-    void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception);
+    void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception) {
+        GetOgrePoseParameters(Rvec, Tvec, position, orientation);
+    }
 
     /**Returns the centroid of the marker
         */
     cv::Point2f getCenter() const;
+
     /**Returns the perimeter of the marker
      */
-    float getPerimeter() const;
+    float getPerimeter() const {
+        assert(size() == 4);
+        return perimeter(*this);
+    }
+
     /**Returns the area
      */
     float getArea() const;
@@ -127,9 +139,6 @@ public:
 
         return str;
     }
-
-private:
-    void rotateXAxis(cv::Vec3f& rotation);
 };
 }
 #endif
