@@ -124,7 +124,7 @@ public:
      * So, to achieve this change, we have to rotate the X axis.
      */
     void setYPerpendicular(bool enable) { _setYPerpendicular = enable; }
-    void setYPerperdicular(bool enable) { setYPerpendicular(enable); } // TODO mark as deprecated
+
     bool isYPerpendicular() { return _setYPerpendicular; }
 
     /**Sets the threshold for reprjection test. Pixels that after  estimating the camera location

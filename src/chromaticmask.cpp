@@ -187,7 +187,6 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
 
     // deterimne the idx of the neighbours
     _BD.getMarkerDetector().setThresholdParams(35, 7);
-    _BD.getMarkerDetector().enableErosion(false);
     _BD.getMarkerDetector().setCornerRefinementMethod(aruco::MarkerDetector::LINES);
     _BD.setYPerpendicular(false);
 

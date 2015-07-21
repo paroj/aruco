@@ -203,7 +203,7 @@ int main(int argc, char** argv) {
         cv::namedWindow("thres", 1);
         cv::namedWindow("in", 1);
 
-        TheBoardDetector.setYPerperdicular(false);
+        TheBoardDetector.setYPerpendicular(false);
         TheBoardDetector.setParams(TheBoardConfig, TheCameraParameters, TheMarkerSize);
         TheBoardDetector.getMarkerDetector().setThresholdParams(
             21, 7); // for blue-green markers, the window size has to be larger

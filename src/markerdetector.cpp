@@ -1029,21 +1029,6 @@ void MarkerDetector::warpPerspective(const cv::Mat &in,cv::Mat & out, const cv::
 */
 
 /************************************
- *
- *
- *
- *
- ************************************/
-
-void MarkerDetector::glGetProjectionMatrix(CameraParameters& CamMatrix, cv::Size orgImgSize, cv::Size size,
-                                           double proj_matrix[16], double gnear, double gfar,
-                                           bool invert) throw(cv::Exception) {
-    cerr << "MarkerDetector::glGetProjectionMatrix . This a deprecated function. Use "
-            "CameraParameters::glGetProjectionMatrix instead. " << __FILE__ << " " << __LINE__ << endl;
-    CamMatrix.glGetProjectionMatrix(orgImgSize, size, proj_matrix, gnear, gfar, invert);
-}
-
-/************************************
 *
 *
 *

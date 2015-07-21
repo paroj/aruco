@@ -37,7 +37,6 @@ using namespace aruco;
 string TheInputVideo;
 string TheIntrinsicFile;
 float TheMarkerSize = -1;
-int ThePyrDownLevel;
 MarkerDetector MDetector;
 VideoCapture TheVideoCapturer;
 vector<Marker> TheMarkers;
@@ -124,9 +123,6 @@ int main(int argc, char** argv) {
             TheCameraParameters.readFromXMLFile(TheIntrinsicFile);
             TheCameraParameters.resize(TheInputImage.size());
         }
-        // Configure other parameters
-        if (ThePyrDownLevel > 0)
-            MDetector.pyrDown(ThePyrDownLevel);
 
         // Create gui
 

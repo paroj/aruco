@@ -192,13 +192,6 @@ public:
         max = _maxSize;
     }
 
-    /**Deprecated!!!
-     *
-     * Enables/Disables erosion process that is REQUIRED for chessboard like boards.
-     * By default, this property is enabled
-     */
-    void enableErosion(bool enable) {}
-
     /**
      * Specifies a value to indicate the required speed for the internal processes. If you need maximum
      *speed (at the cost of a lower detection rate),
@@ -250,17 +243,6 @@ public:
         markerIdDetector_ptrfunc = markerdetector_func;
     }
 
-    /**Deprecated
-     *
-     * Use an smaller version of the input image for marker detection.
-     * If your marker is small enough, you can employ an smaller image to perform the detection without
-     *noticeable reduction in the precision.
-     * Internally, we are performing a pyrdown operation
-     *
-     * @param level number of times the image size is divided by 2. Internally, we are performing a pyrdown.
-     */
-    void pyrDown(unsigned int level) {}
-
     ///-------------------------------------------------
     /// Methods you may not need
     /// Thesde methods do the hard work. They have been set public in case you want to do customizations
@@ -297,27 +279,6 @@ public:
      */
     void refineCandidateLines(MarkerCandidate& candidate, const cv::Mat& camMatrix,
                               const cv::Mat& distCoeff);
-
-    /**DEPRECATED!!! Use the member function in CameraParameters
-     *
-     * Given the intrinsic camera parameters returns the GL_PROJECTION matrix for opengl.
-     * PLease NOTE that when using OpenGL, it is assumed no camera distorsion! So, if it is not true, you
-     *should have
-     * undistor image
-     *
-     * @param CamMatrix  arameters of the camera specified.
-     * @param orgImgSize size of the original image
-     * @param size of the image/window where to render (can be different from the real camera image). Please
-     *not that it must be related to CamMatrix
-     * @param proj_matrix output projection matrix to give to opengl
-     * @param gnear,gfar: visible rendering range
-     * @param invert: indicates if the output projection matrix has to yield a horizontally inverted image
-     *because image data has not been stored in the order
-     *of glDrawPixels: bottom-to-top.
-     */
-    static void glGetProjectionMatrix(CameraParameters& CamMatrix, cv::Size orgImgSize, cv::Size size,
-                                      double proj_matrix[16], double gnear, double gfar,
-                                      bool invert = false) throw(cv::Exception);
 
 private:
     bool warp_cylinder(cv::Mat& in, cv::Mat& out, cv::Size size, MarkerCandidate& mc) throw(cv::Exception);
