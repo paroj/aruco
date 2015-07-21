@@ -470,8 +470,8 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
     if (param2 == -1)
         param2 = _thresParam2;
 
-    if (grey.type() != CV_8UC1)
-        throw cv::Exception(9001, "grey.type()!=CV_8UC1", "MarkerDetector::thresHold", __FILE__, __LINE__);
+    CV_Assert(grey.type() == CV_8UC1);
+
     switch (method) {
     case FIXED_THRES:
         cv::threshold(grey, out, param1, 255, CV_THRESH_BINARY_INV);
@@ -507,8 +507,7 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
  ************************************/
 bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points) throw(cv::Exception) {
 
-    if (points.size() != 4)
-        throw cv::Exception(9001, "point.size()!=4", "MarkerDetector::warp", __FILE__, __LINE__);
+    CV_Assert(points.size() == 4);
     // obtain the perspective transform
     Point2f pointsRes[4], pointsIn[4];
     for (int i = 0; i < 4; i++)
@@ -630,8 +629,7 @@ void setPointIntoImage(cv::Point& p, cv::Size s) {
 bool MarkerDetector::warp_cylinder(Mat& in, Mat& out, Size size,
                                    MarkerCandidate& mcand) throw(cv::Exception) {
 
-    if (mcand.size() != 4)
-        throw cv::Exception(9001, "point.size()!=4", "MarkerDetector::warp", __FILE__, __LINE__);
+    CV_Assert(mcand.size() == 4);
 
     // check first the real need for cylinder warping
     //     cout<<"im="<<mcand.contour.size()<<endl;
@@ -1050,14 +1048,10 @@ void MarkerDetector::warpPerspective(const cv::Mat &in,cv::Mat & out, const cv::
 ************************************/
 
 void MarkerDetector::setMinMaxSize(float min, float max) throw(cv::Exception) {
-    if (min <= 0 || min > 1)
-        throw cv::Exception(1, " min parameter out of range", "MarkerDetector::setMinMaxSize", __FILE__,
-                            __LINE__);
-    if (max <= 0 || max > 1)
-        throw cv::Exception(1, " max parameter out of range", "MarkerDetector::setMinMaxSize", __FILE__,
-                            __LINE__);
-    if (min > max)
-        throw cv::Exception(1, " min>max", "MarkerDetector::setMinMaxSize", __FILE__, __LINE__);
+    CV_Assert (min > 0 && min <= 1);
+    CV_Assert (max > 0 && max <= 1);
+    CV_Assert (min < max);
+
     _minSize = min;
     _maxSize = max;
 }
@@ -1070,9 +1064,8 @@ void MarkerDetector::setMinMaxSize(float min, float max) throw(cv::Exception) {
 ************************************/
 
 void MarkerDetector::setWarpSize(int val) throw(cv::Exception) {
-    if (val < 10)
-        throw cv::Exception(1, " invalid canonical image size", "MarkerDetector::setWarpSize", __FILE__,
-                            __LINE__);
+    CV_Assert (val >= 10);
+
     _markerWarpSize = val;
 }
 
