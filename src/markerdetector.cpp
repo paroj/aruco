@@ -40,6 +40,8 @@ or implied, of Rafael Muñoz Salinas.
 using namespace std;
 using namespace cv;
 
+#define ARUCO_MARKER_BENCHMARK 0
+
 namespace aruco {
 /************************************
  *
@@ -136,7 +138,10 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
         cv::cvtColor(input, grey, CV_BGR2GRAY);
     else
         grey = input;
+
+#if ARUCO_MARKER_BENCHMARK
     double t1 = cv::getTickCount();
+#endif
     //     cv::cvtColor(grey,_ssImC ,CV_GRAY2BGR); //DELETE
 
     // clear input data
@@ -157,12 +162,16 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
     thres = thres_images[n_param1 / 2];
     //
 
+#if ARUCO_MARKER_BENCHMARK
     double t2 = cv::getTickCount();
+#endif
     // find all rectangles in the thresholdes image
     vector<MarkerCandidate> MarkerCanditates;
     detectRectangles(thres_images, MarkerCanditates);
 
+#if ARUCO_MARKER_BENCHMARK
     double t3 = cv::getTickCount();
+#endif
 
     /// identify the markers
     vector<vector<Marker> > markers_omp(omp_get_max_threads());
@@ -194,8 +203,9 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
     joinVectors(markers_omp, detectedMarkers, true);
     joinVectors(candidates_omp, _candidates, true);
 
+#if ARUCO_MARKER_BENCHMARK
     double t4 = cv::getTickCount();
-
+#endif
     /// refine the corner location if desired
     if (detectedMarkers.size() > 0 && _cornerMethod != NONE && _cornerMethod != LINES) {
 
@@ -221,7 +231,9 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
                 detectedMarkers[i][c] = Corners[i * 4 + c];
     }
 
+#if ARUCO_MARKER_BENCHMARK
     double t5 = cv::getTickCount();
+#endif
 
     // sort by id
     std::sort(detectedMarkers.begin(), detectedMarkers.end());
@@ -262,13 +274,16 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
             detectedMarkers[i].calculateExtrinsics(markerSizeMeters, camMatrix, distCoeff,
                                                    setYPerpendicular);
     }
+
+#if ARUCO_MARKER_BENCHMARK
     double t6 = cv::getTickCount();
 
-    //    cerr << "Threshold: " << (t2 - t1) / double(cv::getTickFrequency()) << endl;
-    //    cerr << "Rectangles: " << (t3 - t2) / double(cv::getTickFrequency()) << endl;
-    //    cerr << "Identify: " << (t4 - t3) / double(cv::getTickFrequency()) << endl;
-    //    cerr << "Subpixel: " << (t5 - t4) / double(cv::getTickFrequency()) << endl;
-    //    cerr << "Filtering: " << (t6 - t5) / double(cv::getTickFrequency()) << endl;
+    cerr << "Threshold: " << (t2 - t1) / double(cv::getTickFrequency()) << endl;
+    cerr << "Rectangles: " << (t3 - t2) / double(cv::getTickFrequency()) << endl;
+    cerr << "Identify: " << (t4 - t3) / double(cv::getTickFrequency()) << endl;
+    cerr << "Subpixel: " << (t5 - t4) / double(cv::getTickFrequency()) << endl;
+    cerr << "Filtering: " << (t6 - t5) / double(cv::getTickFrequency()) << endl;
+#endif
 }
 
 /************************************
