@@ -35,7 +35,6 @@ or implied, of Rafael Muñoz Salinas.
 #include <iostream>
 #include <fstream>
 #include "arucofidmarkers.h"
-#include <valarray>
 #include "ar_omp.h"
 using namespace std;
 using namespace cv;
@@ -381,7 +380,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
         }
 
     /// sort the points in anti-clockwise order
-    valarray<bool> swapped(false, MarkerCanditates.size()); // used later
+    vector<bool> swapped(MarkerCanditates.size(), false); // used later
     for (unsigned int i = 0; i < MarkerCanditates.size(); i++) {
 
         // trace a line between the first and second point.
@@ -409,7 +408,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
         // 	cout<<"Marker i="<<i<<MarkerCanditates[i]<<endl;
         // calculate the average distance of each corner to the nearest corner of the other marker candidate
         for (unsigned int j = i + 1; j < MarkerCanditates.size(); j++) {
-            valarray<float> vdist(4);
+            float vdist[4];
             for (int c = 0; c < 4; c++)
                 vdist[c] = sqrt((MarkerCanditates[i][c].x - MarkerCanditates[j][c].x) *
                                     (MarkerCanditates[i][c].x - MarkerCanditates[j][c].x) +
@@ -426,7 +425,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
     vector<pair<int, int> > TooNearCandidates;
     joinVectors(TooNearCandidates_omp, TooNearCandidates);
     // mark for removal the element of  the pair with smaller perimeter
-    valarray<bool> toRemove(false, MarkerCanditates.size());
+    vector<bool> toRemove(MarkerCanditates.size(), false);
     for (unsigned int i = 0; i < TooNearCandidates.size(); i++) {
         if (perimeter(MarkerCanditates[TooNearCandidates[i].first]) >
             perimeter(MarkerCanditates[TooNearCandidates[i].second]))
