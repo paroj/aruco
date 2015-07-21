@@ -41,6 +41,52 @@ using namespace cv;
 
 #define ARUCO_MARKER_BENCHMARK 0
 
+namespace {
+template <typename T>
+void joinVectors(vector<vector<T> >& vv, vector<T>& v, bool clearv = false) {
+    if (clearv)
+        v.clear();
+    for (size_t i = 0; i < vv.size(); i++)
+        v.insert(v.end(), vv[i].begin(), vv[i].end());
+}
+
+/**Given a vector vinout with elements and a boolean vector indicating the lements from it to remove,
+ * this function remove the elements
+ * @param vinout
+ * @param toRemove
+ */
+template <typename T>
+void removeElements(vector<T>& vinout, const vector<bool>& toRemove) {
+    // remove the invalid ones by setting the valid in the positions left by the invalids
+    size_t indexValid = 0;
+    for (size_t i = 0; i < toRemove.size(); i++) {
+        if (!toRemove[i]) {
+            if (indexValid != i)
+                vinout[indexValid] = vinout[i];
+            indexValid++;
+        }
+    }
+    vinout.resize(indexValid);
+}
+
+bool isInto(Mat& contour, vector<Point2f>& b) {
+
+    for (size_t i = 0; i < b.size(); i++)
+        if (pointPolygonTest(contour, b[i], false) > 0)
+            return true;
+    return false;
+}
+
+int perimeter(vector<Point2f>& a) {
+    int sum = 0;
+    for (size_t i = 0; i < a.size(); i++) {
+        size_t i2 = (i + 1) % a.size();
+        sum += norm(a[i] - a[i2]);
+    }
+    return sum;
+}
+}
+
 namespace aruco {
 /************************************
  *
@@ -760,38 +806,7 @@ bool MarkerDetector::warp_cylinder(Mat& in, Mat& out, Size size,
     //     cv::waitKey(0);
     return true;
 }
-/************************************
- *
- *
- *
- *
- ************************************/
-bool MarkerDetector::isInto(Mat& contour, vector<Point2f>& b) {
 
-    for (unsigned int i = 0; i < b.size(); i++)
-        if (pointPolygonTest(contour, b[i], false) > 0)
-            return true;
-    return false;
-}
-/************************************
- *
- *
- *
- *
- ************************************/
-int MarkerDetector::perimeter(vector<Point2f>& a) {
-    int sum = 0;
-    for (unsigned int i = 0; i < a.size(); i++) {
-        int i2 = (i + 1) % a.size();
-        sum += norm(a[i] - a[i2]);
-    }
-    return sum;
-}
-
-/**
- *
- *
- */
 void MarkerDetector::findBestCornerInRegion_harris(const cv::Mat& grey, vector<cv::Point2f>& Corners,
                                                    int blockSize) {
     SubPixelCorner Subp;

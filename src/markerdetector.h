@@ -310,13 +310,6 @@ private:
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
     int (*markerIdDetector_ptrfunc)(const cv::Mat& in, int& nRotations);
 
-    /**
-     */
-    bool isInto(cv::Mat& contour, std::vector<cv::Point2f>& b);
-    /**
-     */
-    int perimeter(std::vector<cv::Point2f>& a);
-
     //     //GL routines
     //
     //     static void argConvGLcpara2( double cparam[3][4], int width, int height, double gnear, double
@@ -337,24 +330,6 @@ private:
     void distortPoints(vector<cv::Point2f> in, vector<cv::Point2f>& out, const cv::Mat& camMatrix,
                        const cv::Mat& distCoeff);
 
-    /**Given a vector vinout with elements and a boolean vector indicating the lements from it to remove,
-     * this function remove the elements
-     * @param vinout
-     * @param toRemove
-     */
-    template <typename T> void removeElements(vector<T>& vinout, const vector<bool>& toRemove) {
-        // remove the invalid ones by setting the valid in the positions left by the invalids
-        size_t indexValid = 0;
-        for (size_t i = 0; i < toRemove.size(); i++) {
-            if (!toRemove[i]) {
-                if (indexValid != i)
-                    vinout[indexValid] = vinout[i];
-                indexValid++;
-            }
-        }
-        vinout.resize(indexValid);
-    }
-
     // graphical debug
     void drawApproxCurve(cv::Mat& in, std::vector<cv::Point>& approxCurve, cv::Scalar color);
     void drawContour(cv::Mat& in, std::vector<cv::Point>& contour, cv::Scalar);
@@ -363,14 +338,6 @@ private:
     // method to refine corner detection in case the internal border after threshold is found
     // This was tested in the context of chessboard methods
     void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize);
-
-    template <typename T> void joinVectors(vector<vector<T> >& vv, vector<T>& v, bool clearv = false) {
-        if (clearv)
-            v.clear();
-        for (size_t i = 0; i < vv.size(); i++)
-            for (size_t j = 0; j < vv[i].size(); j++)
-                v.push_back(vv[i][j]);
-    }
 };
 };
 #endif
