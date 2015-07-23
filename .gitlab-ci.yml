@@ -4,12 +4,20 @@ before_script:
     - BUILD_DIR=../aruco_build
     - cmake -E make_directory $BUILD_DIR
 
-ubuntu-14-04:
+types:
+    - build
+    - test
+
+ubuntu-build:
+    type: build
     script:
         - cd $BUILD_DIR
         - cmake -DCMAKE_PREFIX_PATH=$PRECOMPILED_DIR $SOURCE_DIR
         - cmake --build . --config Release
-        # execute tests
+
+ubuntu-test:
+    type: test
+    script:
         - cd $SOURCE_DIR/test/
         - $SOURCE_DIR/$BUILD_DIR/test/core_tests
         - $SOURCE_DIR/$BUILD_DIR/test/perf_tests
