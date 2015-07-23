@@ -4,6 +4,7 @@
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
+#include <opencv2/core/version.hpp>
 
 #define PERF_RUNS_DEFAULT 1000
 #define TESTDATA_PATH "../testdata/"
@@ -192,7 +193,7 @@ int main(int argc, char **argv) {
     if (write_performance_data) {
         PerformanceData.open("/tmp/performance.yml", FileStorage::WRITE);
         PerformanceData << "aruco_version" << ARUCO_VERSION;
-        PerformanceData << "opencv_version" << OPENCV_VERSION;
+        PerformanceData << "opencv_version" << CV_VERSION;
     } else {
         BenchmarkData.open("/tmp/benchmark.yml", FileStorage::WRITE);
         BenchmarkData["aruco_version"] >> Aruco_Version;
