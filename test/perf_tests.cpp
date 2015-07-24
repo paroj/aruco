@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <aruco.h>
+#include "highlyreliablemarkers.h"
+
 #include <chrono>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -153,6 +155,45 @@ TEST(ArucoPerf, GL_Conversion) {
     PerformanceData["avg_gl_conversion_time"] >> reference;
     EXPECT_LE(avgProcessTime, reference * TOLERANCE);
     BenchmarkData << "relative_gl_conversion_speedup" << (reference / avgProcessTime);
+}
+
+TEST(ArucoPerf, HRM_Single) {
+    MarkerFixture mf;
+
+    Dictionary dictionary;
+    dictionary.fromFile(TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml");
+    HighlyReliableMarkers::loadDictionary(dictionary);
+
+    Mat frameImage = imread(TESTDATA_PATH "hrm/image-test.png", IMREAD_GRAYSCALE);
+
+    mf.CamParam.readFromXMLFile(TESTDATA_PATH "hrm/intrinsics.yml");
+    mf.CamParam.resize(frameImage.size());
+
+    mf.MDetector.enableLockedCornersMethod(false);
+    mf.MDetector.setMakerDetectorFunction(HighlyReliableMarkers::detect);
+    mf.MDetector.setThresholdParams(21, 7);
+    mf.MDetector.setCornerRefinementMethod(MarkerDetector::LINES);
+    mf.MDetector.setWarpSize((dictionary[0].n() + 2) * 8);
+    mf.MDetector.setMinMaxSize(0.005, 0.5);
+
+    auto startTime = steady_clock::now();
+
+    for (auto run = 0; run < PERF_RUNS_DEFAULT; run++) {
+        mf.MDetector.detect(frameImage, mf.Markers, mf.CamParam, mf.MarkerSize);
+    }
+
+    double avgProcessTime = ((double)duration_cast<milliseconds>(steady_clock::now() - startTime).count() /
+                             (double)PERF_RUNS_DEFAULT);
+
+    if (write_performance_data) {
+        PerformanceData << "avg_hrm_marker_detection_time" << avgProcessTime;
+        return;
+    }
+
+    double reference;
+    PerformanceData["avg_hrm_marker_detection_time"] >> reference;
+    EXPECT_LE(avgProcessTime, reference * TOLERANCE);
+    BenchmarkData << "relative_hrm_marker_detection_speedup" << (reference / avgProcessTime);
 }
 
 int main(int argc, char** argv) {
