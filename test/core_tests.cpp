@@ -231,3 +231,27 @@ TEST(Aruco, HRM_Single) {
         }
     }
 }
+
+TEST(Aruco, RefineFail) {
+    using namespace aruco;
+
+    MarkerFixture mf;
+    Dictionary dictionary;
+
+    dictionary.fromFile( TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml" );
+    HighlyReliableMarkers::loadDictionary( dictionary );
+
+    cv::Mat frameImage = cv::imread( TESTDATA_PATH "hrm/refine-fail.png" );
+
+    mf.CamParam.readFromXMLFile( TESTDATA_PATH "hrm/intrinsics.yml" );
+    mf.CamParam.resize( frameImage.size() );
+
+    mf.MDetector.enableLockedCornersMethod( false );
+    mf.MDetector.setMakerDetectorFunction(HighlyReliableMarkers::detect );
+    mf.MDetector.setThresholdParams( 21, 7 );
+    mf.MDetector.setCornerRefinementMethod(MarkerDetector::LINES );
+    mf.MDetector.setMinMaxSize( 0.005, 0.5 );
+    mf.MDetector.setWarpSize( 48 );
+
+    mf.MDetector.detect( frameImage, mf.Markers, mf.CamParam, mf.MarkerSize );
+}
