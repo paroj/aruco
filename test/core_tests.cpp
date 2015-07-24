@@ -3,6 +3,7 @@
 
 #include <aruco.h>
 #include "filestorage_adapter.h"
+#include "highlyreliablemarkers.h"
 
 #define TESTDATA_PATH "../testdata/"
 
@@ -200,5 +201,53 @@ TEST(Aruco, HRM_CreateBoard) {
 }
 
 TEST(Aruco, HRM_Single) {
-    // use Testdata of Single
+    using namespace aruco;
+
+    float markerSize = 1.f;
+    MarkerDetector markerDetector;
+    vector<Marker> expected, foundMarkers;
+    cv::Mat frameImage;
+    CameraParameters cameraParameters;
+    Dictionary dictionary;
+
+    dictionary.fromFile( TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml" );
+    HighlyReliableMarkers::loadDictionary( dictionary );
+
+    frameImage = cv::imread( TESTDATA_PATH "hrm/image-test.png" );
+
+    cameraParameters.readFromXMLFile( TESTDATA_PATH "hrm/intrinsics.yml" );
+    cameraParameters.resize( frameImage.size() );
+
+    markerDetector.enableLockedCornersMethod( false );
+    markerDetector.setMakerDetectorFunction( aruco::HighlyReliableMarkers::detect );
+    markerDetector.setThresholdParams( 21, 7 );
+    markerDetector.setCornerRefinementMethod( aruco::MarkerDetector::LINES );
+    markerDetector.setWarpSize( (dictionary[0].n() + 2) * 8 );
+    markerDetector.setMinMaxSize( 0.005, 0.5 );
+
+    cv::FileStorage fs( TESTDATA_PATH "hrm/expected.yml", generateResults ? 1 : 0 );
+
+    markerDetector.detect( frameImage, foundMarkers, cameraParameters, markerSize );
+
+    if(generateResults) {
+        fs << "Markers" << foundMarkers;
+        return;
+    }
+
+    fs["Markers"] >> expected;
+
+    // now check the results
+    ASSERT_EQ(expected.size(), foundMarkers.size());
+
+    for (size_t i = 0; i < foundMarkers.size(); i++) {
+        EXPECT_EQ(expected[i].id, foundMarkers[i].id);
+
+        EXPECT_FLOAT_EQ(expected[i].getCenter().x, foundMarkers[i].getCenter().x);
+        EXPECT_FLOAT_EQ(expected[i].getCenter().y, foundMarkers[i].getCenter().y);
+
+        for(auto j = 0; j < 3; j++) {
+            EXPECT_FLOAT_EQ(expected[i].Tvec(j), foundMarkers[i].Tvec(j));
+            EXPECT_FLOAT_EQ(expected[i].Rvec(j), foundMarkers[i].Rvec(j));
+        }
+    }
 }
