@@ -345,11 +345,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
                         // points is large enough
                         float minDist = 1e10;
                         for (int j = 0; j < 4; j++) {
-                            float d = std::sqrt((float)(approxCurve[j].x - approxCurve[(j + 1) % 4].x) *
-                                                    (approxCurve[j].x - approxCurve[(j + 1) % 4].x) +
-                                                (approxCurve[j].y - approxCurve[(j + 1) % 4].y) *
-                                                    (approxCurve[j].y - approxCurve[(j + 1) % 4].y));
-                            // 		norm(Mat(approxCurve[i]),Mat(approxCurve[(i+1)%4]));
+                            float d = norm(approxCurve[i] - approxCurve[(i+1)%4]);
                             if (d < minDist)
                                 minDist = d;
                         }
@@ -410,10 +406,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
         for (unsigned int j = i + 1; j < MarkerCanditates.size(); j++) {
             float vdist[4];
             for (int c = 0; c < 4; c++)
-                vdist[c] = sqrt((MarkerCanditates[i][c].x - MarkerCanditates[j][c].x) *
-                                    (MarkerCanditates[i][c].x - MarkerCanditates[j][c].x) +
-                                (MarkerCanditates[i][c].y - MarkerCanditates[j][c].y) *
-                                    (MarkerCanditates[i][c].y - MarkerCanditates[j][c].y));
+                vdist[c] = norm(MarkerCanditates[i][c] - MarkerCanditates[j][c]);
             //                 dist/=4;
             // if distance is too small
             if (vdist[0] < 6 && vdist[1] < 6 && vdist[2] < 6 && vdist[3] < 6) {
@@ -559,7 +552,7 @@ int findDeformedSidesIdx(const vector<cv::Point>& contour, const vector<int>& id
     for (int i = 0; i < 3; i++) {
         cv::Point p1 = contour[idxSegments[i]];
         cv::Point p2 = contour[idxSegments[i + 1]];
-        float inv_den = 1. / sqrt(float((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
+        float inv_den = 1. / norm(p2 - p1);
         //   d=|v^^·r|=(|(x_2-x_1)(y_1-y_0)-(x_1-x_0)(y_2-y_1)|)/(sqrt((x_2-x_1)^2+(y_2-y_1)^2)).
         //         cerr<<"POSS="<<idxSegments[i]<<" "<<idxSegments[i+1]<<endl;
         for (size_t j = idxSegments[i]; j < idxSegments[i + 1]; j++) {
@@ -577,7 +570,7 @@ int findDeformedSidesIdx(const vector<cv::Point>& contour, const vector<int>& id
     // for the last one
     cv::Point p1 = contour[idxSegments[0]];
     cv::Point p2 = contour[idxSegments[3]];
-    float inv_den = 1. / std::sqrt(float((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
+    float inv_den = 1. / norm(p2 - p1);
     //   d=|v^^·r|=(|(x_2-x_1)(y_1-y_0)-(x_1-x_0)(y_2-y_1)|)/(sqrt((x_2-x_1)^2+(y_2-y_1)^2)).
     for (size_t j = 0; j < idxSegments[0]; j++)
         distSum[3] += std::fabs(float((p2.x - p1.x) * (p1.y - contour[j].y) -
@@ -793,7 +786,7 @@ int MarkerDetector::perimeter(vector<Point2f>& a) {
     int sum = 0;
     for (unsigned int i = 0; i < a.size(); i++) {
         int i2 = (i + 1) % a.size();
-        sum += sqrt((a[i].x - a[i2].x) * (a[i].x - a[i2].x) + (a[i].y - a[i2].y) * (a[i].y - a[i2].y));
+        sum += norm(a[i] - a[i2]);
     }
     return sum;
 }
@@ -939,21 +932,19 @@ void MarkerDetector::interpolate2Dline(const std::vector<Point2f>& inPoints, Poi
 Point2f MarkerDetector::getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2) {
 
     // create matrices of equation system
-    Mat A(2, 2, CV_32FC1, Scalar(0));
-    Mat B(2, 1, CV_32FC1, Scalar(0));
-    Mat X;
+    Matx22f A;
+    Vec2f B, X;
+    A(0, 0) = line1.x;
+    A(0, 1) = line1.y;
+    B(0) = -line1.z;
 
-    A.at<float>(0, 0) = line1.x;
-    A.at<float>(0, 1) = line1.y;
-    B.at<float>(0, 0) = -line1.z;
-
-    A.at<float>(1, 0) = line2.x;
-    A.at<float>(1, 1) = line2.y;
-    B.at<float>(1, 0) = -line2.z;
+    A(1, 0) = line2.x;
+    A(1, 1) = line2.y;
+    B(1) = -line2.z;
 
     // solve system
     solve(A, B, X, DECOMP_SVD);
-    return Point2f(X.at<float>(0, 0), X.at<float>(1, 0));
+    return X;
 }
 
 /**
