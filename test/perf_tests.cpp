@@ -6,6 +6,8 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/version.hpp>
 
+#include "test.h"
+
 #define PERF_RUNS_DEFAULT 1000
 #define TESTDATA_PATH "../testdata/"
 #define TOLERANCE 1.05
@@ -25,24 +27,17 @@ FileStorage PerformanceData;
 }
 
 TEST( ArucoPerf, Single ){
-
-    auto markerSize = 1.f;
-    Mat testFrame;
-    vector<Marker> detectedMarkers;
-    MarkerDetector markerDetector;
-    CameraParameters camParams;
-
-    testFrame = imread( TESTDATA_PATH "single/image-test.png" );
+    MarkerFixture mf;
     // color conversion should not be part of performance test
-    cvtColor(testFrame, testFrame, COLOR_BGR2GRAY);
+    Mat testFrame = imread( TESTDATA_PATH "single/image-test.png", IMREAD_GRAYSCALE);
 
-    camParams.readFromXMLFile( TESTDATA_PATH "single/intrinsics.yml" );
-    camParams.resize( testFrame.size()) ;
+    mf.CamParam.readFromXMLFile( TESTDATA_PATH "single/intrinsics.yml" );
+    mf.CamParam.resize( testFrame.size()) ;
 
     auto startTime = steady_clock::now();
 
     for( auto i = 0; i < PERF_RUNS_DEFAULT; i++ )
-        markerDetector.detect( testFrame, detectedMarkers, camParams, markerSize );
+        mf.MDetector.detect( testFrame, mf.Markers, mf.CamParam, mf.MarkerSize );
 
     auto avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / ( double) PERF_RUNS_DEFAULT );
 
@@ -58,29 +53,19 @@ TEST( ArucoPerf, Single ){
 }
 
 TEST( ArucoPerf, Board ){
+    MarkerBoardFixture mbf;
+    Mat testFrame = imread( TESTDATA_PATH "board/image-test.png", IMREAD_GRAYSCALE);
 
-    auto markerSize = 1.f;
-    Mat testFrame;
-    Board detectedBoard;
-    vector<Marker> detectedMarkers;
-    CameraParameters camParams;
-    MarkerDetector markerDetector;
-    BoardConfiguration boardConfig;
-    BoardDetector boardDetector;
+    mbf.BoardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
 
-    testFrame = imread( TESTDATA_PATH "board/image-test.png" );
-    cvtColor(testFrame, testFrame, COLOR_BGR2GRAY);
-
-    boardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
-
-    camParams.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
-    camParams.resize( testFrame.size() );
+    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
+    mbf.CamParam.resize( testFrame.size() );
 
     auto startTime = steady_clock::now();
 
     for( auto i = 0; i < PERF_RUNS_DEFAULT; i++ ){
-        markerDetector.detect( testFrame, detectedMarkers );
-        boardDetector.detect( detectedMarkers, boardConfig, detectedBoard, camParams, markerSize );
+        mbf.MDetector.detect( testFrame, mbf.Markers );
+        mbf.BoardDetector.detect( mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize );
     }
 
     auto avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / (double) PERF_RUNS_DEFAULT );
@@ -98,29 +83,22 @@ TEST( ArucoPerf, Board ){
 }
 
 TEST( ArucoPerf, Multi ) {
+    MarkerBoardFixture mbf;
 
-    auto markerSize = 1.f;
-    double thresParam1, thresParam2;
-    CameraParameters camParams;
-    BoardConfiguration boardConfig;
-    BoardDetector boardDetector;
+    cv::Mat currentFrame = cv::imread(TESTDATA_PATH "chessboard/chessboard_frame.png", IMREAD_GRAYSCALE);
 
-    cv::Mat currentFrame = cv::imread(TESTDATA_PATH "chessboard/chessboard_frame.png");
-    cvtColor(currentFrame, currentFrame, COLOR_BGR2GRAY);
+    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "chessboard/intrinsics.yml" );
+    mbf.CamParam.resize( currentFrame.size() );
 
-    camParams.readFromXMLFile( TESTDATA_PATH "chessboard/intrinsics.yml" );
-    camParams.resize( currentFrame.size() );
+    mbf.BoardConfig.readFromFile( TESTDATA_PATH "chessboard/chessboardinfo_pix.yml" );
 
-    boardConfig.readFromFile( TESTDATA_PATH "chessboard/chessboardinfo_pix.yml" );
-
-    boardDetector.setParams( boardConfig, camParams, markerSize );
-    boardDetector.getMarkerDetector().getThresholdParams( thresParam1, thresParam2 );
-    boardDetector.getMarkerDetector().setCornerRefinementMethod( MarkerDetector::HARRIS );
-    boardDetector.set_repj_err_thres( 1.5 );
+    mbf.BoardDetector.setParams( mbf.BoardConfig, mbf.CamParam, mbf.MarkerSize );
+    mbf.BoardDetector.getMarkerDetector().setCornerRefinementMethod( MarkerDetector::HARRIS );
+    mbf.BoardDetector.set_repj_err_thres( 1.5 );
 
     auto startTime = steady_clock::now();
     for (auto i = 0; i < PERF_RUNS_DEFAULT; i++) {
-        boardDetector.detect(currentFrame);
+        mbf.BoardDetector.detect(currentFrame);
     }
 
     auto thisTimeElapsed = duration_cast<milliseconds>(steady_clock::now() - startTime).count();
@@ -139,36 +117,28 @@ TEST( ArucoPerf, Multi ) {
 }
 
 TEST( ArucoPerf, GL_Conversion ) {
+    MarkerBoardFixture mbf;
+    Mat testFrame = imread( TESTDATA_PATH "board/image-test.png" );
 
-    float markerSize = 1.f;
-    Mat testFrame;
-    CameraParameters camParams;
-    vector<Marker> detectedMarkers;
-    Board detectedBoard;
-    MarkerDetector markerDetector;
-    BoardDetector boardDetector;
-    BoardConfiguration boardConfig;
+    mbf.BoardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
 
-    testFrame = imread( TESTDATA_PATH "board/image-test.png" );
-    boardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
+    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
+    mbf.CamParam.resize( testFrame.size() );
 
-    camParams.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
-    camParams.resize( testFrame.size() );
+    mbf.MDetector.detect( testFrame, mbf.Markers, mbf.CamParam, mbf.MarkerSize );
+    mbf.BoardDetector.detect( mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize );
 
-    markerDetector.detect( testFrame, detectedMarkers, camParams, markerSize );
-    boardDetector.detect( detectedMarkers, boardConfig, detectedBoard, camParams, markerSize );
-
-    vector<Vec<double, 16>> gldata( detectedMarkers.size() + 2 );
+    vector<Vec<double, 16>> gldata( mbf.Markers.size() + 2 );
 
     auto startTime = steady_clock::now();
 
-    camParams.Distorsion.setTo(0); // silence cerr spam
+    mbf.CamParam.Distorsion.setTo(0); // silence cerr spam
 
     for ( auto run = 0; run < PERF_RUNS_DEFAULT; run++ ){
-        camParams.glGetProjectionMatrix( testFrame.size(), testFrame.size(), gldata[0].val, 0.5, 10 );
-        detectedBoard.glGetModelViewMatrix( gldata[1].val );
-        for( size_t i = 0; i < detectedMarkers.size(); i++ )
-            detectedMarkers[i].glGetModelViewMatrix( gldata[i + 2].val );
+        mbf.CamParam.glGetProjectionMatrix( testFrame.size(), testFrame.size(), gldata[0].val, 0.5, 10 );
+        mbf.Board.glGetModelViewMatrix( gldata[1].val );
+        for( size_t i = 0; i < mbf.Markers.size(); i++ )
+            mbf.Markers[i].glGetModelViewMatrix( gldata[i + 2].val );
     }
 
     double avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / (double) PERF_RUNS_DEFAULT );
