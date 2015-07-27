@@ -30,7 +30,7 @@ TEST(Aruco, Single) {
     int mode = cv::FileStorage::Mode(generateResults);
     cv::FileStorage fs(TESTDATA_PATH "single/expected.yml", mode);
 
-    if(generateResults) {
+    if (generateResults) {
         fs << "Markers" << mf.Markers;
         return;
     }
@@ -46,7 +46,7 @@ TEST(Aruco, Single) {
         EXPECT_FLOAT_EQ(expected[i].getCenter().x, mf.Markers[i].getCenter().x);
         EXPECT_FLOAT_EQ(expected[i].getCenter().y, mf.Markers[i].getCenter().y);
 
-        for(auto j = 0; j < 3; j++) {
+        for (auto j = 0; j < 3; j++) {
             EXPECT_FLOAT_EQ(expected[i].Tvec(j), mf.Markers[i].Tvec(j));
             EXPECT_FLOAT_EQ(expected[i].Rvec(j), mf.Markers[i].Rvec(j));
         }
@@ -71,7 +71,7 @@ TEST(Aruco, Board) {
     int mode = cv::FileStorage::Mode(generateResults);
     cv::FileStorage fs(TESTDATA_PATH "board/expected.yml", mode);
 
-    if(generateResults) {
+    if (generateResults) {
         fs << "Board" << mbf.Board;
         return;
     }
@@ -80,7 +80,7 @@ TEST(Aruco, Board) {
 
     // now check the results
     EXPECT_EQ(expected.size(), mbf.Board.size());
-    for(int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         EXPECT_FLOAT_EQ(expected.Rvec(i), mbf.Board.Rvec(i));
         EXPECT_FLOAT_EQ(expected.Tvec(i), mbf.Board.Tvec(i));
     }
@@ -104,7 +104,7 @@ TEST(Aruco, Multi) {
     int mode = cv::FileStorage::Mode(generateResults);
     cv::FileStorage fs(TESTDATA_PATH "chessboard/expected.yml", mode);
 
-    if(generateResults) {
+    if (generateResults) {
         fs << "Board" << mbf.Board;
         return;
     }
@@ -113,7 +113,7 @@ TEST(Aruco, Multi) {
 
     // now check the results
     EXPECT_EQ(expected.size(), mbf.Board.size());
-    for(int i = 0; i < 3; i++) {
+    for (int i = 0; i < 3; i++) {
         EXPECT_FLOAT_EQ(expected.Rvec(i), mbf.Board.Rvec(i));
         EXPECT_FLOAT_EQ(expected.Tvec(i), mbf.Board.Tvec(i));
     }
@@ -129,27 +129,29 @@ TEST(Aruco, GL_Conversion) {
     // resizes the parameters to fit the size of the input image
     mbf.CamParam.resize(InImage.size());
 
-    mbf.MDetector.detect(InImage, mbf.Markers, mbf.CamParam, mbf.MarkerSize); // detect markers computing R and T information
+    mbf.MDetector.detect(InImage, mbf.Markers, mbf.CamParam,
+                         mbf.MarkerSize); // detect markers computing R and T information
     // Detection of the board
     mbf.BoardDetector.detect(mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize);
 
     int mode = cv::FileStorage::Mode(generateResults);
     cv::FileStorage fs(TESTDATA_PATH "board/expected_gl.yml", mode);
 
-    std::vector<cv::Vec<double, 16>> gldata(mbf.Markers.size() + 2), expected;
+    std::vector<cv::Vec<double, 16> > gldata(mbf.Markers.size() + 2), expected;
 
     mbf.CamParam.Distorsion.setTo(0); // silence cerr spam
 
     mbf.CamParam.glGetProjectionMatrix(InImage.size(), InImage.size(), gldata[0].val, 0.5, 10);
     mbf.Board.glGetModelViewMatrix(gldata[1].val);
 
-    for(size_t i = 0; i < mbf.Markers.size(); i++) {
+    for (size_t i = 0; i < mbf.Markers.size(); i++) {
         mbf.Markers[i].glGetModelViewMatrix(gldata[i + 2].val);
     }
 
-    if(generateResults) {
-        fs << "gldata" << "[";
-        for(size_t i = 0; i < gldata.size(); i++) {
+    if (generateResults) {
+        fs << "gldata"
+           << "[";
+        for (size_t i = 0; i < gldata.size(); i++) {
             fs << gldata[i];
         }
         fs << "]";
@@ -160,13 +162,13 @@ TEST(Aruco, GL_Conversion) {
     cv::FileNode gls = fs["gldata"];
     expected.resize(gls.size());
 
-    for(size_t i = 0; i < expected.size(); i++) {
+    for (size_t i = 0; i < expected.size(); i++) {
         gls[i] >> expected[i];
     }
 
     // now check the results
-    for(size_t i = 0; i < expected.size(); i++) {
-        for(int j = 0; j < 16; j++) {
+    for (size_t i = 0; i < expected.size(); i++) {
+        for (int j = 0; j < 16; j++) {
             EXPECT_FLOAT_EQ(expected[i].val[j], gldata[i].val[j]);
         }
     }
@@ -186,28 +188,28 @@ TEST(Aruco, HRM_Single) {
     MarkerFixture mf;
     Dictionary dictionary;
 
-    vector<Marker> expected;;
+    vector<Marker> expected;
 
-    dictionary.fromFile( TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml" );
-    HighlyReliableMarkers::loadDictionary( dictionary );
+    dictionary.fromFile(TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml");
+    HighlyReliableMarkers::loadDictionary(dictionary);
 
-    cv::Mat frameImage = cv::imread( TESTDATA_PATH "hrm/image-test.png" );
+    cv::Mat frameImage = cv::imread(TESTDATA_PATH "hrm/image-test.png");
 
-    mf.CamParam.readFromXMLFile( TESTDATA_PATH "hrm/intrinsics.yml" );
-    mf.CamParam.resize( frameImage.size() );
+    mf.CamParam.readFromXMLFile(TESTDATA_PATH "hrm/intrinsics.yml");
+    mf.CamParam.resize(frameImage.size());
 
-    mf.MDetector.enableLockedCornersMethod( false );
-    mf.MDetector.setMakerDetectorFunction( aruco::HighlyReliableMarkers::detect );
-    mf.MDetector.setThresholdParams( 21, 7 );
-    mf.MDetector.setCornerRefinementMethod( aruco::MarkerDetector::LINES );
-    mf.MDetector.setWarpSize( (dictionary[0].n() + 2) * 8 );
-    mf.MDetector.setMinMaxSize( 0.005, 0.5 );
+    mf.MDetector.enableLockedCornersMethod(false);
+    mf.MDetector.setMakerDetectorFunction(aruco::HighlyReliableMarkers::detect);
+    mf.MDetector.setThresholdParams(21, 7);
+    mf.MDetector.setCornerRefinementMethod(aruco::MarkerDetector::LINES);
+    mf.MDetector.setWarpSize((dictionary[0].n() + 2) * 8);
+    mf.MDetector.setMinMaxSize(0.005, 0.5);
 
-    cv::FileStorage fs( TESTDATA_PATH "hrm/expected.yml", generateResults ? 1 : 0 );
+    cv::FileStorage fs(TESTDATA_PATH "hrm/expected.yml", generateResults ? 1 : 0);
 
-    mf.MDetector.detect( frameImage, mf.Markers, mf.CamParam, mf.MarkerSize );
+    mf.MDetector.detect(frameImage, mf.Markers, mf.CamParam, mf.MarkerSize);
 
-    if(generateResults) {
+    if (generateResults) {
         fs << "Markers" << mf.Markers;
         return;
     }
@@ -223,7 +225,7 @@ TEST(Aruco, HRM_Single) {
         EXPECT_FLOAT_EQ(expected[i].getCenter().x, mf.Markers[i].getCenter().x);
         EXPECT_FLOAT_EQ(expected[i].getCenter().y, mf.Markers[i].getCenter().y);
 
-        for(auto j = 0; j < 3; j++) {
+        for (auto j = 0; j < 3; j++) {
             EXPECT_FLOAT_EQ(expected[i].Tvec(j), mf.Markers[i].Tvec(j));
             EXPECT_FLOAT_EQ(expected[i].Rvec(j), mf.Markers[i].Rvec(j));
         }

@@ -26,75 +26,76 @@ FileStorage BenchmarkData;
 FileStorage PerformanceData;
 }
 
-TEST( ArucoPerf, Single ){
+TEST(ArucoPerf, Single) {
     MarkerFixture mf;
     // color conversion should not be part of performance test
-    Mat testFrame = imread( TESTDATA_PATH "single/image-test.png", IMREAD_GRAYSCALE);
+    Mat testFrame = imread(TESTDATA_PATH "single/image-test.png", IMREAD_GRAYSCALE);
 
-    mf.CamParam.readFromXMLFile( TESTDATA_PATH "single/intrinsics.yml" );
-    mf.CamParam.resize( testFrame.size()) ;
+    mf.CamParam.readFromXMLFile(TESTDATA_PATH "single/intrinsics.yml");
+    mf.CamParam.resize(testFrame.size());
 
     auto startTime = steady_clock::now();
 
-    for( auto i = 0; i < PERF_RUNS_DEFAULT; i++ )
-        mf.MDetector.detect( testFrame, mf.Markers, mf.CamParam, mf.MarkerSize );
+    for (auto i = 0; i < PERF_RUNS_DEFAULT; i++)
+        mf.MDetector.detect(testFrame, mf.Markers, mf.CamParam, mf.MarkerSize);
 
-    auto avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / ( double) PERF_RUNS_DEFAULT );
+    auto avgProcessTime = ((double)duration_cast<milliseconds>(steady_clock::now() - startTime).count() /
+                           (double)PERF_RUNS_DEFAULT);
 
-    if( write_performance_data ){
+    if (write_performance_data) {
         PerformanceData << "avg_marker_detection_time" << avgProcessTime;
         return;
     }
 
     double reference;
     PerformanceData["avg_marker_detection_time"] >> reference;
-    EXPECT_LE(avgProcessTime, reference*TOLERANCE);
-    BenchmarkData << "relative_marker_detection_speedup" << ( reference / avgProcessTime );
+    EXPECT_LE(avgProcessTime, reference * TOLERANCE);
+    BenchmarkData << "relative_marker_detection_speedup" << (reference / avgProcessTime);
 }
 
-TEST( ArucoPerf, Board ){
+TEST(ArucoPerf, Board) {
     MarkerBoardFixture mbf;
-    Mat testFrame = imread( TESTDATA_PATH "board/image-test.png", IMREAD_GRAYSCALE);
+    Mat testFrame = imread(TESTDATA_PATH "board/image-test.png", IMREAD_GRAYSCALE);
 
-    mbf.BoardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
+    mbf.BoardConfig.readFromFile(TESTDATA_PATH "board/board_pix.yml");
 
-    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
-    mbf.CamParam.resize( testFrame.size() );
+    mbf.CamParam.readFromXMLFile(TESTDATA_PATH "board/intrinsics.yml");
+    mbf.CamParam.resize(testFrame.size());
 
     auto startTime = steady_clock::now();
 
-    for( auto i = 0; i < PERF_RUNS_DEFAULT; i++ ){
-        mbf.MDetector.detect( testFrame, mbf.Markers );
-        mbf.BoardDetector.detect( mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize );
+    for (auto i = 0; i < PERF_RUNS_DEFAULT; i++) {
+        mbf.MDetector.detect(testFrame, mbf.Markers);
+        mbf.BoardDetector.detect(mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize);
     }
 
-    auto avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / (double) PERF_RUNS_DEFAULT );
+    auto avgProcessTime = ((double)duration_cast<milliseconds>(steady_clock::now() - startTime).count() /
+                           (double)PERF_RUNS_DEFAULT);
 
-    if( write_performance_data ){
+    if (write_performance_data) {
         PerformanceData << "avg_board_detection_time" << avgProcessTime;
         return;
     }
 
     double reference;
     PerformanceData["avg_board_detection_time"] >> reference;
-    EXPECT_LE(avgProcessTime, reference*TOLERANCE);
-    BenchmarkData << "relative_board_detection_speedup" << ( reference / avgProcessTime );
-
+    EXPECT_LE(avgProcessTime, reference * TOLERANCE);
+    BenchmarkData << "relative_board_detection_speedup" << (reference / avgProcessTime);
 }
 
-TEST( ArucoPerf, Multi ) {
+TEST(ArucoPerf, Multi) {
     MarkerBoardFixture mbf;
 
     cv::Mat currentFrame = cv::imread(TESTDATA_PATH "chessboard/chessboard_frame.png", IMREAD_GRAYSCALE);
 
-    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "chessboard/intrinsics.yml" );
-    mbf.CamParam.resize( currentFrame.size() );
+    mbf.CamParam.readFromXMLFile(TESTDATA_PATH "chessboard/intrinsics.yml");
+    mbf.CamParam.resize(currentFrame.size());
 
-    mbf.BoardConfig.readFromFile( TESTDATA_PATH "chessboard/chessboardinfo_pix.yml" );
+    mbf.BoardConfig.readFromFile(TESTDATA_PATH "chessboard/chessboardinfo_pix.yml");
 
-    mbf.BoardDetector.setParams( mbf.BoardConfig, mbf.CamParam, mbf.MarkerSize );
-    mbf.BoardDetector.getMarkerDetector().setCornerRefinementMethod( MarkerDetector::HARRIS );
-    mbf.BoardDetector.set_repj_err_thres( 1.5 );
+    mbf.BoardDetector.setParams(mbf.BoardConfig, mbf.CamParam, mbf.MarkerSize);
+    mbf.BoardDetector.getMarkerDetector().setCornerRefinementMethod(MarkerDetector::HARRIS);
+    mbf.BoardDetector.set_repj_err_thres(1.5);
 
     auto startTime = steady_clock::now();
     for (auto i = 0; i < PERF_RUNS_DEFAULT; i++) {
@@ -104,59 +105,59 @@ TEST( ArucoPerf, Multi ) {
     auto thisTimeElapsed = duration_cast<milliseconds>(steady_clock::now() - startTime).count();
     double avgProcessTime = ((double)thisTimeElapsed / (double)PERF_RUNS_DEFAULT);
 
-    if( write_performance_data ){
+    if (write_performance_data) {
         PerformanceData << "avg_chessboard_detection_time" << avgProcessTime;
         return;
     }
 
     double reference;
     PerformanceData["avg_chessboard_detection_time"] >> reference;
-    EXPECT_LE(avgProcessTime, reference*TOLERANCE);
-    BenchmarkData << "relative_chessboard_detection_speedup" << ( reference / avgProcessTime );
-
+    EXPECT_LE(avgProcessTime, reference * TOLERANCE);
+    BenchmarkData << "relative_chessboard_detection_speedup" << (reference / avgProcessTime);
 }
 
-TEST( ArucoPerf, GL_Conversion ) {
+TEST(ArucoPerf, GL_Conversion) {
     MarkerBoardFixture mbf;
-    Mat testFrame = imread( TESTDATA_PATH "board/image-test.png" );
+    Mat testFrame = imread(TESTDATA_PATH "board/image-test.png");
 
-    mbf.BoardConfig.readFromFile( TESTDATA_PATH "board/board_pix.yml" );
+    mbf.BoardConfig.readFromFile(TESTDATA_PATH "board/board_pix.yml");
 
-    mbf.CamParam.readFromXMLFile( TESTDATA_PATH "board/intrinsics.yml" );
-    mbf.CamParam.resize( testFrame.size() );
+    mbf.CamParam.readFromXMLFile(TESTDATA_PATH "board/intrinsics.yml");
+    mbf.CamParam.resize(testFrame.size());
 
-    mbf.MDetector.detect( testFrame, mbf.Markers, mbf.CamParam, mbf.MarkerSize );
-    mbf.BoardDetector.detect( mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize );
+    mbf.MDetector.detect(testFrame, mbf.Markers, mbf.CamParam, mbf.MarkerSize);
+    mbf.BoardDetector.detect(mbf.Markers, mbf.BoardConfig, mbf.Board, mbf.CamParam, mbf.MarkerSize);
 
-    vector<Vec<double, 16>> gldata( mbf.Markers.size() + 2 );
+    vector<Vec<double, 16> > gldata(mbf.Markers.size() + 2);
 
     auto startTime = steady_clock::now();
 
     mbf.CamParam.Distorsion.setTo(0); // silence cerr spam
 
-    for ( auto run = 0; run < PERF_RUNS_DEFAULT; run++ ){
-        mbf.CamParam.glGetProjectionMatrix( testFrame.size(), testFrame.size(), gldata[0].val, 0.5, 10 );
-        mbf.Board.glGetModelViewMatrix( gldata[1].val );
-        for( size_t i = 0; i < mbf.Markers.size(); i++ )
-            mbf.Markers[i].glGetModelViewMatrix( gldata[i + 2].val );
+    for (auto run = 0; run < PERF_RUNS_DEFAULT; run++) {
+        mbf.CamParam.glGetProjectionMatrix(testFrame.size(), testFrame.size(), gldata[0].val, 0.5, 10);
+        mbf.Board.glGetModelViewMatrix(gldata[1].val);
+        for (size_t i = 0; i < mbf.Markers.size(); i++)
+            mbf.Markers[i].glGetModelViewMatrix(gldata[i + 2].val);
     }
 
-    double avgProcessTime = ( (double) duration_cast<milliseconds>( steady_clock::now() - startTime ).count() / (double) PERF_RUNS_DEFAULT );
+    double avgProcessTime = ((double)duration_cast<milliseconds>(steady_clock::now() - startTime).count() /
+                             (double)PERF_RUNS_DEFAULT);
 
-    if( write_performance_data ){
+    if (write_performance_data) {
         PerformanceData << "avg_gl_conversion_time" << avgProcessTime;
         return;
     }
 
     double reference;
     PerformanceData["avg_gl_conversion_time"] >> reference;
-    EXPECT_LE( avgProcessTime, reference*TOLERANCE);
-    BenchmarkData << "relative_gl_conversion_speedup" << ( reference / avgProcessTime );
+    EXPECT_LE(avgProcessTime, reference * TOLERANCE);
+    BenchmarkData << "relative_gl_conversion_speedup" << (reference / avgProcessTime);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
-    ::testing::InitGoogleTest( &argc, argv );
+    ::testing::InitGoogleTest(&argc, argv);
 
     write_performance_data = not PerformanceData.open("/tmp/performance.yml", FileStorage::READ);
 
