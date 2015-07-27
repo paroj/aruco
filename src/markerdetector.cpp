@@ -325,55 +325,54 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
         vector<Point> approxCurve;
         /// for each contour, analyze if it is a paralelepiped likely to be the marker
         for (unsigned int i = 0; i < contours2.size(); i++) {
-
             // check it is a possible element by first checking is has enough points
-            if (minSize < contours2[i].size() && contours2[i].size() < maxSize) {
-                // approximate to a poligon
-                approxPolyDP(contours2[i], approxCurve, double(contours2[i].size()) * 0.05, true);
-                // 				drawApproxCurve(copy,approxCurve,Scalar(0,0,255));
-                // check that the poligon has 4 points
-                if (approxCurve.size() == 4) {
-                    /*
-                                            drawContour ( input,contours2[i],Scalar ( 255,0,225 ) );
-                                            namedWindow ( "input" );
-                                            imshow ( "input",input );*/
-                    //  	 	waitKey(0);
-                    // and is convex
-                    if (isContourConvex(Mat(approxCurve))) {
-                        // 					      drawApproxCurve(input,approxCurve,Scalar(255,0,255));
-                        // 						//ensure that the   distace between consecutive
-                        // points is large enough
-                        float minDist = 1e10;
-                        for (int j = 0; j < 4; j++) {
-                            float d = norm(approxCurve[i] - approxCurve[(i+1)%4]);
-                            if (d < minDist)
-                                minDist = d;
-                        }
-                        // check that distance is not very small
-                        if (minDist > 10) {
-                            // add the points
-                            // 	      cout<<"ADDED"<<endl;
-                            MarkerCanditatesV[omp_get_thread_num()].push_back(MarkerCandidate());
-                            MarkerCanditatesV[omp_get_thread_num()].back().idx = i;
-                            for (int j = 0; j < 4; j++) {
-                                MarkerCanditatesV[omp_get_thread_num()].back().push_back(
-                                    Point2f(approxCurve[j].x, approxCurve[j].y));
-                                MarkerCanditatesV[omp_get_thread_num()].back().contour = contours2[i];
-                            }
-                        }
-                    }
-                }
+            if (contours2[i].size() <= minSize || contours2[i].size() >= maxSize) {
+                continue;
             }
+
+            // approximate to a poligon
+            approxPolyDP(contours2[i], approxCurve, double(contours2[i].size()) * 0.05, true);
+            // 				drawApproxCurve(copy,approxCurve,Scalar(0,0,255));
+
+            // check that the polygon has 4 points
+            if (approxCurve.size() != 4) {
+                continue;
+            }
+            /*
+                                    drawContour ( input,contours2[i],Scalar ( 255,0,225 ) );
+                                    namedWindow ( "input" );
+                                    imshow ( "input",input );*/
+            //  	 	waitKey(0);
+            // and is convex
+            if (!isContourConvex(approxCurve)) {
+                continue;
+            }
+
+            // 					      drawApproxCurve(input,approxCurve,Scalar(255,0,255));
+            // 						//ensure that the   distace between consecutive
+            // points is large enough
+            float minDist = 1e10;
+            for (int j = 0; j < 4; j++) {
+                float d = norm(approxCurve[i] - approxCurve[(i+1)%4]);
+                if (d < minDist)
+                    minDist = d;
+            }
+
+            // check that distance is not very small
+            if (minDist <= 10) {
+                continue;
+            }
+
+            // add the points
+            // 	      cout<<"ADDED"<<endl;
+            MarkerCanditatesV[omp_get_thread_num()].push_back(Marker(vector<Point2f>(approxCurve.begin(), approxCurve.end())));
+            MarkerCanditatesV[omp_get_thread_num()].back().idx = i;
+            MarkerCanditatesV[omp_get_thread_num()].back().contour = contours2[i];
         }
     }
     // join all candidates
     vector<MarkerCandidate> MarkerCanditates;
-
-    for (size_t i = 0; i < MarkerCanditatesV.size(); i++)
-        for (size_t j = 0; j < MarkerCanditatesV[i].size(); j++) {
-            MarkerCanditates.push_back(MarkerCanditatesV[i][j]);
-            //                 MarkerCanditates.back().draw ( input,cv::Scalar ( 0,0,255 ) );
-        }
+    joinVectors(MarkerCanditatesV, MarkerCanditates);
 
     /// sort the points in anti-clockwise order
     vector<bool> swapped(MarkerCanditates.size(), false); // used later
@@ -381,11 +380,9 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
 
         // trace a line between the first and second point.
         // if the thrid point is at the right side, then the points are anti-clockwise
-        double dx1 = MarkerCanditates[i][1].x - MarkerCanditates[i][0].x;
-        double dy1 = MarkerCanditates[i][1].y - MarkerCanditates[i][0].y;
-        double dx2 = MarkerCanditates[i][2].x - MarkerCanditates[i][0].x;
-        double dy2 = MarkerCanditates[i][2].y - MarkerCanditates[i][0].y;
-        double o = (dx1 * dy2) - (dy1 * dx2);
+        Point2f d1 = MarkerCanditates[i][1] - MarkerCanditates[i][0];
+        Point2f d2 = MarkerCanditates[i][2] - MarkerCanditates[i][0];
+        float o = (d1.x * d2.y) - (d1.y * d2.x);
 
         if (o < 0.0) { // if the third point is in the left side, then sort in anti-clockwise order
             swap(MarkerCanditates[i][1], MarkerCanditates[i][3]);
