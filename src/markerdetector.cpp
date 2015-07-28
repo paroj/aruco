@@ -43,9 +43,7 @@ using namespace cv;
 
 namespace {
 template <typename T>
-void joinVectors(vector<vector<T> >& vv, vector<T>& v, bool clearv = false) {
-    if (clearv)
-        v.clear();
+void joinVectors(vector<vector<T> >& vv, vector<T>& v) {
     for (size_t i = 0; i < vv.size(); i++)
         v.insert(v.end(), vv[i].begin(), vv[i].end());
 }
@@ -189,9 +187,6 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
 #endif
     //     cv::cvtColor(grey,_ssImC ,CV_GRAY2BGR); //DELETE
 
-    // clear input data
-    detectedMarkers.clear();
-
     cv::Mat imgToBeThresHolded = grey;
     double ThresParam1 = _thresParam1, ThresParam2 = _thresParam2;
 
@@ -219,34 +214,40 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
 #endif
 
     /// identify the markers
-    vector<vector<Marker> > markers_omp(omp_get_max_threads());
-    vector<vector<std::vector<cv::Point2f> > > candidates_omp(omp_get_max_threads());
     //#pragma omp parallel for
-    for (int i = 0; i < MarkerCanditates.size(); i++) {
+    for (size_t i = 0; i < MarkerCanditates.size(); i++) {
         // Find proyective homography
         Mat canonicalMarker;
-        bool resW = false;
-        resW = warp(grey, canonicalMarker, Size(_markerWarpSize, _markerWarpSize), MarkerCanditates[i]);
-        if (resW) {
-            int nRotations;
-            int id = (*markerIdDetector_ptrfunc)(canonicalMarker, nRotations);
-            if (id != -1) {
-                if (_cornerMethod == LINES) // make LINES refinement before lose contour points
-                    refineCandidateLines(MarkerCanditates[i], camMatrix, distCoeff);
-                markers_omp[omp_get_thread_num()].push_back(MarkerCanditates[i]);
-                markers_omp[omp_get_thread_num()].back().id = id;
-                // sort the points so that they are always in the same order no matter the camera
-                // orientation
-                std::rotate(markers_omp[omp_get_thread_num()].back().begin(),
-                            markers_omp[omp_get_thread_num()].back().begin() + 4 - nRotations,
-                            markers_omp[omp_get_thread_num()].back().end());
-            } else
-                candidates_omp[omp_get_thread_num()].push_back(MarkerCanditates[i]);
+        warp(grey, canonicalMarker, Size(_markerWarpSize, _markerWarpSize), MarkerCanditates[i]);
+        int nRotations;
+        int id = (*markerIdDetector_ptrfunc)(canonicalMarker, nRotations);
+        MarkerCanditates[i].id = id;
+
+        if (id != -1) {
+            if (_cornerMethod == LINES) // make LINES refinement before lose contour points
+                refineCandidateLines(MarkerCanditates[i], camMatrix, distCoeff);
+
+            // sort the points so that they are always in the same order no matter the camera
+            // orientation
+            std::rotate(MarkerCanditates[i].begin(),
+                    MarkerCanditates[i].begin() + 4 - nRotations,
+                    MarkerCanditates[i].end());
         }
     }
-    // unify parallel data
-    joinVectors(markers_omp, detectedMarkers, true);
-    joinVectors(candidates_omp, _candidates, true);
+
+    // clear input data
+    detectedMarkers.clear();
+    _candidates.clear();
+
+    // collect results based on id
+    for (size_t i = 0; i < MarkerCanditates.size(); i++) {
+        if(MarkerCanditates[i].id != -1) {
+            detectedMarkers.push_back(MarkerCanditates[i]);
+            detectedMarkers.back().id = MarkerCanditates[i].id;
+        } else {
+            _candidates.push_back(MarkerCanditates[i]);
+        }
+    }
 
 #if ARUCO_MARKER_BENCHMARK
     double t4 = cv::getTickCount();
