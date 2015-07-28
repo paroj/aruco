@@ -543,17 +543,17 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
  *
  ************************************/
 bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points) throw(cv::Exception) {
-
     CV_Assert(points.size() == 4);
+
+    Point2f pointsRes[] = {
+        Point2f(0, 0),
+        Point2f(size.width - 1, 0),
+        Point2f(size.width - 1, size.height - 1),
+        Point2f(0, size.height - 1)
+    };
+
     // obtain the perspective transform
-    Point2f pointsRes[4], pointsIn[4];
-    for (int i = 0; i < 4; i++)
-        pointsIn[i] = points[i];
-    pointsRes[0] = (Point2f(0, 0));
-    pointsRes[1] = Point2f(size.width - 1, 0);
-    pointsRes[2] = Point2f(size.width - 1, size.height - 1);
-    pointsRes[3] = Point2f(0, size.height - 1);
-    Mat M = getPerspectiveTransform(pointsIn, pointsRes);
+    Mat M = getPerspectiveTransform(points, Mat(4, 2, CV_32F, pointsRes));
     cv::warpPerspective(in, out, M, size, cv::INTER_NEAREST);
     return true;
 }
