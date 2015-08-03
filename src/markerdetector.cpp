@@ -166,6 +166,7 @@ void MarkerDetector::enableLockedCornersMethod(bool enable) {
 void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarkers, Mat camMatrix,
                             Mat distCoeff, float markerSizeMeters,
                             bool setYPerpendicular) throw(cv::Exception) {
+    Mat grey;
 
     // it must be a 3 channel image
     if (input.type() == CV_8UC3)

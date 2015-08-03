@@ -306,7 +306,7 @@ private:
     // vectr of candidates to be markers. This is a vector with a set of rectangles that have no valid id
     vector<std::vector<cv::Point2f> > _candidates;
     // Images
-    cv::Mat grey, thres;
+    cv::Mat thres;
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
     int (*markerIdDetector_ptrfunc)(const cv::Mat& in, int& nRotations);
 
