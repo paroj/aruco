@@ -135,19 +135,6 @@ void MarkerDetector::setDesiredSpeed(int val) {
     };
 }
 
-/************************************
- *
- *
- *
- *
- ************************************/
-void MarkerDetector::detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers,
-                            CameraParameters camParams, float markerSizeMeters,
-                            bool setYPerpendicular) throw(cv::Exception) {
-    detect(input, detectedMarkers, camParams.CameraMatrix, camParams.Distorsion, markerSizeMeters,
-           setYPerpendicular);
-}
-
 /***
  *
  *

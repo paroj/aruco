@@ -81,12 +81,12 @@ public:
      * @param camMatrix intrinsic camera information.
      * @param distCoeff camera distorsion coefficient. If set Mat() if is assumed no camera distorion
      * @param markerSizeMeters size of the marker sides expressed in meters
-     * @param setYPerperdicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
+     * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      *be the Z axis
      */
     void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, cv::Mat camMatrix = cv::Mat(),
                 cv::Mat distCoeff = cv::Mat(), float markerSizeMeters = -1,
-                bool setYPerperdicular = false) throw(cv::Exception);
+                bool setYPerpendicular = false) throw(cv::Exception);
     /**Detects the markers in the image passed
      *
      * If you provide information about the camera parameters and the size of the marker, then, the
@@ -96,11 +96,14 @@ public:
      * @param detectedMarkers output vector with the markers detected
      * @param camParams Camera parameters
      * @param markerSizeMeters size of the marker sides expressed in meters
-     * @param setYPerperdicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
+     * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      *be the Z axis
      */
-    void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, CameraParameters camParams,
-                float markerSizeMeters = -1, bool setYPerperdicular = false) throw(cv::Exception);
+    void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, const CameraParameters& camParams,
+                float markerSizeMeters = -1, bool setYPerpendicular = false) throw(cv::Exception) {
+        detect(input, detectedMarkers, camParams.CameraMatrix, camParams.Distorsion, markerSizeMeters,
+               setYPerpendicular);
+    }
 
     /**This set the type of thresholding methods available
      */
