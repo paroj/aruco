@@ -99,7 +99,7 @@ public:
      * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      *be the Z axis
      */
-    void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, cv::Mat camMatrix = cv::Mat(),
+    void detect(cv::InputArray input, std::vector<Marker>& detectedMarkers, cv::Mat camMatrix = cv::Mat(),
                 cv::Mat distCoeff = cv::Mat(), float markerSizeMeters = -1, bool setYPerpendicular = false) ;
     /**Detects the markers in the image passed
      *
@@ -113,7 +113,7 @@ public:
      * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      *be the Z axis
      */
-    void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, const CameraParameters& camParams,
+    void detect(cv::InputArray input, std::vector<Marker>& detectedMarkers, const CameraParameters& camParams,
                 float markerSizeMeters = -1, bool setYPerpendicular = false) {
         detect(input, detectedMarkers, camParams.CameraMatrix, camParams.Distorsion, markerSizeMeters,
                setYPerpendicular);
@@ -252,13 +252,13 @@ public:
     /**
      * Thesholds the passed image with the specified method.
      */
-    void thresHold(int method, const cv::Mat& grey, cv::Mat& thresImg, double param1 = -1,
+    void thresHold(int method, cv::InputArray grey, cv::OutputArray thresImg, double param1 = -1,
                    double param2 = -1);
     /**
     * Detection of candidates to be markers, i.e., rectangles.
     * This function returns in candidates all the rectangles found in a thresolded image
     */
-    void detectRectangles(const cv::Mat& thresImg, std::vector<std::vector<cv::Point2f> >& candidates);
+    void detectRectangles(cv::InputArray thresImg, std::vector<std::vector<cv::Point2f> >& candidates);
 
     /**Returns a list candidates to be markers (rectangles), for which no valid id was found after calling
      * detectRectangles
@@ -272,7 +272,7 @@ public:
      * @param points 4 corners of the marker in the image in
      * @return true if the operation succeed
      */
-    bool warp(cv::Mat& in, cv::Mat& out, cv::Size size, std::vector<cv::Point2f> points) ;
+    void warp(cv::InputArray in, cv::OutputArray out, cv::Size size, std::vector<cv::Point2f> points) ;
 
     /** Refine MarkerCandidate Corner using LINES method
      * @param candidate candidate to refine corners

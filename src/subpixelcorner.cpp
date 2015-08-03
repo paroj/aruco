@@ -67,13 +67,16 @@ void SubPixelCorner::generateMask() {
     }
 }
 
-void SubPixelCorner::RefineCorner(cv::Mat image, std::vector<cv::Point2f>& corners) {
+void SubPixelCorner::RefineCorner(InputArray image, std::vector<cv::Point2f>& corners) {
 
     if (enable == false)
         return;
     checkTerm();
 
     generateMask();
+
+    Size sz = image.getSz();
+
     // loop over all the corner points
     for (int k = 0; k < corners.size(); k++) {
         cv::Point2f curr_corner;
@@ -82,8 +85,8 @@ void SubPixelCorner::RefineCorner(cv::Mat image, std::vector<cv::Point2f>& corne
 
         // cerr << 'SSS" << corners[k].x <<":" << corners[k].y << endl;
 
-        if (estimate_corner.x < 0 || estimate_corner.y < 0 || estimate_corner.y > image.rows ||
-            estimate_corner.y > image.cols)
+        if (estimate_corner.x < 0 || estimate_corner.y < 0 || estimate_corner.y > sz.height ||
+            estimate_corner.y > sz.width)
             continue;
         int iter = 0;
         double dist = TermCriteria::EPS;

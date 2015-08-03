@@ -76,7 +76,7 @@ bool isInto(Mat& contour, vector<Point2f>& b) {
     return false;
 }
 
-void findBestCornerInRegion_harris(const cv::Mat& grey, vector<cv::Point2f>& Corners, int blockSize) {
+void findBestCornerInRegion_harris(cv::InputArray grey, vector<cv::Point2f>& Corners, int blockSize) {
     aruco::SubPixelCorner Subp;
     Subp.RefineCorner(grey, Corners);
 }
@@ -156,8 +156,7 @@ void distortPoints(vector<cv::Point2f> in, vector<cv::Point2f>& out, const Mat& 
 
 // method to refine corner detection in case the internal border after threshold is found
 // This was tested in the context of chessboard methods
-void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize) {
-
+void findCornerMaxima(vector<cv::Point2f>& Corners, const Mat& grey, int wsize) {
 // for each element, search in a region around
 #pragma omp parallel for
     for (int i = 0; i < int(Corners.size()); i++) {
@@ -302,7 +301,7 @@ void MarkerDetector::enableLockedCornersMethod(bool enable) {
  *
  *
  ************************************/
-void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarkers, Mat camMatrix,
+void MarkerDetector::detect(cv::InputArray input, vector<Marker>& detectedMarkers, Mat camMatrix,
                             Mat distCoeff, float markerSizeMeters, bool setYPerpendicular) {
     Mat grey;
 
@@ -310,14 +309,14 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
     if (input.type() == CV_8UC3)
         cv::cvtColor(input, grey, CV_BGR2GRAY);
     else
-        grey = input;
+        grey = input.getMat();
 
 #if ARUCO_MARKER_BENCHMARK
     double t1 = cv::getTickCount();
 #endif
     //     cv::cvtColor(grey,_ssImC ,CV_GRAY2BGR); //DELETE
 
-    cv::Mat imgToBeThresHolded = grey;
+    Mat imgToBeThresHolded = grey;
     double ThresParam1 = _thresParam1, ThresParam2 = _thresParam2;
 
     /// Do threshold the image and detect contours
@@ -473,10 +472,9 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
  *
  *
  ************************************/
-void MarkerDetector::detectRectangles(const cv::Mat& thres, vector<std::vector<cv::Point2f> >& MarkerCanditates) {
+void MarkerDetector::detectRectangles(InputArray thres, vector<std::vector<cv::Point2f> >& MarkerCanditates) {
     vector<MarkerCandidate> candidates;
-    vector<cv::Mat> thres_v;
-    thres_v.push_back(thres);
+    vector<cv::Mat> thres_v(1, thres.getMat());
     detectRectangles(thres_v, candidates);
     // create the output
     MarkerCanditates.resize(candidates.size());
@@ -631,7 +629,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerC
  *
  *
  ************************************/
-void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double param1, double param2) {
+void MarkerDetector::thresHold(int method, InputArray grey, OutputArray out, double param1, double param2) {
     CV_Assert(grey.type() == CV_8UC1);
 
     if (param1 == -1)
@@ -672,7 +670,7 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
  *
  *
  ************************************/
-bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points){
+void MarkerDetector::warp(InputArray in, OutputArray out, Size size, vector<Point2f> points){
     CV_Assert(points.size() == 4);
 
     Point2f pointsRes[] = {
@@ -685,7 +683,6 @@ bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points){
     // obtain the perspective transform
     Mat M = getPerspectiveTransform(points, Mat(4, 2, CV_32F, pointsRes));
     cv::warpPerspective(in, out, M, size, cv::INTER_NEAREST);
-    return true;
 }
 
 void findCornerPointsInContour(const vector<cv::Point2f>& points, const vector<cv::Point>& contour,
