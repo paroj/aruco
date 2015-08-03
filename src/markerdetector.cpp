@@ -289,15 +289,15 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
     }
 
     // remove markers with corners too near the image limits
-    int borderDistThresX = _borderDistThres * float(input.cols);
-    int borderDistThresY = _borderDistThres * float(input.rows);
+    Point inputSize = Point(input.size());
+    Rect validRegion(inputSize*_borderDistThres, inputSize*(1.0f - _borderDistThres));
+
     for (size_t i = 0; i < detectedMarkers.size(); i++) {
         // delete if any of the corners is too near image border
         for (size_t c = 0; c < detectedMarkers[i].size(); c++) {
-            if (detectedMarkers[i][c].x < borderDistThresX || detectedMarkers[i][c].y < borderDistThresY ||
-                detectedMarkers[i][c].x > input.cols - borderDistThresX ||
-                detectedMarkers[i][c].y > input.rows - borderDistThresY) {
+            if(!validRegion.contains(detectedMarkers[i][c])) {
                 toRemove[i] = true;
+                break;
             }
         }
     }
