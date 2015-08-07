@@ -18,7 +18,7 @@ void rotateXAxis(Vec3f& rotation) {
     Rodrigues(rotation, R);
     // create a rotation matrix for x axis
     cv::Matx33f RX = cv::Matx33f::eye();
-    float angleRad = M_PI / 2;
+    float angleRad = CV_PI / 2;
     RX(1, 1) = cos(angleRad);
     RX(1, 2) = -sin(angleRad);
     RX(2, 1) = sin(angleRad);

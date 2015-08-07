@@ -8,11 +8,6 @@
 #ifndef aruco_UTILS_HPP
 #define aruco_UTILS_HPP
 
-// won't work if cmath has been included before without _USE_MATH_DEFINES defined.
-// see http://stackoverflow.com/questions/6563810/m-pi-works-with-math-h-but-not-with-cmath-in-visual-studio
-#define _USE_MATH_DEFINES
-#include <cmath>
-
 #include <aruco_export.h>
 #include <opencv2/core.hpp>
 
