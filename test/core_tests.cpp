@@ -188,7 +188,7 @@ TEST(Aruco, HRM_Single) {
     MarkerFixture mf;
     Dictionary dictionary;
 
-    vector<Marker> expected;
+    std::vector<Marker> expected;
 
     dictionary.fromFile(TESTDATA_PATH "hrm/dictionaries/d4x4_100.yml");
     HighlyReliableMarkers::loadDictionary(dictionary);

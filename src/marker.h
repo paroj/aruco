@@ -35,7 +35,6 @@ or implied, of Rafael Muñoz Salinas.
 #include "cameraparameters.h"
 #include "utils.h"
 
-using namespace std;
 namespace aruco {
 /**\brief This class represents a marker. It is a vector of the fours corners ot the marker
  *
@@ -124,7 +123,7 @@ public:
     friend bool operator<(const Marker& M1, const Marker& M2) { return M1.id < M2.id; }
     /**
      */
-    friend ostream& operator<<(ostream& str, const Marker& M) {
+    friend std::ostream& operator<<(std::ostream& str, const Marker& M) {
         str << M.id << "=";
         for (int i = 0; i < 4; i++)
             str << "(" << M[i].x << "," << M[i].y << ") ";

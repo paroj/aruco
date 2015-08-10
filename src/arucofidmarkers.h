@@ -32,6 +32,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <aruco_export.h>
 #include "marker.h"
 #include "board.h"
+
 namespace aruco {
 
 class ARUCO_EXPORTS FiducidalMarkers {
@@ -91,7 +92,7 @@ public:
      * @param excludedIds set of ids excluded from the board
      */
     static cv::Mat createBoardImage(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                    vector<int>* excludedIds = NULL);
+                                    std::vector<int>* excludedIds = NULL);
 
     /**Creates a printable image of a board in chessboard_like manner
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -102,7 +103,7 @@ public:
      *
      */
     static cv::Mat createBoardImage_ChessBoard(cv::Size gridSize, int MarkerSize, BoardConfiguration& TInfo,
-                                               bool setDataCentered = true, vector<int>* excludedIds = NULL);
+                                               bool setDataCentered = true, std::vector<int>* excludedIds = NULL);
 
     /**Creates a printable image of a board in a frame fashion
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -114,10 +115,10 @@ public:
      *
      */
     static cv::Mat createBoardImage_Frame(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                          bool setDataCentered = true, vector<int>* excludedIds = NULL) ;
+                                          bool setDataCentered = true, std::vector<int>* excludedIds = NULL) ;
 
 private:
-    static vector<int> getListOfValidMarkersIds_random(int nMarkers, vector<int>* excluded);
+    static std::vector<int> getListOfValidMarkersIds_random(int nMarkers, std::vector<int>* excluded);
     static cv::Mat rotate(const cv::Mat& in);
     static int hammDistMarker(cv::Mat bits);
     static int analyzeMarkerImage(cv::Mat& grey, int& nRotations);

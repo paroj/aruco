@@ -30,6 +30,8 @@ or implied, of Rafael Muñoz Salinas.
 #include <set>
 // #include <omp.h>
 
+using namespace std;
+
 /**
  */
 EMClassifier::EMClassifier(unsigned int nelements) {

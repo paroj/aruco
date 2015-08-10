@@ -36,6 +36,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <fstream>
 #include "arucofidmarkers.h"
 #include "ar_omp.h"
+
 using namespace std;
 using namespace cv;
 
