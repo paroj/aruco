@@ -68,8 +68,7 @@ public:
     * @param locked if true, creates etra rectangles lcoking the corners of the marker (new in version
     *1.2.6)
     */
-    static cv::Mat createMarkerImage(int id, int size, bool writeIdWaterMark = true,
-                                     bool locked = false) throw(cv::Exception);
+    static cv::Mat createMarkerImage(int id, int size, bool writeIdWaterMark = true, bool locked = false);
 
     /** Detection of fiducidal aruco markers (10 bits)
      * @param in input image with the patch that contains the possible marker
@@ -82,7 +81,7 @@ public:
     /**Similar to createMarkerImage. Instead of returning a visible image, returns a 8UC1 matrix of 0s and
      * 1s with the marker info
      */
-    static cv::Mat getMarkerMat(int id) throw(cv::Exception);
+    static cv::Mat getMarkerMat(int id);
 
     /**Creates a printable image of a board
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -91,9 +90,8 @@ public:
       * @param TInfo output
      * @param excludedIds set of ids excluded from the board
      */
-    static cv::Mat createBoardImage(cv::Size gridSize, int MarkerSize, int MarkerDistance,
-                                    BoardConfiguration& TInfo,
-                                    vector<int>* excludedIds = NULL) throw(cv::Exception);
+    static cv::Mat createBoardImage(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
+                                    vector<int>* excludedIds = NULL);
 
     /**Creates a printable image of a board in chessboard_like manner
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -104,8 +102,7 @@ public:
      *
      */
     static cv::Mat createBoardImage_ChessBoard(cv::Size gridSize, int MarkerSize, BoardConfiguration& TInfo,
-                                               bool setDataCentered = true,
-                                               vector<int>* excludedIds = NULL) throw(cv::Exception);
+                                               bool setDataCentered = true, vector<int>* excludedIds = NULL);
 
     /**Creates a printable image of a board in a frame fashion
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -116,13 +113,11 @@ public:
      *left-upper corner
      *
      */
-    static cv::Mat createBoardImage_Frame(cv::Size gridSize, int MarkerSize, int MarkerDistance,
-                                          BoardConfiguration& TInfo, bool setDataCentered = true,
-                                          vector<int>* excludedIds = NULL) throw(cv::Exception);
+    static cv::Mat createBoardImage_Frame(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
+                                          bool setDataCentered = true, vector<int>* excludedIds = NULL) ;
 
 private:
-    static vector<int> getListOfValidMarkersIds_random(int nMarkers,
-                                                       vector<int>* excluded) throw(cv::Exception);
+    static vector<int> getListOfValidMarkersIds_random(int nMarkers, vector<int>* excluded);
     static cv::Mat rotate(const cv::Mat& in);
     static int hammDistMarker(cv::Mat bits);
     static int analyzeMarkerImage(cv::Mat& grey, int& nRotations);

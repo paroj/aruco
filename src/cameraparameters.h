@@ -52,13 +52,13 @@ public:
      * @param distorsionCoeff 4x1 matrix (k1,k2,p1,p2)
      * @param size image size
      */
-    CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) throw(cv::Exception);
+    CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size);
     /**Sets the parameters
      * @param cameraMatrix 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
      * @param distorsionCoeff 4x1 matrix (k1,k2,p1,p2)
      * @param size image size
      */
-    void setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) throw(cv::Exception);
+    void setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size);
     /**Copy constructor
      */
     CameraParameters(const CameraParameters& CI);
@@ -84,7 +84,7 @@ public:
 
     /**Adjust the parameters to the size of the image indicated
      */
-    void resize(cv::Size size) throw(cv::Exception);
+    void resize(cv::Size size);
 
     /**Returns the location of the camera in the reference system given by the rotation and translation
      * vectors passed

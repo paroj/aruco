@@ -152,8 +152,8 @@ const MarkerInfo& BoardConfiguration::getMarkerInfo(int id) const throw(cv::Exce
     for (size_t i = 0; i < size(); i++)
         if (at(i).id == id)
             return at(i);
-    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",
-                        __FILE__, __LINE__);
+
+    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",__FILE__, __LINE__);
 }
 
 /**

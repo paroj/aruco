@@ -144,7 +144,7 @@ public:
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
     * Setting this matrix, the reference corrdinate system will be set in this board
      */
-    void glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exception) {
+    void glGetModelViewMatrix(double modelview_matrix[16]) {
         GetGLModelViewMatrix(Rvec, Tvec, modelview_matrix);
     }
 
@@ -158,7 +158,7 @@ public:
      * mySceneNode->setOrientation( ogreOrient  );
      * ...
      */
-    void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception) {
+    void OgreGetPoseParameters(double position[3], double orientation[4]){
         GetOgrePoseParameters(Rvec, Tvec, position, orientation);
     }
 

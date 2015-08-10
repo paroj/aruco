@@ -41,8 +41,7 @@ CameraParameters::CameraParameters() {
  * @param distorsionCoeff 4x1 matrix (k1,k2,p1,p2)
  * @param size image size
  */
-CameraParameters::CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff,
-                                   cv::Size size) throw(cv::Exception) {
+CameraParameters::CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) {
     setParams(cameraMatrix, distorsionCoeff, size);
 }
 /**
@@ -61,8 +60,7 @@ CameraParameters& CameraParameters::operator=(const CameraParameters& CI) {
 }
 /**
  */
-void CameraParameters::setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff,
-                                 cv::Size size) throw(cv::Exception) {
+void CameraParameters::setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size)  {
     CV_Assert(cameraMatrix.rows == 3 && cameraMatrix.cols == 3);
     CV_Assert(distorsionCoeff.total() >= 4 && distorsionCoeff.total() < 7);
 
@@ -96,8 +94,8 @@ void CameraParameters::readFromFile(string path) throw(cv::Exception) {
 
     ifstream file(path.c_str());
     if (!file)
-        throw cv::Exception(9005, "could not open file:" + path, "CameraParameters::readFromFile", __FILE__,
-                            __LINE__);
+        throw cv::Exception(9005, "could not open file:" + path, "CameraParameters::readFromFile", __FILE__, __LINE__);
+
     // Create the matrices
     Distorsion = cv::Mat::zeros(4, 1, CV_32FC1);
     CameraMatrix = cv::Mat::eye(3, 3, CV_32FC1);
@@ -134,13 +132,13 @@ void CameraParameters::readFromFile(string path) throw(cv::Exception) {
 /**Saves this to a file
   */
 void CameraParameters::saveToFile(string path, bool inXML) throw(cv::Exception) {
-    if (!isValid())
-        throw cv::Exception(9006, "invalid object", "CameraParameters::saveToFile", __FILE__, __LINE__);
+    CV_Assert( isValid() && "invalid camera parameters" );
+
     if (!inXML) {
         ofstream file(path.c_str());
         if (!file)
-            throw cv::Exception(9006, "could not open file:" + path, "CameraParameters::saveToFile",
-                                __FILE__, __LINE__);
+            throw cv::Exception(9006, "could not open file:" + path, "CameraParameters::saveToFile", __FILE__, __LINE__);
+
         file << "# Aruco 1.0 CameraParameters" << endl;
         file << "fx = " << CameraMatrix(0, 0) << endl;
         file << "cx = " << CameraMatrix(0, 2) << endl;
@@ -163,9 +161,9 @@ void CameraParameters::saveToFile(string path, bool inXML) throw(cv::Exception) 
 
 /**Adjust the parameters to the size of the image indicated
  */
-void CameraParameters::resize(cv::Size size) throw(cv::Exception) {
-    if (!isValid())
-        throw cv::Exception(9007, "invalid object", "CameraParameters::resize", __FILE__, __LINE__);
+void CameraParameters::resize(cv::Size size) {
+    CV_Assert( isValid() && "invalid camera parameters" );
+
     if (size == CamSize)
         return;
     // now, read the camera size
@@ -185,6 +183,7 @@ void CameraParameters::resize(cv::Size size) throw(cv::Exception) {
  *
  */
 void CameraParameters::readFromXMLFile(string filePath) throw(cv::Exception) {
+
     cv::FileStorage fs(filePath, cv::FileStorage::READ);
     int w = -1, h = -1;
     cv::Mat MCamera, MDist;
@@ -195,11 +194,9 @@ void CameraParameters::readFromXMLFile(string filePath) throw(cv::Exception) {
     fs["camera_matrix"] >> MCamera;
 
     if (MCamera.cols == 0 || MCamera.rows == 0)
-        throw cv::Exception(9007, "File :" + filePath + " does not contains valid camera matrix",
-                            "CameraParameters::readFromXML", __FILE__, __LINE__);
+        throw cv::Exception(9007, "File :" + filePath + " does not contains valid camera matrix", "CameraParameters::readFromXML", __FILE__, __LINE__);
     if (w == -1 || h == 0)
-        throw cv::Exception(9007, "File :" + filePath + " does not contains valid camera dimensions",
-                            "CameraParameters::readFromXML", __FILE__, __LINE__);
+        throw cv::Exception(9007, "File :" + filePath + " does not contains valid camera dimensions", "CameraParameters::readFromXML", __FILE__, __LINE__);
 
     if (MCamera.type() != CV_32FC1)
         MCamera.convertTo(CameraMatrix, CV_32FC1);
@@ -207,8 +204,7 @@ void CameraParameters::readFromXMLFile(string filePath) throw(cv::Exception) {
         CameraMatrix = MCamera;
 
     if (MDist.total() < 4)
-        throw cv::Exception(9007, "File :" + filePath + " does not contains valid distortion_coefficients",
-                            "CameraParameters::readFromXML", __FILE__, __LINE__);
+        throw cv::Exception(9007, "File :" + filePath + " does not contains valid distortion_coefficients", "CameraParameters::readFromXML", __FILE__, __LINE__);
     // convert to 32 and get the 4 first elements only
     cv::Mat mdist32;
     MDist.convertTo(mdist32, CV_32FC1);
@@ -227,13 +223,11 @@ void CameraParameters::readFromXMLFile(string filePath) throw(cv::Exception) {
  */
 void CameraParameters::glGetProjectionMatrix(cv::Size orgImgSize, cv::Size size, double proj_matrix[16],
                                              double gnear, double gfar, bool invert) throw(cv::Exception) {
+    CV_Assert( isValid() && "invalid camera parameters" );
 
     if (cv::countNonZero(Distorsion) != 0)
         std::cerr << "CameraParameters::glGetProjectionMatrix :: The camera has distortion coefficients "
                   << __FILE__ << " " << __LINE__ << endl;
-    if (isValid() == false)
-        throw cv::Exception(9100, "invalid camera parameters", "CameraParameters::glGetProjectionMatrix",
-                            __FILE__, __LINE__);
 
     // Deterime the rsized info
     double Ax = double(size.width) / double(orgImgSize.width);
@@ -464,4 +458,4 @@ cv::Mat CameraParameters::getRTMatrix(const cv::Mat& R_, const cv::Mat& T_, int 
         return MTyped;
     }
 }
-};
+}
