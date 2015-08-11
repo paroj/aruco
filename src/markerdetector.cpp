@@ -800,11 +800,10 @@ void MarkerDetector::findBestCornerInRegion_harris(const cv::Mat& grey, vector<c
 void MarkerDetector::refineCandidateLines(MarkerDetector::MarkerCandidate& candidate,
                                           const cv::Mat& camMatrix, const cv::Mat& distCoeff) {
     // search corners on the contour vector
-    vector<unsigned int> cornerIndex;
-    cornerIndex.resize(4);
-    for (unsigned int j = 0; j < candidate.contour.size(); j++) {
-        for (unsigned int k = 0; k < 4; k++) {
-            if (candidate.contour[j].x == candidate[k].x && candidate.contour[j].y == candidate[k].y) {
+    int cornerIndex[4];
+    for (size_t j = 0; j < candidate.contour.size(); j++) {
+        for (int k = 0; k < 4; k++) {
+            if (candidate.contour[j] == Point(candidate[k])) {
                 cornerIndex[k] = j;
             }
         }
@@ -821,50 +820,43 @@ void MarkerDetector::refineCandidateLines(MarkerDetector::MarkerCandidate& candi
         inverse = true;
 
     // get pixel vector for each line of the marker
-    int inc = 1;
-    if (inverse)
-        inc = -1;
+    int inc = inverse ? -1 : 1;
 
     // undistort contour
-    vector<Point2f> contour2f;
-    for (unsigned int i = 0; i < candidate.contour.size(); i++)
-        contour2f.push_back(cv::Point2f(candidate.contour[i].x, candidate.contour[i].y));
+    vector<Point2f> contour2f(candidate.contour.begin(), candidate.contour.end());
     if (!camMatrix.empty() && !distCoeff.empty())
         cv::undistortPoints(contour2f, contour2f, camMatrix, distCoeff, cv::Mat(), camMatrix);
 
-    vector<std::vector<cv::Point2f> > contourLines;
-    contourLines.resize(4);
-    for (unsigned int l = 0; l < 4; l++) {
-        for (int j = (int)cornerIndex[l]; j != (int)cornerIndex[(l + 1) % 4]; j += inc) {
-            if (j == (int)candidate.contour.size() && !inverse)
-                j = 0;
-            else if (j == 0 && inverse)
-                j = candidate.contour.size() - 1;
+    vector<cv::Point2f> contourLines[4];
+    for (int l = 0; l < 4; l++) {
+        int j = cornerIndex[l];
+        while (j != cornerIndex[(l + 1) % 4]) {
             contourLines[l].push_back(contour2f[j]);
-            if (j == (int)cornerIndex[(l + 1) % 4])
-                break; // this has to be added because of the previous ifs
+
+            j = (j + inc) % contour2f.size();
+            if (j < 0)
+                j += contour2f.size();
         }
     }
 
     // interpolate marker lines
-    vector<Point3f> lines;
-    lines.resize(4);
-    for (unsigned int j = 0; j < lines.size(); j++)
+    Point3f lines[4];
+    for (int j = 0; j < 4; j++)
         interpolate2Dline(contourLines[j], lines[j]);
 
     // get cross points of lines
-    vector<Point2f> crossPoints;
-    crossPoints.resize(4);
-    for (unsigned int i = 0; i < 4; i++)
-        crossPoints[i] = getCrossPoint(lines[(i - 1) % 4], lines[i]);
+    vector<Point2f> crossPoints(4);
+    for (int i = 0; i < 4; i++)
+        crossPoints[i] = getCrossPoint(lines[i], lines[((i - 1) % 4 + 4) % 4]);
 
     // distort corners again if undistortion was performed
     if (!camMatrix.empty() && !distCoeff.empty())
         distortPoints(crossPoints, crossPoints, camMatrix, distCoeff);
 
     // reassing points
-    for (unsigned int j = 0; j < 4; j++)
+    for (int j = 0; j < 4; j++) {
         candidate[j] = crossPoints[j];
+    }
 }
 
 /**
@@ -922,21 +914,12 @@ void MarkerDetector::interpolate2Dline(const std::vector<Point2f>& inPoints, Poi
 /**
  */
 Point2f MarkerDetector::getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2) {
-
     // create matrices of equation system
-    Matx22f A;
-    Vec2f B, X;
-    A(0, 0) = line1.x;
-    A(0, 1) = line1.y;
-    B(0) = -line1.z;
+    Matx22f A(line1.x, line1.y,
+              line2.x, line2.y);
+    Vec2f   B(-line1.z, -line2.z);
 
-    A(1, 0) = line2.x;
-    A(1, 1) = line2.y;
-    B(1) = -line2.z;
-
-    // solve system
-    solve(A, B, X, DECOMP_SVD);
-    return X;
+    return A.solve(B, DECOMP_SVD);
 }
 
 /**
