@@ -837,6 +837,12 @@ void MarkerDetector::refineCandidateLines(MarkerDetector::MarkerCandidate& candi
             if (j < 0)
                 j += contour2f.size();
         }
+
+        // fix up line equation by adding the next corner
+        // if there were no intermediate points
+        if(contourLines[l].size() == 1) {
+            contourLines[l].push_back(contour2f[cornerIndex[(l + 1) % 4]]);
+        }
     }
 
     // interpolate marker lines
