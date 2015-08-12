@@ -85,11 +85,12 @@ endif()
 ENDIF()
 
 #Omp
-find_package(OpenMP  )
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-add_definitions(-DUSE_OMP)
+option(ENABLE_OPENMP "use OpenMP" TRUE)
+find_package(OpenMP)
+if (OPENMP_FOUND AND ENABLE_OPENMP)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    add_definitions(-DUSE_OMP)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -218,10 +219,6 @@ IF(CMAKE_COMPILER_IS_GNUCXX OR MINGW)
     endif()
 
     # Parallel mode
-    if(ENABLE_OPENMP)
-        set(EXTRA_C_FLAGS "${EXTRA_C_FLAGS}  -fopenmp")
-        set(LINKER_LIBS ${LINKER_LIBS} gomp)
-    endif()
     IF(${CMAKE_SYSTEM_PROCESSOR} MATCHES armv7l) # In ARM_COrtex8 with neon, enalble vectorized operations
 	SET(EXTRA_C_FLAGS_RELEASE "${EXTRA_C_FLAGS_RELEASE} -mcpu=cortex-a8 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize ")
     ENDIF()
