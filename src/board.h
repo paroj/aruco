@@ -32,12 +32,12 @@ or implied, of Rafael Muñoz Salinas.
 #include <vector>
 #include <aruco_export.h>
 #include "marker.h"
-using namespace std;
+
 namespace aruco {
 /**
  * 3d representation of a marker
  */
-struct ARUCO_EXPORTS MarkerInfo : public vector<cv::Point3f> {
+struct ARUCO_EXPORTS MarkerInfo : public std::vector<cv::Point3f> {
     MarkerInfo() {}
     MarkerInfo(int _id) { id = _id; }
     MarkerInfo(const MarkerInfo& MI) : vector<cv::Point3f>(MI) { id = MI.id; }
@@ -68,7 +68,7 @@ struct ARUCO_EXPORTS MarkerInfo : public vector<cv::Point3f> {
  *
 */
 
-class ARUCO_EXPORTS BoardConfiguration : public vector<MarkerInfo> {
+class ARUCO_EXPORTS BoardConfiguration : public std::vector<MarkerInfo> {
     friend class Board;
 
 public:
@@ -87,7 +87,7 @@ public:
     /**Loads from file
      * @param filePath to the config file
      */
-    BoardConfiguration(string filePath) throw(cv::Exception);
+    BoardConfiguration(std::string filePath) throw(cv::Exception);
 
     /**
     */
@@ -98,10 +98,10 @@ public:
     BoardConfiguration& operator=(const BoardConfiguration& T);
     /**Saves the board info to a file
     */
-    void saveToFile(string sfile) throw(cv::Exception);
+    void saveToFile(std::string sfile) throw(cv::Exception);
     /**Reads board info from a file
     */
-    void readFromFile(string sfile) throw(cv::Exception);
+    void readFromFile(std::string sfile) throw(cv::Exception);
     /**Indicates if the corners are expressed in meters
      */
     bool isExpressedInMeters() const { return mInfoType == METERS; }
@@ -116,7 +116,7 @@ public:
     const MarkerInfo& getMarkerInfo(int id) const throw(cv::Exception);
     /**Set in the list passed the set of the ids
      */
-    void getIdList(vector<int>& ids, bool append = true) const;
+    void getIdList(std::vector<int>& ids, bool append = true) const;
 
 private:
     /**Saves the board info to a file
@@ -129,7 +129,7 @@ private:
 
 /**
 */
-class ARUCO_EXPORTS Board : public vector<Marker> {
+class ARUCO_EXPORTS Board : public std::vector<Marker> {
 
 public:
     BoardConfiguration conf;
@@ -144,7 +144,7 @@ public:
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
     * Setting this matrix, the reference corrdinate system will be set in this board
      */
-    void glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exception) {
+    void glGetModelViewMatrix(double modelview_matrix[16]) {
         GetGLModelViewMatrix(Rvec, Tvec, modelview_matrix);
     }
 
@@ -158,16 +158,16 @@ public:
      * mySceneNode->setOrientation( ogreOrient  );
      * ...
      */
-    void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception) {
+    void OgreGetPoseParameters(double position[3], double orientation[4]){
         GetOgrePoseParameters(Rvec, Tvec, position, orientation);
     }
 
     /**Save this from a file
      */
-    void saveToFile(string filePath) throw(cv::Exception);
+    void saveToFile(std::string filePath) throw(cv::Exception);
     /**Read  this from a file
      */
-    void readFromFile(string filePath) throw(cv::Exception);
+    void readFromFile(std::string filePath) throw(cv::Exception);
 
     /**Draws the detected markers
      */

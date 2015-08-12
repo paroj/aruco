@@ -31,6 +31,8 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;
+using namespace std;
+
 namespace aruco {
 /****
  *

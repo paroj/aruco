@@ -28,8 +28,10 @@ or implied, of Rafael Muñoz Salinas.
 #include "board.h"
 #include <opencv2/calib3d/calib3d.hpp>
 #include <fstream>
+
 using namespace std;
 using namespace cv;
+
 namespace aruco {
 
 /**
@@ -152,8 +154,8 @@ const MarkerInfo& BoardConfiguration::getMarkerInfo(int id) const throw(cv::Exce
     for (size_t i = 0; i < size(); i++)
         if (at(i).id == id)
             return at(i);
-    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",
-                        __FILE__, __LINE__);
+
+    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",__FILE__, __LINE__);
 }
 
 /**
@@ -237,4 +239,4 @@ void BoardConfiguration::getIdList(std::vector<int>& ids, bool append) const {
     for (size_t i = 0; i < size(); i++)
         ids.push_back(at(i).id);
 }
-};
+}

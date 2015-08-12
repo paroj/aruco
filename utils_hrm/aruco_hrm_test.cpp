@@ -34,6 +34,7 @@ or implied, of Rafael Muñoz Salinas.
 #include "highlyreliablemarkers.h"
 using namespace cv;
 using namespace aruco;
+using namespace std;
 
 string TheInputVideo;
 string TheIntrinsicFile;

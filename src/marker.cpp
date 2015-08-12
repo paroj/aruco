@@ -31,7 +31,10 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+
 using namespace cv;
+using namespace std;
+
 namespace aruco {
 /**
  *
@@ -84,28 +87,19 @@ void Marker::draw(Mat& in, Scalar color, int lineWidth, bool writeId) const {
 
 /**
  */
-void Marker::calculateExtrinsics(float markerSize, const CameraParameters& CP,
-                                 bool setYPerpendicular) throw(cv::Exception) {
-    if (!CP.isValid())
-        throw cv::Exception(
-            9004, "!CP.isValid(): invalid camera parameters. It is not possible to calculate extrinsics",
-            "calculateExtrinsics", __FILE__, __LINE__);
+void Marker::calculateExtrinsics(float markerSize, const CameraParameters& CP, bool setYPerpendicular){
+    CV_Assert( CP.isValid() && "invalid camera parameters. It is not possible to calculate extrinsics" );
+
     calculateExtrinsics(markerSize, CP.CameraMatrix, CP.Distorsion, setYPerpendicular);
 }
 
 void print(cv::Point3f p, string cad) { cout << cad << " " << p.x << " " << p.y << " " << p.z << endl; }
 /**
  */
-void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::Mat distCoeff,
-                                 bool setYPerpendicular) throw(cv::Exception) {
-    if (!isValid())
-        throw cv::Exception(9004, "!isValid(): invalid marker. It is not possible to calculate extrinsics",
-                            "calculateExtrinsics", __FILE__, __LINE__);
-    if (markerSizeMeters <= 0)
-        throw cv::Exception(9004, "markerSize<=0: invalid markerSize", "calculateExtrinsics", __FILE__,
-                            __LINE__);
-    if (camMatrix.rows == 0 || camMatrix.cols == 0)
-        throw cv::Exception(9004, "CameraMatrix is empty", "calculateExtrinsics", __FILE__, __LINE__);
+void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::Mat distCoeff, bool setYPerpendicular) {
+
+    CV_Assert( markerSizeMeters > 0 && isValid() && "invalid marker. It is not possible to calculate extrinsics");
+    CV_Assert( camMatrix.rows != 0 || camMatrix.cols != 0 && "CameraMatrix is empty" );
 
     double halfSize = markerSizeMeters / 2.;
     cv::Matx<float, 4, 3> ObjPoints;
@@ -157,7 +151,7 @@ cv::Point2f Marker::getCenter() const {
 /**
  */
 float Marker::getArea() const {
-    assert(size() == 4);
+    CV_Assert(size() == 4);
     // use the cross products
     cv::Point2f v01 = (*this)[1] - (*this)[0];
     cv::Point2f v03 = (*this)[3] - (*this)[0];

@@ -32,8 +32,10 @@ or implied, of Rafael Muñoz Salinas.
 #include <cassert>
 #include <fstream>
 #include <opencv2/calib3d/calib3d.hpp>
+
 using namespace std;
 using namespace cv;
+
 namespace aruco {
 /**
 */
@@ -65,7 +67,7 @@ void BoardDetector::setParams(const BoardConfiguration& bc) {
 *
 *
 */
-float BoardDetector::detect(const cv::Mat& im) throw(cv::Exception) {
+float BoardDetector::detect(const cv::Mat& im){
     _mdetector.detect(im, _vmarkers);
 
     float res;
@@ -82,8 +84,7 @@ float BoardDetector::detect(const cv::Mat& im) throw(cv::Exception) {
 *
 */
 float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf,
-                            Board& Bdetected, const CameraParameters& cp,
-                            float markerSizeMeters) throw(cv::Exception) {
+                            Board& Bdetected, const CameraParameters& cp, float markerSizeMeters) {
     return detect(detectedMarkers, BConf, Bdetected, cp.CameraMatrix, cp.Distorsion, markerSizeMeters);
 }
 /**
@@ -92,13 +93,9 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
 */
 float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf,
                             Board& Bdetected, Mat camMatrix, Mat distCoeff,
-                            float markerSizeMeters) throw(cv::Exception) {
-    if (BConf.size() == 0)
-        throw cv::Exception(8881, "BoardDetector::detect", "Invalid BoardConfig that is empty", __FILE__,
-                            __LINE__);
-    if (BConf[0].size() < 2)
-        throw cv::Exception(8881, "BoardDetector::detect", "Invalid BoardConfig that is empty 2", __FILE__,
-                            __LINE__);
+                            float markerSizeMeters){
+    CV_Assert( BConf.size() != 0 && BConf[0].size() >= 2 && "Invalid BoardConfig that is empty" );
+
     // compute the size of the markers in meters, which is used for some routines(mostly drawing)
     float ssize;
     if (BConf.mInfoType == BoardConfiguration::PIX && markerSizeMeters > 0)

@@ -40,6 +40,7 @@ or implied, of Rafael Muñoz Salinas.
 #include "aruco.h"
 using namespace cv;
 using namespace aruco;
+using namespace std;
 
 string TheInputVideo;
 string TheIntrinsicFile;

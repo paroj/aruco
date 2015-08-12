@@ -60,7 +60,7 @@ public:
     /**
      * Get id of a specific rotation as the number obtaiend from the concatenation of all the bits
      */
-    unsigned int getId(unsigned int rot = 0) const { return _ids[rot]; };
+    unsigned int getId(unsigned int rot = 0) const { return _ids[rot]; }
 
     /**
      * Get a bit value in a specific rotation.
@@ -71,7 +71,7 @@ public:
     /**
      * Get the string of bits for a specific rotation
      */
-    const std::vector<bool>& getRotation(unsigned int rot) const { return _bits[rot]; };
+    const std::vector<bool>& getRotation(unsigned int rot) const { return _bits[rot]; }
 
     /**
      * Set the value of a bit in a specific rotation
@@ -86,12 +86,12 @@ public:
     /**
      * Return the full size of the marker (n*n)
      */
-    unsigned int size() const { return n() * n(); };
+    unsigned int size() const { return n() * n(); }
 
     /**
      * Return the value of marker dimension (n)
      */
-    unsigned int n() const { return _n; };
+    unsigned int n() const { return _n; }
 
     /**
      * Return the self distance S(m) of the marker (Equation 8)
@@ -106,7 +106,7 @@ public:
     unsigned int selfDistance() const {
         unsigned int minRot;
         return selfDistance(minRot);
-    };
+    }
 
     /**
      * Return the rotation invariant distance to another marker, D(m1, m2) (Equation 6)
@@ -122,7 +122,7 @@ public:
     unsigned int distance(const MarkerCode& m) const {
         unsigned int minRot;
         return distance(m, minRot);
-    };
+    }
 
     /**
      * Read marker bits from a string of "0"s and "1"s

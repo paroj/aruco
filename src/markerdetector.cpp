@@ -36,6 +36,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <fstream>
 #include "arucofidmarkers.h"
 #include "ar_omp.h"
+
 using namespace std;
 using namespace cv;
 
@@ -151,8 +152,7 @@ void MarkerDetector::enableLockedCornersMethod(bool enable) {
  *
  ************************************/
 void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarkers, Mat camMatrix,
-                            Mat distCoeff, float markerSizeMeters,
-                            bool setYPerpendicular) throw(cv::Exception) {
+                            Mat distCoeff, float markerSizeMeters, bool setYPerpendicular) {
     Mat grey;
 
     // it must be a 3 channel image
@@ -317,8 +317,7 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
  *
  *
  ************************************/
-void MarkerDetector::detectRectangles(const cv::Mat& thres,
-                                      vector<std::vector<cv::Point2f> >& MarkerCanditates) {
+void MarkerDetector::detectRectangles(const cv::Mat& thres, vector<std::vector<cv::Point2f> >& MarkerCanditates) {
     vector<MarkerCandidate> candidates;
     vector<cv::Mat> thres_v;
     thres_v.push_back(thres);
@@ -329,8 +328,7 @@ void MarkerDetector::detectRectangles(const cv::Mat& thres,
         MarkerCanditates[i] = candidates[i];
 }
 
-void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
-                                      vector<MarkerCandidate>& OutMarkerCanditates) {
+void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerCandidate>& OutMarkerCanditates) {
     //         omp_set_num_threads ( 1 );
     vector<vector<MarkerCandidate> > MarkerCanditatesV(omp_get_max_threads());
     // calcualte the min_max contour sizes
@@ -478,15 +476,13 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv,
  *
  *
  ************************************/
-void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double param1,
-                               double param2) throw(cv::Exception) {
+void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double param1, double param2) {
+    CV_Assert(grey.type() == CV_8UC1);
 
     if (param1 == -1)
         param1 = _thresParam1;
     if (param2 == -1)
         param2 = _thresParam2;
-
-    CV_Assert(grey.type() == CV_8UC1);
 
     switch (method) {
     case FIXED_THRES:
@@ -521,7 +517,7 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
  *
  *
  ************************************/
-bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points) throw(cv::Exception) {
+bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points){
     CV_Assert(points.size() == 4);
 
     Point2f pointsRes[] = {
@@ -539,7 +535,7 @@ bool MarkerDetector::warp(Mat& in, Mat& out, Size size, vector<Point2f> points) 
 
 void findCornerPointsInContour(const vector<cv::Point2f>& points, const vector<cv::Point>& contour,
                                vector<int>& idxs) {
-    assert(points.size() == 4);
+    CV_Assert(points.size() == 4);
     int idxSegments[4] = {-1, -1, -1, -1};
     // the first point coincides with one
     cv::Point points2i[4];
@@ -642,8 +638,7 @@ void setPointIntoImage(cv::Point& p, cv::Size s) {
  *
  *
  ************************************/
-bool MarkerDetector::warp_cylinder(Mat& in, Mat& out, Size size,
-                                   MarkerCandidate& mcand) throw(cv::Exception) {
+bool MarkerDetector::warp_cylinder(Mat& in, Mat& out, Size size, MarkerCandidate& mcand){
 
     CV_Assert(mcand.size() == 4);
 
@@ -1019,7 +1014,7 @@ void MarkerDetector::warpPerspective(const cv::Mat &in,cv::Mat & out, const cv::
 *
 ************************************/
 
-void MarkerDetector::setMinMaxSize(float min, float max) throw(cv::Exception) {
+void MarkerDetector::setMinMaxSize(float min, float max) {
     CV_Assert (min > 0 && min <= 1);
     CV_Assert (max > 0 && max <= 1);
     CV_Assert (min < max);
@@ -1035,7 +1030,7 @@ void MarkerDetector::setMinMaxSize(float min, float max) throw(cv::Exception) {
 *
 ************************************/
 
-void MarkerDetector::setWarpSize(int val) throw(cv::Exception) {
+void MarkerDetector::setWarpSize(int val) {
     CV_Assert (val >= 10);
 
     _markerWarpSize = val;

@@ -48,6 +48,7 @@ or implied, of Rafael Muñoz Salinas.
 
 using namespace cv;
 using namespace aruco;
+using namespace std;
 
 string TheInputVideo, TheIntrinsicFile, TheBoardConfigFile;
 bool The3DInfoAvailable = false;

@@ -31,6 +31,8 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 #include "board.h"
 
+using namespace std;
+
 int main(int argc, char** argv) {
     if (argc < 6) {
         cerr << "Invalid number of arguments" << endl;

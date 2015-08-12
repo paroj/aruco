@@ -32,6 +32,8 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
+using namespace std;
+
 int main(int argc, char** argv) {
     try {
         if (argc < 2) {

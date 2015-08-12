@@ -14,18 +14,19 @@
 namespace aruco {
 
 /**
- * change rotation such that Y axis points up
+ * Change rotation such that Y axis points up
  */
 ARUCO_EXPORTS void rotateXAxis(cv::Vec3f& rotation);
 
-/**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
+/**
+ * Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
  * Setting this matrix, the reference coordinate system will be set in this marker
  */
 ARUCO_EXPORTS void GetGLModelViewMatrix(const cv::Vec3f& Rvec, const cv::Vec3f& Tvec, double modelview_matrix[16]);
 
 /**
  * Returns position vector and orientation quaternion for an Ogre scene node or entity.
- *  Use:
+ * Use:
  * ...
  * Ogre::Vector3 ogrePos (position[0], position[1], position[2]);
  * Ogre::Quaternion  ogreOrient (orientation[0], orientation[1], orientation[2], orientation[3]);

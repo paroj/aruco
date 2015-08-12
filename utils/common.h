@@ -29,6 +29,8 @@ or implied, of Rafael Muñoz Salinas.
 #define _COMMON_ARUCO_
 #include <opencv/cv.h>
 using namespace cv;
+using namespace std;
+
 /**This function reads the matrix intrinsics and the distorsion coefficients from a file.
  * The format of the file is
  * \code

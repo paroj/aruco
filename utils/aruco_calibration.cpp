@@ -19,8 +19,8 @@ aruco::BoardDetector TheBoardDetector;
 cv::Mat TheInputImage;
 aruco::CameraParameters TheCamParams;
 std::vector<cv::Mat> The_rvecs, The_tvecs; // locations at which calibration is done
-std::vector<vector<cv::Point2f> > TheimagePointsV;
-std::vector<vector<cv::Point3f> > TheobjPointsV; // image and obj points at which calibration is done
+std::vector<std::vector<cv::Point2f> > TheimagePointsV;
+std::vector<std::vector<cv::Point3f> > TheobjPointsV; // image and obj points at which calibration is done
 float ViewPointDistance = 0.025;
 using namespace std;
 

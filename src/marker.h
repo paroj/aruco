@@ -35,7 +35,6 @@ or implied, of Rafael Muñoz Salinas.
 #include "cameraparameters.h"
 #include "utils.h"
 
-using namespace std;
 namespace aruco {
 /**\brief This class represents a marker. It is a vector of the fours corners ot the marker
  *
@@ -72,8 +71,7 @@ public:
      * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      * be the Z axis
      */
-    void calculateExtrinsics(float markerSize, const CameraParameters& CP,
-                             bool setYPerpendicular = true) throw(cv::Exception);
+    void calculateExtrinsics(float markerSize, const CameraParameters& CP, bool setYPerpendicular = true);
     /**Calculates the extrinsics (Rvec and Tvec) of the marker with respect to the camera
      * @param markerSize size of the marker side expressed in meters
      * @param CameraMatrix matrix with camera parameters (fx,fy,cx,cy)
@@ -81,13 +79,12 @@ public:
      * @param setYPerpendicular If set the Y axis will be perpendicular to the surface. Otherwise, it will
      * be the Z axis
      */
-    void calculateExtrinsics(float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion = cv::Mat(),
-                             bool setYPerpendicular = true) throw(cv::Exception);
+    void calculateExtrinsics(float markerSize, cv::Mat CameraMatrix, cv::Mat Distorsion = cv::Mat(), bool setYPerpendicular = true);
 
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
      * Setting this matrix, the reference coordinate system will be set in this marker
      */
-    void glGetModelViewMatrix(double modelview_matrix[16]) throw(cv::Exception) {
+    void glGetModelViewMatrix(double modelview_matrix[16]){
         GetGLModelViewMatrix(Rvec, Tvec, modelview_matrix);
     }
 
@@ -101,7 +98,7 @@ public:
      * mySceneNode->setOrientation( ogreOrient  );
      * ...
      */
-    void OgreGetPoseParameters(double position[3], double orientation[4]) throw(cv::Exception) {
+    void OgreGetPoseParameters(double position[3], double orientation[4]) {
         GetOgrePoseParameters(Rvec, Tvec, position, orientation);
     }
 
@@ -126,7 +123,7 @@ public:
     friend bool operator<(const Marker& M1, const Marker& M2) { return M1.id < M2.id; }
     /**
      */
-    friend ostream& operator<<(ostream& str, const Marker& M) {
+    friend std::ostream& operator<<(std::ostream& str, const Marker& M) {
         str << M.id << "=";
         for (int i = 0; i < 4; i++)
             str << "(" << M[i].x << "," << M[i].y << ") ";

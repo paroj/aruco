@@ -165,4 +165,5 @@ void GetOgrePoseParameters(const Vec3f& Rvec, const Vec3f& Tvec, double position
         *apkQuat[k] = (axes[k][i] + axes[i][k]) * fRoot;
     }
 }
+
 } /* namespace aruco */

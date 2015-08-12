@@ -25,15 +25,16 @@ The views and conclusions contained in the software and documentation are those 
 authors and should not be interpreted as representing official policies, either expressed
 or implied, of Rafael Muñoz Salinas.
 ********************************/
+
 #ifndef _ARUCO_MarkerDetector_H
 #define _ARUCO_MarkerDetector_H
+
 #include <opencv2/core/core.hpp>
 #include <cstdio>
 #include <iostream>
 #include "cameraparameters.h"
 #include <aruco_export.h>
 #include "marker.h"
-using namespace std;
 
 namespace aruco {
 
@@ -57,7 +58,7 @@ class ARUCO_EXPORTS MarkerDetector {
             return *this;
         }
 
-        vector<cv::Point> contour; // all the points of its contour
+        std::vector<cv::Point> contour; // all the points of its contour
         int idx;                   // index position in the global contour list
     };
 
@@ -85,8 +86,7 @@ public:
      *be the Z axis
      */
     void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, cv::Mat camMatrix = cv::Mat(),
-                cv::Mat distCoeff = cv::Mat(), float markerSizeMeters = -1,
-                bool setYPerpendicular = false) throw(cv::Exception);
+                cv::Mat distCoeff = cv::Mat(), float markerSizeMeters = -1, bool setYPerpendicular = false) ;
     /**Detects the markers in the image passed
      *
      * If you provide information about the camera parameters and the size of the marker, then, the
@@ -100,7 +100,7 @@ public:
      *be the Z axis
      */
     void detect(const cv::Mat& input, std::vector<Marker>& detectedMarkers, const CameraParameters& camParams,
-                float markerSizeMeters = -1, bool setYPerpendicular = false) throw(cv::Exception) {
+                float markerSizeMeters = -1, bool setYPerpendicular = false) {
         detect(input, detectedMarkers, camParams.CameraMatrix, camParams.Distorsion, markerSizeMeters,
                setYPerpendicular);
     }
@@ -183,7 +183,7 @@ public:
      * @param max size of the contour to consider a possible marker as valid [0,1)
      *
      */
-    void setMinMaxSize(float min = 0.03, float max = 0.5) throw(cv::Exception);
+    void setMinMaxSize(float min = 0.03, float max = 0.5);
 
     /**reads the min and max sizes employed
      * @param min output size of the contour to consider a possible marker as valid (0,1]
@@ -215,8 +215,8 @@ public:
      * small value.
      * Minimun value is 10. Default value is 56.
      */
-    void setWarpSize(int val) throw(cv::Exception);
-    ;
+    void setWarpSize(int val);
+
     /**
      */
     int getWarpSize() const { return _markerWarpSize; }
@@ -255,17 +255,17 @@ public:
      * Thesholds the passed image with the specified method.
      */
     void thresHold(int method, const cv::Mat& grey, cv::Mat& thresImg, double param1 = -1,
-                   double param2 = -1) throw(cv::Exception);
+                   double param2 = -1);
     /**
     * Detection of candidates to be markers, i.e., rectangles.
     * This function returns in candidates all the rectangles found in a thresolded image
     */
-    void detectRectangles(const cv::Mat& thresImg, vector<std::vector<cv::Point2f> >& candidates);
+    void detectRectangles(const cv::Mat& thresImg, std::vector<std::vector<cv::Point2f> >& candidates);
 
     /**Returns a list candidates to be markers (rectangles), for which no valid id was found after calling
      * detectRectangles
      */
-    const vector<std::vector<cv::Point2f> >& getCandidates() { return _candidates; }
+    const std::vector<std::vector<cv::Point2f> >& getCandidates() { return _candidates; }
 
     /**Given the iput image with markers, creates an output image with it in the canonical position
      * @param in input image
@@ -274,22 +274,20 @@ public:
      * @param points 4 corners of the marker in the image in
      * @return true if the operation succeed
      */
-    bool warp(cv::Mat& in, cv::Mat& out, cv::Size size,
-              std::vector<cv::Point2f> points) throw(cv::Exception);
+    bool warp(cv::Mat& in, cv::Mat& out, cv::Size size, std::vector<cv::Point2f> points) ;
 
     /** Refine MarkerCandidate Corner using LINES method
      * @param candidate candidate to refine corners
      */
-    void refineCandidateLines(MarkerCandidate& candidate, const cv::Mat& camMatrix,
-                              const cv::Mat& distCoeff);
+    void refineCandidateLines(MarkerCandidate& candidate, const cv::Mat& camMatrix, const cv::Mat& distCoeff);
 
 private:
-    bool warp_cylinder(cv::Mat& in, cv::Mat& out, cv::Size size, MarkerCandidate& mc) throw(cv::Exception);
+    bool warp_cylinder(cv::Mat& in, cv::Mat& out, cv::Size size, MarkerCandidate& mc);
     /**
     * Detection of candidates to be markers, i.e., rectangles.
     * This function returns in candidates all the rectangles found in a thresolded image
     */
-    void detectRectangles(vector<cv::Mat>& vimages, vector<MarkerCandidate>& candidates);
+    void detectRectangles(std::vector<cv::Mat>& vimages, std::vector<MarkerCandidate>& candidates);
     // Current threshold method
     ThresholdMethods _thresMethod;
     // Threshold parameters
@@ -307,7 +305,7 @@ private:
     int _markerWarpSize;
     float _borderDistThres; // border around image limits in which corners are not allowed to be detected.
     // vectr of candidates to be markers. This is a vector with a set of rectangles that have no valid id
-    vector<std::vector<cv::Point2f> > _candidates;
+    std::vector<std::vector<cv::Point2f> > _candidates;
     // Images
     cv::Mat thres;
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
@@ -325,22 +323,22 @@ private:
     //
 
     // detection of the
-    void findBestCornerInRegion_harris(const cv::Mat& grey, vector<cv::Point2f>& Corners, int blockSize);
+    void findBestCornerInRegion_harris(const cv::Mat& grey, std::vector<cv::Point2f>& Corners, int blockSize);
 
     // auxiliar functions to perform LINES refinement
-    void interpolate2Dline(const vector<cv::Point2f>& inPoints, cv::Point3f& outLine);
+    void interpolate2Dline(const std::vector<cv::Point2f>& inPoints, cv::Point3f& outLine);
     cv::Point2f getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2);
-    void distortPoints(vector<cv::Point2f> in, vector<cv::Point2f>& out, const cv::Mat& camMatrix,
-                       const cv::Mat& distCoeff);
+    void distortPoints(std::vector<cv::Point2f> in, std::vector<cv::Point2f>& out, const cv::Mat& camMatrix, const cv::Mat& distCoeff);
 
     // graphical debug
     void drawApproxCurve(cv::Mat& in, std::vector<cv::Point>& approxCurve, cv::Scalar color);
     void drawContour(cv::Mat& in, std::vector<cv::Point>& contour, cv::Scalar);
     void drawAllContours(cv::Mat input, std::vector<std::vector<cv::Point> >& contours);
     void draw(cv::Mat out, const std::vector<Marker>& markers);
+
     // method to refine corner detection in case the internal border after threshold is found
     // This was tested in the context of chessboard methods
-    void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize);
+    void findCornerMaxima(std::vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize);
 };
-};
+}
 #endif

@@ -33,6 +33,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/highgui/highgui.hpp>
 using namespace cv;
 using namespace aruco;
+using namespace std;
 
 string TheInputVideo;
 string TheIntrinsicFile;

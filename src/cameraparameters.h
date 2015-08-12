@@ -30,7 +30,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <aruco_export.h>
 #include <opencv2/core/core.hpp>
 #include <string>
-using namespace std;
+
 namespace aruco {
 /**\brief Parameters of the camera
  */
@@ -52,13 +52,13 @@ public:
      * @param distorsionCoeff 4x1 matrix (k1,k2,p1,p2)
      * @param size image size
      */
-    CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) throw(cv::Exception);
+    CameraParameters(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size);
     /**Sets the parameters
      * @param cameraMatrix 3x3 matrix (fx 0 cx, 0 fy cy, 0 0 1)
      * @param distorsionCoeff 4x1 matrix (k1,k2,p1,p2)
      * @param size image size
      */
-    void setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size) throw(cv::Exception);
+    void setParams(cv::Mat cameraMatrix, cv::Mat distorsionCoeff, cv::Size size);
     /**Copy constructor
      */
     CameraParameters(const CameraParameters& CI);
@@ -73,18 +73,18 @@ public:
     CameraParameters& operator=(const CameraParameters& CI);
     /**Reads the camera parameters from a file generated using saveToFile.
      */
-    void readFromFile(string path) throw(cv::Exception);
+    void readFromFile(std::string path) throw(cv::Exception);
     /**Saves this to a file
      */
-    void saveToFile(string path, bool inXML = true) throw(cv::Exception);
+    void saveToFile(std::string path, bool inXML = true) throw(cv::Exception);
 
     /**Reads from a YAML file generated with the opencv2.2 calibration utility
      */
-    void readFromXMLFile(string filePath) throw(cv::Exception);
+    void readFromXMLFile(std::string filePath) throw(cv::Exception);
 
     /**Adjust the parameters to the size of the image indicated
      */
-    void resize(cv::Size size) throw(cv::Exception);
+    void resize(cv::Size size);
 
     /**Returns the location of the camera in the reference system given by the rotation and translation
      * vectors passed

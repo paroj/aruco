@@ -32,7 +32,6 @@ or implied, of Rafael Muñoz Salinas.
 #include "board.h"
 #include "cameraparameters.h"
 #include "markerdetector.h"
-using namespace std;
 
 namespace aruco {
 
@@ -77,7 +76,7 @@ public:
      * Detect markers, and then, look for the board indicated in setParams()
      * @return value indicating  the  likelihood of having found the marker
      */
-    float detect(const cv::Mat& im) throw(cv::Exception);
+    float detect(const cv::Mat& im);
     /**Returns a reference to the board detected
      */
     Board& getDetectedBoard() { return _boardDetected; }
@@ -86,7 +85,7 @@ public:
     MarkerDetector& getMarkerDetector() { return _mdetector; }
     /**Returns the vector of markers detected
      */
-    vector<Marker>& getDetectedMarkers() { return _vmarkers; }
+    std::vector<Marker>& getDetectedMarkers() { return _vmarkers; }
 
     // ALTERNATIVE DETECTION METHOD, BASED ON MARKERS PREVIOUSLY DETECTED
 
@@ -101,11 +100,12 @@ public:
     * @param markerSizeMeters size of the marker sides expressed in meters
     * @return value indicating  the  likelihood of having found the marker
     */
-    float detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
+    float detect(const std::vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
                  cv::Mat camMatrix = cv::Mat(), cv::Mat distCoeff = cv::Mat(),
-                 float markerSizeMeters = -1) throw(cv::Exception);
-    float detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
-                 const CameraParameters& cp, float markerSizeMeters = -1) throw(cv::Exception);
+                 float markerSizeMeters = -1);
+
+    float detect(const std::vector<Marker>& detectedMarkers, const BoardConfiguration& BConf, Board& Bdetected,
+                 const CameraParameters& cp, float markerSizeMeters = -1);
 
     /**Static version (all in one). Detects the board indicated
    * @param Image input image
@@ -144,7 +144,7 @@ private:
     float _markerSize, repj_err_thres;
     CameraParameters _camParams;
     MarkerDetector _mdetector; // internal markerdetector
-    vector<Marker> _vmarkers;  // markers detected in the call to : float  detect(const cv::Mat &im);
+    std::vector<Marker> _vmarkers;  // markers detected in the call to : float  detect(const cv::Mat &im);
 };
 }
 #endif
