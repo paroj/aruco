@@ -7,9 +7,6 @@
 
 #include "utils.h"
 
-#define _USE_MATH_DEFINES
-#include <cmath>
-
 #include <opencv2/calib3d.hpp>
 
 using namespace cv;
@@ -21,7 +18,7 @@ void rotateXAxis(Vec3f& rotation) {
     Rodrigues(rotation, R);
     // create a rotation matrix for x axis
     cv::Matx33f RX = cv::Matx33f::eye();
-    float angleRad = M_PI / 2;
+    float angleRad = CV_PI / 2;
     RX(1, 1) = cos(angleRad);
     RX(1, 2) = -sin(angleRad);
     RX(2, 1) = sin(angleRad);
@@ -41,7 +38,7 @@ void GetGLModelViewMatrix(const Vec3f& Rvec, const Vec3f& Tvec, double modelview
         if (Rvec(i) != -999999)
             invalid |= false;
     }
-    CV_Assert(not invalid && "extrinsic parameters are not set");
+    CV_Assert(!invalid && "extrinsic parameters are not set");
 
     Matx33f Rot;
     Rodrigues(Rvec, Rot);
@@ -92,7 +89,7 @@ void GetOgrePoseParameters(const Vec3f& Rvec, const Vec3f& Tvec, double position
         if (Rvec(i) != -999999)
             invalid |= false;
     }
-    CV_Assert(not invalid && "extrinsic parameters are not set");
+    CV_Assert(!invalid && "extrinsic parameters are not set");
 
     // calculate position vector
     position[0] = -Tvec[0];
