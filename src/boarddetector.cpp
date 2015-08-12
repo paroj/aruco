@@ -94,7 +94,7 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
 float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf,
                             Board& Bdetected, Mat camMatrix, Mat distCoeff,
                             float markerSizeMeters){
-    CV_Assert( BConf.size() == 0 && BConf[0].size() < 2 && "Invalid BoardConfig that is empty" );
+    CV_Assert( BConf.size() != 0 && BConf[0].size() >= 2 && "Invalid BoardConfig that is empty" );
 
     // compute the size of the markers in meters, which is used for some routines(mostly drawing)
     float ssize;
