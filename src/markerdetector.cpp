@@ -479,11 +479,10 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerC
 
 #pragma omp parallel for
     for (int i = 0; i < int(thresImgv.size()); i++) {
-        std::vector<cv::Vec4i> hierarchy2;
         std::vector<std::vector<cv::Point> > contours2;
         cv::Mat thres2;
         thresImgv[i].copyTo(thres2);
-        cv::findContours(thres2, contours2, hierarchy2, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+        cv::findContours(thres2, contours2, noArray(), CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
         vector<Point> approxCurve;
         /// for each contour, analyze if it is a paralelepiped likely to be the marker
