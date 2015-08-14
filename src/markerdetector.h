@@ -309,12 +309,6 @@ private:
     cv::Mat thres;
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
     int (*markerIdDetector_ptrfunc)(const cv::Mat& in, int& nRotations);
-
-    // graphical debug
-    void drawApproxCurve(cv::Mat& in, std::vector<cv::Point>& approxCurve, cv::Scalar color);
-    void drawContour(cv::Mat& in, std::vector<cv::Point>& contour, cv::Scalar);
-    void drawAllContours(cv::Mat input, std::vector<std::vector<cv::Point> >& contours);
-    void draw(cv::Mat out, const std::vector<Marker>& markers);
 };
 }
 #endif

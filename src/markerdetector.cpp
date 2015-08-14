@@ -200,6 +200,20 @@ void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsi
         Corners[i] = best + minLimit;
     }
 }
+
+#if ARUCO_MARKER_DEBUG_DRAW
+void drawContour(Mat& in, vector<Point>& contour, Scalar color) {
+    for (size_t i = 0; i < contour.size(); i++) {
+        cv::rectangle(in, contour[i], contour[i], color);
+    }
+}
+
+void drawApproxCurve(Mat& in, vector<Point>& contour, Scalar color) {
+    for (size_t i = 0; i < contour.size(); i++) {
+        cv::line(in, contour[i], contour[(i + 1) % contour.size()], color);
+    }
+}
+#endif
 }
 
 namespace aruco {
@@ -979,48 +993,6 @@ void MarkerDetector::refineCandidateLines(MarkerDetector::MarkerCandidate& candi
     }
 }
 
-/************************************
- *
- *
- *
- *
- ************************************/
-void MarkerDetector::drawAllContours(Mat input, std::vector<std::vector<cv::Point> >& contours) {
-    drawContours(input, contours, -1, Scalar(255, 0, 255));
-}
-
-/************************************
- *
- *
- *
- *
- ************************************/
-void MarkerDetector::drawContour(Mat& in, vector<Point>& contour, Scalar color) {
-    for (unsigned int i = 0; i < contour.size(); i++) {
-        cv::rectangle(in, contour[i], contour[i], color);
-    }
-}
-
-void MarkerDetector::drawApproxCurve(Mat& in, vector<Point>& contour, Scalar color) {
-    for (unsigned int i = 0; i < contour.size(); i++) {
-        cv::line(in, contour[i], contour[(i + 1) % contour.size()], color);
-    }
-}
-/************************************
- *
- *
- *
- *
- ************************************/
-
-void MarkerDetector::draw(Mat out, const vector<Marker>& markers) {
-    for (unsigned int i = 0; i < markers.size(); i++) {
-        cv::line(out, markers[i][0], markers[i][1], cvScalar(255, 0, 0), 2, CV_AA);
-        cv::line(out, markers[i][1], markers[i][2], cvScalar(255, 0, 0), 2, CV_AA);
-        cv::line(out, markers[i][2], markers[i][3], cvScalar(255, 0, 0), 2, CV_AA);
-        cv::line(out, markers[i][3], markers[i][0], cvScalar(255, 0, 0), 2, CV_AA);
-    }
-}
 /* Attempt to make it faster than in opencv. I could not :( Maybe trying with SSE3...
 void MarkerDetector::warpPerspective(const cv::Mat &in,cv::Mat & out, const cv::Mat & M,cv::Size size)
 {
