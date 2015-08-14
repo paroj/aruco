@@ -30,10 +30,9 @@ or implied, of Rafael Muñoz Salinas.
 #define _ARUCO_MarkerDetector_H
 
 #include <opencv2/core/core.hpp>
-#include <cstdio>
-#include <iostream>
-#include "cameraparameters.h"
+
 #include <aruco_export.h>
+#include "cameraparameters.h"
 #include "marker.h"
 
 namespace aruco {
@@ -311,34 +310,11 @@ private:
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
     int (*markerIdDetector_ptrfunc)(const cv::Mat& in, int& nRotations);
 
-    //     //GL routines
-    //
-    //     static void argConvGLcpara2( double cparam[3][4], int width, int height, double gnear, double
-    //     gfar, double m[16], bool invert )throw(cv::Exception);
-    //     static int  arParamDecompMat( double source[3][4], double cpara[3][4], double trans[3][4]
-    //     )throw(cv::Exception);
-    //     static double norm( double a, double b, double c );
-    //     static double dot(  double a1, double a2, double a3,
-    //                         double b1, double b2, double b3 );
-    //
-
-    // detection of the
-    void findBestCornerInRegion_harris(const cv::Mat& grey, std::vector<cv::Point2f>& Corners, int blockSize);
-
-    // auxiliar functions to perform LINES refinement
-    void interpolate2Dline(const std::vector<cv::Point2f>& inPoints, cv::Point3f& outLine);
-    cv::Point2f getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2);
-    void distortPoints(std::vector<cv::Point2f> in, std::vector<cv::Point2f>& out, const cv::Mat& camMatrix, const cv::Mat& distCoeff);
-
     // graphical debug
     void drawApproxCurve(cv::Mat& in, std::vector<cv::Point>& approxCurve, cv::Scalar color);
     void drawContour(cv::Mat& in, std::vector<cv::Point>& contour, cv::Scalar);
     void drawAllContours(cv::Mat input, std::vector<std::vector<cv::Point> >& contours);
     void draw(cv::Mat out, const std::vector<Marker>& markers);
-
-    // method to refine corner detection in case the internal border after threshold is found
-    // This was tested in the context of chessboard methods
-    void findCornerMaxima(std::vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize);
 };
 }
 #endif

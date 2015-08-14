@@ -75,6 +75,131 @@ bool isInto(Mat& contour, vector<Point2f>& b) {
             return true;
     return false;
 }
+
+void findBestCornerInRegion_harris(const cv::Mat& grey, vector<cv::Point2f>& Corners, int blockSize) {
+    aruco::SubPixelCorner Subp;
+    Subp.RefineCorner(grey, Corners);
+}
+
+// auxiliary functions to perform LINES refinement
+void interpolate2Dline(const std::vector<Point2f>& inPoints, Point3f& outLine) {
+    float minX, maxX, minY, maxY;
+    minX = maxX = inPoints[0].x;
+    minY = maxY = inPoints[0].y;
+    for (unsigned int i = 1; i < inPoints.size(); i++) {
+        if (inPoints[i].x < minX)
+            minX = inPoints[i].x;
+        if (inPoints[i].x > maxX)
+            maxX = inPoints[i].x;
+        if (inPoints[i].y < minY)
+            minY = inPoints[i].y;
+        if (inPoints[i].y > maxY)
+            maxY = inPoints[i].y;
+    }
+
+    // create matrices of equation system
+    Mat A(inPoints.size(), 2, CV_32FC1, Scalar(0));
+    Mat B(inPoints.size(), 1, CV_32FC1, Scalar(0));
+    Mat X;
+
+    if (maxX - minX > maxY - minY) {
+        // Ax + C = y
+        for (int i = 0; i < inPoints.size(); i++) {
+
+            A.at<float>(i, 0) = inPoints[i].x;
+            A.at<float>(i, 1) = 1.;
+            B.at<float>(i, 0) = inPoints[i].y;
+        }
+
+        // solve system
+        solve(A, B, X, DECOMP_SVD);
+        // return Ax + By + C
+        outLine = Point3f(X.at<float>(0, 0), -1., X.at<float>(1, 0));
+    } else {
+        // By + C = x
+        for (int i = 0; i < inPoints.size(); i++) {
+
+            A.at<float>(i, 0) = inPoints[i].y;
+            A.at<float>(i, 1) = 1.;
+            B.at<float>(i, 0) = inPoints[i].x;
+        }
+
+        // solve system
+        solve(A, B, X, DECOMP_SVD);
+        // return Ax + By + C
+        outLine = Point3f(-1., X.at<float>(0, 0), X.at<float>(1, 0));
+    }
+}
+
+Point2f getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2) {
+    // create matrices of equation system
+    Matx22f A(line1.x, line1.y,
+              line2.x, line2.y);
+    Vec2f   B(-line1.z, -line2.z);
+
+    return A.solve(B, DECOMP_SVD);
+}
+
+void distortPoints(vector<cv::Point2f> in, vector<cv::Point2f>& out, const Mat& camMatrix, const Mat& distCoeff) {
+    // trivial extrinsics
+    cv::Mat Rvec = cv::Mat(3, 1, CV_32FC1, cv::Scalar::all(0));
+    cv::Mat Tvec = Rvec.clone();
+    // calculate 3d points and then reproject, so opencv makes the distortion internally
+    vector<cv::Point3f> cornersPoints3d;
+    for (unsigned int i = 0; i < in.size(); i++)
+        cornersPoints3d.push_back(
+            cv::Point3f((in[i].x - camMatrix.at<float>(0, 2)) / camMatrix.at<float>(0, 0), // x
+                        (in[i].y - camMatrix.at<float>(1, 2)) / camMatrix.at<float>(1, 1), // y
+                        1));                                                               // z
+    cv::projectPoints(cornersPoints3d, Rvec, Tvec, camMatrix, distCoeff, out);
+}
+
+// method to refine corner detection in case the internal border after threshold is found
+// This was tested in the context of chessboard methods
+void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize) {
+
+// for each element, search in a region around
+#pragma omp parallel for
+    for (int i = 0; i < int(Corners.size()); i++) {
+        cv::Point2f minLimit(std::max(0, int(Corners[i].x - wsize)),
+                             std::max(0, int(Corners[i].y - wsize)));
+        cv::Point2f maxLimit(std::min(grey.cols, int(Corners[i].x + wsize)),
+                             std::min(grey.rows, int(Corners[i].y + wsize)));
+
+        cv::Mat reg = grey(cv::Range(minLimit.y, maxLimit.y), cv::Range(minLimit.x, maxLimit.x));
+        cv::Mat harr, harrint;
+        cv::cornerHarris(reg, harr, 3, 3, 0.04);
+
+        // now, do a sum block operation
+        cv::integral(harr, harrint);
+        int bls_a = 4;
+        for (int y = bls_a; y < harr.rows - bls_a; y++) {
+            float* h = harr.ptr<float>(y);
+            for (int x = bls_a; x < harr.cols - bls_a; x++)
+                h[x] = harrint.at<double>(y + bls_a, x + bls_a) - harrint.at<double>(y + bls_a, x) -
+                       harrint.at<double>(y, x + bls_a) + harrint.at<double>(y, x);
+        }
+
+        cv::Point2f best(-1, -1);
+        cv::Point2f center(reg.cols / 2, reg.rows / 2);
+
+        double maxv = 0;
+        for (int i = 0; i < harr.rows; i++) {
+            // L1 dist to center
+            float* har = harr.ptr<float>(i);
+            for (int x = 0; x < harr.cols; x++) {
+                float d =
+                    float(fabs(center.x - x) + fabs(center.y - i)) / float(reg.cols / 2 + reg.rows / 2);
+                float w = 1. - d;
+                if (w * har[x] > maxv) {
+                    maxv = w * har[x];
+                    best = cv::Point2f(x, i);
+                }
+            }
+        }
+        Corners[i] = best + minLimit;
+    }
+}
 }
 
 namespace aruco {
@@ -782,12 +907,6 @@ bool MarkerDetector::warp_cylinder(Mat& in, Mat& out, Size size, MarkerCandidate
     return true;
 }
 
-void MarkerDetector::findBestCornerInRegion_harris(const cv::Mat& grey, vector<cv::Point2f>& Corners,
-                                                   int blockSize) {
-    SubPixelCorner Subp;
-    Subp.RefineCorner(grey, Corners);
-}
-
 /**
  *
  *
@@ -858,86 +977,6 @@ void MarkerDetector::refineCandidateLines(MarkerDetector::MarkerCandidate& candi
     for (int j = 0; j < 4; j++) {
         candidate[j] = crossPoints[j];
     }
-}
-
-/**
- */
-void MarkerDetector::interpolate2Dline(const std::vector<Point2f>& inPoints, Point3f& outLine) {
-
-    float minX, maxX, minY, maxY;
-    minX = maxX = inPoints[0].x;
-    minY = maxY = inPoints[0].y;
-    for (unsigned int i = 1; i < inPoints.size(); i++) {
-        if (inPoints[i].x < minX)
-            minX = inPoints[i].x;
-        if (inPoints[i].x > maxX)
-            maxX = inPoints[i].x;
-        if (inPoints[i].y < minY)
-            minY = inPoints[i].y;
-        if (inPoints[i].y > maxY)
-            maxY = inPoints[i].y;
-    }
-
-    // create matrices of equation system
-    Mat A(inPoints.size(), 2, CV_32FC1, Scalar(0));
-    Mat B(inPoints.size(), 1, CV_32FC1, Scalar(0));
-    Mat X;
-
-    if (maxX - minX > maxY - minY) {
-        // Ax + C = y
-        for (int i = 0; i < inPoints.size(); i++) {
-
-            A.at<float>(i, 0) = inPoints[i].x;
-            A.at<float>(i, 1) = 1.;
-            B.at<float>(i, 0) = inPoints[i].y;
-        }
-
-        // solve system
-        solve(A, B, X, DECOMP_SVD);
-        // return Ax + By + C
-        outLine = Point3f(X.at<float>(0, 0), -1., X.at<float>(1, 0));
-    } else {
-        // By + C = x
-        for (int i = 0; i < inPoints.size(); i++) {
-
-            A.at<float>(i, 0) = inPoints[i].y;
-            A.at<float>(i, 1) = 1.;
-            B.at<float>(i, 0) = inPoints[i].x;
-        }
-
-        // solve system
-        solve(A, B, X, DECOMP_SVD);
-        // return Ax + By + C
-        outLine = Point3f(-1., X.at<float>(0, 0), X.at<float>(1, 0));
-    }
-}
-
-/**
- */
-Point2f MarkerDetector::getCrossPoint(const cv::Point3f& line1, const cv::Point3f& line2) {
-    // create matrices of equation system
-    Matx22f A(line1.x, line1.y,
-              line2.x, line2.y);
-    Vec2f   B(-line1.z, -line2.z);
-
-    return A.solve(B, DECOMP_SVD);
-}
-
-/**
- */
-void MarkerDetector::distortPoints(vector<cv::Point2f> in, vector<cv::Point2f>& out, const Mat& camMatrix,
-                                   const Mat& distCoeff) {
-    // trivial extrinsics
-    cv::Mat Rvec = cv::Mat(3, 1, CV_32FC1, cv::Scalar::all(0));
-    cv::Mat Tvec = Rvec.clone();
-    // calculate 3d points and then reproject, so opencv makes the distortion internally
-    vector<cv::Point3f> cornersPoints3d;
-    for (unsigned int i = 0; i < in.size(); i++)
-        cornersPoints3d.push_back(
-            cv::Point3f((in[i].x - camMatrix.at<float>(0, 2)) / camMatrix.at<float>(0, 0), // x
-                        (in[i].y - camMatrix.at<float>(1, 2)) / camMatrix.at<float>(1, 1), // y
-                        1));                                                               // z
-    cv::projectPoints(cornersPoints3d, Rvec, Tvec, camMatrix, distCoeff, out);
 }
 
 /************************************
@@ -1034,50 +1073,5 @@ void MarkerDetector::setWarpSize(int val) {
     CV_Assert (val >= 10);
 
     _markerWarpSize = val;
-}
-
-void MarkerDetector::findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsize) {
-
-// for each element, search in a region around
-#pragma omp parallel for
-    for (int i = 0; i < int(Corners.size()); i++) {
-        cv::Point2f minLimit(std::max(0, int(Corners[i].x - wsize)),
-                             std::max(0, int(Corners[i].y - wsize)));
-        cv::Point2f maxLimit(std::min(grey.cols, int(Corners[i].x + wsize)),
-                             std::min(grey.rows, int(Corners[i].y + wsize)));
-
-        cv::Mat reg = grey(cv::Range(minLimit.y, maxLimit.y), cv::Range(minLimit.x, maxLimit.x));
-        cv::Mat harr, harrint;
-        cv::cornerHarris(reg, harr, 3, 3, 0.04);
-
-        // now, do a sum block operation
-        cv::integral(harr, harrint);
-        int bls_a = 4;
-        for (int y = bls_a; y < harr.rows - bls_a; y++) {
-            float* h = harr.ptr<float>(y);
-            for (int x = bls_a; x < harr.cols - bls_a; x++)
-                h[x] = harrint.at<double>(y + bls_a, x + bls_a) - harrint.at<double>(y + bls_a, x) -
-                       harrint.at<double>(y, x + bls_a) + harrint.at<double>(y, x);
-        }
-
-        cv::Point2f best(-1, -1);
-        cv::Point2f center(reg.cols / 2, reg.rows / 2);
-        ;
-        double maxv = 0;
-        for (size_t i = 0; i < harr.rows; i++) {
-            // L1 dist to center
-            float* har = harr.ptr<float>(i);
-            for (size_t x = 0; x < harr.cols; x++) {
-                float d =
-                    float(fabs(center.x - x) + fabs(center.y - i)) / float(reg.cols / 2 + reg.rows / 2);
-                float w = 1. - d;
-                if (w * har[x] > maxv) {
-                    maxv = w * har[x];
-                    best = cv::Point2f(x, i);
-                }
-            }
-        }
-        Corners[i] = best + minLimit;
-    }
 }
 };

@@ -115,14 +115,7 @@ public:
      *
      */
     static cv::Mat createBoardImage_Frame(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                          bool setDataCentered = true, std::vector<int>* excludedIds = NULL) ;
-
-private:
-    static std::vector<int> getListOfValidMarkersIds_random(int nMarkers, std::vector<int>* excluded);
-    static cv::Mat rotate(const cv::Mat& in);
-    static int hammDistMarker(cv::Mat bits);
-    static int analyzeMarkerImage(cv::Mat& grey, int& nRotations);
-    static bool correctHammMarker(cv::Mat& bits);
+                                          bool setDataCentered = true, std::vector<int>* excludedIds = NULL);
 };
 }
 
