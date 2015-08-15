@@ -9,7 +9,7 @@
 #define aruco_UTILS_HPP
 
 #include <aruco_export.h>
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 
 namespace aruco {
 
