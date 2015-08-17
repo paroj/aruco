@@ -35,6 +35,7 @@ or implied, of Rafael Muñoz Salinas.
 
 using namespace cv;
 using namespace aruco;
+using namespace std;
 
 string TheInputVideo;
 string TheIntrinsicFile;
@@ -206,7 +207,6 @@ int main(int argc, char** argv) {
         cv::namedWindow("in", 1);
         for (unsigned int i = 0; i < TOTAL_METHODS; i++) {
             MDetector[i].getThresholdParams(ThresParam1, ThresParam2);
-            MDetector[i].enableErosion(false);
             MDetector[i].setCornerRefinementMethod((MarkerDetector::CornerRefinementMethod)i);
         }
         // 	MDetector[0].setCornerRefinementMethod(MarkerDetector::NONE);
@@ -233,7 +233,7 @@ int main(int argc, char** argv) {
                 float probDetect = TheBoardDetector.detect(TheMarkers, TheBoardConfig, TheBoardDetected,
                                                            TheCameraParameters, TheMarkerSize);
                 if (probDetect > 0)
-                    SC[i].process(TheBoardDetected.Rvec, TheBoardDetected.Tvec);
+                    SC[i].process(Mat(TheBoardDetected.Rvec), Mat(TheBoardDetected.Tvec));
 
                 switch (i) {
                 case 0:
