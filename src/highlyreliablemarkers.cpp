@@ -30,6 +30,15 @@ or implied, of Rafael Muñoz Salinas.
 #include <iostream>
 using namespace std;
 
+namespace {
+// convert to string
+template <class T> static string to_string(T num) {
+    stringstream ss;
+    ss << num;
+    return ss.str();
+}
+}
+
 namespace aruco {
 
 // static variables from HighlyReliableMarkers. Need to be here to avoid linking errors
@@ -198,7 +207,7 @@ bool Dictionary::fromFile(std::string filename) {
     // read each marker info
     for (int i = 0; i < nmarkers; i++) {
         std::string s;
-        fs["marker_" + toStr(i)] >> s;
+        fs["marker_" + to_string(i)] >> s;
         MarkerCode m(markersize);
         m.fromString(s);
         push_back(m);
@@ -218,7 +227,7 @@ bool Dictionary::toFile(std::string filename) {
     // save each marker code
     for (unsigned int i = 0; i < size(); i++) {
         std::string s = ((*this)[i]).toString();
-        fs << "marker_" + toStr(i) << s;
+        fs << "marker_" + to_string(i) << s;
     }
     fs.release();
     return true;

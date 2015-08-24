@@ -192,14 +192,6 @@ public:
     unsigned int minimunDistance();
 
     int tau0;
-
-private:
-    // convert to string
-    template <class T> static std::string toStr(T num) {
-        std::stringstream ss;
-        ss << num;
-        return ss.str();
-    }
 };
 
 /**
