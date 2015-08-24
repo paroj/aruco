@@ -299,8 +299,6 @@ cv::Mat FiducidalMarkers::getMarkerMat(int id){
 
 cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
                                            vector<int>* excludedIds) {
-
-    srand(cv::getTickCount());
     int nMarkers = gridSize.height * gridSize.width;
     TInfo.resize(nMarkers);
     vector<int> ids = getListOfValidMarkersIds_random(nMarkers, excludedIds);
@@ -349,9 +347,6 @@ cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int Ma
  ************************************/
 cv::Mat FiducidalMarkers::createBoardImage_ChessBoard(Size gridSize, int MarkerSize, BoardConfiguration& TInfo, bool centerData,
                                                       vector<int>* excludedIds){
-
-    srand(cv::getTickCount());
-
     // determine the total number of markers required
     int nMarkers = 3 * (gridSize.width * gridSize.height) / 4; // overdetermine  the number of marker read
     vector<int> idsVector = getListOfValidMarkersIds_random(nMarkers, excludedIds);
@@ -408,8 +403,6 @@ cv::Mat FiducidalMarkers::createBoardImage_ChessBoard(Size gridSize, int MarkerS
  ************************************/
 cv::Mat FiducidalMarkers::createBoardImage_Frame(Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
                                                  bool centerData, vector<int>* excludedIds) {
-
-    srand(cv::getTickCount());
     int nMarkers = 2 * gridSize.height * 2 * gridSize.width;
     vector<int> idsVector = getListOfValidMarkersIds_random(nMarkers, excludedIds);
 

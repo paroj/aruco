@@ -60,6 +60,9 @@ int main(int argc, char** argv) {
         }
         aruco::BoardConfiguration BInfo;
         Mat BoardImage;
+
+        srand(cv::getTickCount()); // randomize picked board ids
+
         if (typeBoard == 0)
             BoardImage = aruco::FiducidalMarkers::createBoardImage(Size(XSize, YSize), pixSize,
                                                                    pixSize * interMarkerDistance, BInfo);
