@@ -30,13 +30,9 @@ or implied, of Rafael Muñoz Salinas.
 #define HIGHLYRELIABLEMARKERS_H
 
 #include <vector>
-#include <math.h>
 #include <string>
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <aruco_export.h>
-
-#include <iostream>
 
 namespace aruco {
 
@@ -144,11 +140,6 @@ private:
     unsigned int _ids[4];       // ids in the four rotations
     std::vector<bool> _bits[4]; // bit strings in the four rotations
     unsigned int _n;            // marker dimension
-
-    /**
-     * Return hamming distance between two bit vectors
-     */
-    unsigned int hammingDistance(const std::vector<bool>& m1, const std::vector<bool>& m2) const;
 };
 
 /**

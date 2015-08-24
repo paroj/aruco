@@ -28,6 +28,8 @@ or implied, of Rafael Muñoz Salinas.
 
 #include "highlyreliablemarkers.h"
 #include <iostream>
+#include <opencv2/imgproc/imgproc.hpp>
+
 using namespace std;
 
 namespace {
@@ -36,6 +38,17 @@ template <class T> static string to_string(T num) {
     stringstream ss;
     ss << num;
     return ss.str();
+}
+
+/**
+ * Return hamming distance between two bit vectors
+ */
+unsigned int hammingDistance(const vector<bool>& m1, const vector<bool>& m2) {
+    unsigned int res = 0;
+    for (unsigned int i = 0; i < m1.size(); i++)
+        if (m1[i] != m2[i])
+            res++;
+    return res;
 }
 }
 
@@ -181,16 +194,6 @@ cv::Mat MarkerCode::getImg(unsigned int pixSize) const {
         }
     }
     return img;
-}
-
-/**
- */
-unsigned int MarkerCode::hammingDistance(const std::vector<bool>& m1, const std::vector<bool>& m2) const {
-    unsigned int res = 0;
-    for (unsigned int i = 0; i < m1.size(); i++)
-        if (m1[i] != m2[i])
-            res++;
-    return res;
 }
 
 /**
