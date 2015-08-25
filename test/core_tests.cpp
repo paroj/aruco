@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <aruco.h>
+#include "arucofidmarkers.h"
 #include "filestorage_adapter.h"
 #include "highlyreliablemarkers.h"
 #include "test.h"
@@ -10,6 +12,51 @@
 
 namespace {
 bool generateResults = false;
+}
+
+TEST(Aruco, CreateMarker){
+
+    const int pixSize = 500;
+    const int markerId = 471;
+
+    if( generateResults ){
+        cv::Mat marker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, true, true);
+        cv::imwrite(TESTDATA_PATH "board/locked-watermark-marker-expected.png", marker);
+
+        marker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, false, true);
+        cv::imwrite(TESTDATA_PATH "board/locked-marker-expected.png", marker);
+
+        marker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, false, false);
+        cv::imwrite(TESTDATA_PATH "board/marker-expected.png", marker);
+
+        marker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, true, false);
+        cv::imwrite(TESTDATA_PATH "board/wartermark-marker-expected.png", marker);
+
+        return ;
+    }
+
+    cv::Mat diff, expectedMarker, currentMarker;
+
+    expectedMarker = cv::imread(TESTDATA_PATH "board/locked-watermark-marker-expected.png", cv::IMREAD_GRAYSCALE);
+    currentMarker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, true, true);
+    cv::compare(expectedMarker, currentMarker, diff, cv::CMP_NE);
+    EXPECT_EQ(0, cv::countNonZero(diff));
+
+    expectedMarker = cv::imread(TESTDATA_PATH "board/locked-marker-expected.png", cv::IMREAD_GRAYSCALE);
+    currentMarker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, false, true);
+    cv::compare(expectedMarker, currentMarker, diff, cv::CMP_NE);
+    EXPECT_EQ(0, cv::countNonZero(diff));
+
+    expectedMarker = cv::imread(TESTDATA_PATH "board/marker-expected.png", cv::IMREAD_GRAYSCALE);
+    currentMarker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, false, false);
+    cv::compare(expectedMarker, currentMarker, diff, cv::CMP_NE);
+    EXPECT_EQ(0, cv::countNonZero(diff));
+
+    expectedMarker = cv::imread(TESTDATA_PATH "board/wartermark-marker-expected.png", cv::IMREAD_GRAYSCALE);
+    currentMarker = aruco::FiducidalMarkers::createMarkerImage(markerId, pixSize, true, false);
+    cv::compare(expectedMarker, currentMarker, diff, cv::CMP_NE);
+    EXPECT_EQ(0, cv::countNonZero(diff));
+
 }
 
 TEST(Aruco, Single) {
