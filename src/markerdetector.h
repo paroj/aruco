@@ -63,6 +63,21 @@ class ARUCO_EXPORTS MarkerDetector {
 
 public:
     /**
+     * The function that identifies a marker
+     *
+     * The marker function receives the image 'in' with the region that might contain one of your markers.
+     * These are the rectangular regions with black in the image.
+     *
+     * As output your marker function must indicate the following information. First, the output parameter
+     * nRotations must indicate how many times the marker
+     * must be rotated clockwise 90 deg  to be in its ideal position. (The way you would see it when you
+     * print it). This is employed to know
+     * always which is the corner that acts as reference system. Second, the function must return -1 if the
+     * image does not contains one of your markers, and its id otherwise.
+     */
+    typedef int (*MarkerdetectorFunc)(const cv::Mat& in, int& nRotations);
+
+    /**
      * See
      */
     MarkerDetector();
@@ -222,27 +237,11 @@ public:
 
     /**
      * Allows to specify the function that identifies a marker. Therefore, you can create your own type of
-     *markers different from these
+     * markers different from these
      * employed by default in the library.
-     * The marker function must have the following structure:
-     *
-     * int myMarkerIdentifier(const cv::Mat &in,int &nRotations);
-     *
-     * The marker function receives the image 'in' with the region that migh contain one of your markers.
-     *These are the rectangular regions with black
-     *  in the image.
-     *
-     * As output your marker function must indicate the following information. First, the output parameter
-     *nRotations must indicate how many times the marker
-     * must be rotated clockwise 90 deg  to be in its ideal position. (The way you would see it when you
-     *print it). This is employed to know
-     * always which is the corner that acts as reference system. Second, the function must return -1 if the
-     *image does not contains one of your markers, and its
-     *id otherwise.
-     *
      */
-    void setMakerDetectorFunction(int (*markerdetector_func)(const cv::Mat& in, int& nRotations)) {
-        markerIdDetector_ptrfunc = markerdetector_func;
+    void setMakerDetectorFunction(MarkerdetectorFunc markerdetector_func) {
+        markerIdDetectorFunc = markerdetector_func;
     }
 
     ///-------------------------------------------------
@@ -308,7 +307,7 @@ private:
     // Images
     cv::Mat thres;
     // pointer to the function that analizes a rectangular region so as to detect its internal marker
-    int (*markerIdDetector_ptrfunc)(const cv::Mat& in, int& nRotations);
+    MarkerdetectorFunc markerIdDetectorFunc;
 };
 }
 #endif

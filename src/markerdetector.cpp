@@ -232,7 +232,7 @@ MarkerDetector::MarkerDetector() {
     _thresParam1_range = 0;
     _markerWarpSize = 56;
     _speed = 0;
-    markerIdDetector_ptrfunc = aruco::FiducidalMarkers::detect;
+    markerIdDetectorFunc = aruco::FiducidalMarkers::detect;
     _minSize = 0.04;
     _maxSize = 0.5;
 
@@ -338,7 +338,7 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
         Mat canonicalMarker;
         warp(grey, canonicalMarker, Size(_markerWarpSize, _markerWarpSize), MarkerCanditates[i]);
         int nRotations;
-        int id = (*markerIdDetector_ptrfunc)(canonicalMarker, nRotations);
+        int id = markerIdDetectorFunc(canonicalMarker, nRotations);
         MarkerCanditates[i].id = id;
 
         if (id != -1) {
