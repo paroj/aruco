@@ -37,23 +37,18 @@ using namespace std;
 namespace {
 typedef Matx<bool, 5, 5> MarkerCode;
 
-vector<int> getListOfValidMarkersIds_random(size_t nMarkers, vector<int>* excluded) {
+vector<int> getListOfValidMarkersIds_random(size_t nMarkers, const vector<int>& excluded) {
+    CV_Assert(nMarkers + excluded.size() <= 1024 && "Number of possible markers is exceeded");
 
-    if (excluded)
-    {
-        CV_Assert(nMarkers + excluded->size() <= 1024 && "Number of possible markers is exceeded");
-    }
-
-    vector<int> listOfMarkers(1024);
+    int listOfMarkers[1024];
     // set a list with all ids
     for (int i = 0; i < 1024; i++)
         listOfMarkers[i] = i;
 
-    if (excluded != NULL) // set excluded to -1
-        for (size_t i = 0; i < excluded->size(); i++)
-            listOfMarkers[excluded->at(i)] = -1;
+    for (size_t i = 0; i < excluded.size(); i++)
+        listOfMarkers[excluded[i]] = -1;
     // random shuffle
-    random_shuffle(listOfMarkers.begin(), listOfMarkers.end(), theRNG());
+    random_shuffle(listOfMarkers, listOfMarkers + 1024, theRNG());
     // now, take the first  nMarkers elements with value !=-1
     int i = 0;
     vector<int> retList;
@@ -212,8 +207,7 @@ namespace aruco {
 Mat FiducidalMarkers::createMarkerImage(int id, int size, bool addWaterMark, bool locked) {
     CV_Assert(0 <= id && id < 1024);
 
-    Mat marker(size, size, CV_8UC1);
-    marker.setTo(Scalar(0));
+    Mat_<uchar> marker(size, size, uchar(0));
 
     // for each line, create
     int swidth = size / 7;
@@ -222,11 +216,8 @@ Mat FiducidalMarkers::createMarkerImage(int id, int size, bool addWaterMark, boo
         int index = (id >> 2 * (4 - y)) & 0x0003;
         int val = ids[index];
         for (int x = 0; x < 5; x++) {
-            Mat roi = marker(Rect((x + 1) * swidth, (y + 1) * swidth, swidth, swidth));
             if ((val >> (4 - x)) & 0x0001)
-                roi.setTo(Scalar(255));
-            else
-                roi.setTo(Scalar(0));
+                marker(Rect((x + 1) * swidth, (y + 1) * swidth, swidth, swidth)) = 255;
         }
     }
 
@@ -243,25 +234,19 @@ Mat FiducidalMarkers::createMarkerImage(int id, int size, bool addWaterMark, boo
         // add a locking
         int sqSize = float(size) * 0.25;
 
-        cv::Mat lock_marker(cv::Size(size + sqSize * 2, size + sqSize * 2), marker.type());
+        cv::Mat_<uchar> lock_marker(size + sqSize * 2, size + sqSize * 2, uchar(255));
         // cerr<<lock_marker.size()<<endl;
-        lock_marker.setTo(cv::Scalar::all(255));
         // write the squares
-        cv::Mat sub = lock_marker(cv::Range(0, sqSize), cv::Range(0, sqSize));
-        sub.setTo(cv::Scalar::all(0));
+        lock_marker(cv::Range(0, sqSize), cv::Range(0, sqSize)) = 0;
 
-        sub = lock_marker(cv::Range(lock_marker.rows - sqSize, lock_marker.rows), cv::Range(0, sqSize));
-        sub.setTo(cv::Scalar::all(0));
+        lock_marker(cv::Range(lock_marker.rows - sqSize, lock_marker.rows), cv::Range(0, sqSize)) = 0;
 
-        sub = lock_marker(cv::Range(lock_marker.rows - sqSize, lock_marker.rows),
-                          cv::Range(lock_marker.cols - sqSize, lock_marker.cols));
-        sub.setTo(cv::Scalar::all(0));
+        lock_marker(cv::Range(lock_marker.rows - sqSize, lock_marker.rows),
+                          cv::Range(lock_marker.cols - sqSize, lock_marker.cols)) = 0;
 
-        sub = lock_marker(cv::Range(0, sqSize), cv::Range(lock_marker.cols - sqSize, lock_marker.cols));
-        sub.setTo(cv::Scalar::all(0));
+        lock_marker(cv::Range(0, sqSize), cv::Range(lock_marker.cols - sqSize, lock_marker.cols)) = 0;
 
-        sub = lock_marker(cv::Range(sqSize, marker.rows + sqSize), cv::Range(sqSize, marker.cols + sqSize));
-        marker.copyTo(sub);
+        marker.copyTo(lock_marker(Range(sqSize, marker.rows + sqSize), Range(sqSize, marker.cols + sqSize)));
         marker = lock_marker;
     }
     return marker;
@@ -272,8 +257,8 @@ Mat FiducidalMarkers::createMarkerImage(int id, int size, bool addWaterMark, boo
 cv::Mat FiducidalMarkers::getMarkerMat(int id){
     CV_Assert(0 <= id && id < 1024 && "Invalid marker id");
 
-    Mat marker(5, 5, CV_8UC1);
-    marker.setTo(Scalar(0));
+    Mat_<uchar> marker(5, 5, uchar(0));
+
     // for each line, create
     int ids[4] = {0x10, 0x17, 0x09, 0x0e};
     for (int y = 0; y < 5; y++) {
@@ -281,9 +266,9 @@ cv::Mat FiducidalMarkers::getMarkerMat(int id){
         int val = ids[index];
         for (int x = 0; x < 5; x++) {
             if ((val >> (4 - x)) & 0x0001)
-                marker.at<uchar>(y, x) = 1;
+                marker(y, x) = 1;
             else
-                marker.at<uchar>(y, x) = 0;
+                marker(y, x) = 0;
         }
     }
     return marker;
@@ -296,7 +281,7 @@ cv::Mat FiducidalMarkers::getMarkerMat(int id){
  ************************************/
 
 cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                           vector<int>* excludedIds) {
+                                           const vector<int>& excludedIds) {
     int nMarkers = gridSize.height * gridSize.width;
     TInfo.resize(nMarkers);
     vector<int> ids = getListOfValidMarkersIds_random(nMarkers, excludedIds);
@@ -344,7 +329,7 @@ cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int Ma
  *
  ************************************/
 cv::Mat FiducidalMarkers::createBoardImage_ChessBoard(Size gridSize, int MarkerSize, BoardConfiguration& TInfo, bool centerData,
-                                                      vector<int>* excludedIds){
+                                                      const vector<int>& excludedIds){
     // determine the total number of markers required
     int nMarkers = 3 * (gridSize.width * gridSize.height) / 4; // overdetermine  the number of marker read
     vector<int> idsVector = getListOfValidMarkersIds_random(nMarkers, excludedIds);
@@ -400,7 +385,7 @@ cv::Mat FiducidalMarkers::createBoardImage_ChessBoard(Size gridSize, int MarkerS
  *
  ************************************/
 cv::Mat FiducidalMarkers::createBoardImage_Frame(Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                                 bool centerData, vector<int>* excludedIds) {
+                                                 bool centerData, const vector<int>& excludedIds) {
     int nMarkers = 2 * gridSize.height * 2 * gridSize.width;
     vector<int> idsVector = getListOfValidMarkersIds_random(nMarkers, excludedIds);
 
@@ -459,12 +444,5 @@ int FiducidalMarkers::detect(const Mat& in, int& nRotations) {
     // try first with the big ones
 
     return analyzeMarkerImage(grey, nRotations);
-
-    // too many false positives
-    /*    int id=analyzeMarkerImage(grey,nRotations);
-        if (id!=-1) return id;
-        id=analyzeMarkerImage_type2(grey,nRotations);
-        if (id!=-1) return id;
-        return -1;*/
 }
 }

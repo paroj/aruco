@@ -92,7 +92,7 @@ public:
      * @param excludedIds set of ids excluded from the board
      */
     static cv::Mat createBoardImage(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                    std::vector<int>* excludedIds = NULL);
+                                    const std::vector<int>& excludedIds = std::vector<int>());
 
     /**Creates a printable image of a board in chessboard_like manner
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -103,7 +103,8 @@ public:
      *
      */
     static cv::Mat createBoardImage_ChessBoard(cv::Size gridSize, int MarkerSize, BoardConfiguration& TInfo,
-                                               bool setDataCentered = true, std::vector<int>* excludedIds = NULL);
+                                               bool setDataCentered = true,
+                                               const std::vector<int>& excludedIds = std::vector<int>());
 
     /**Creates a printable image of a board in a frame fashion
      * @param gridSize grid layout (numer of sqaures in x and Y)
@@ -115,7 +116,8 @@ public:
      *
      */
     static cv::Mat createBoardImage_Frame(cv::Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
-                                          bool setDataCentered = true, std::vector<int>* excludedIds = NULL);
+                                          bool setDataCentered = true,
+                                          const std::vector<int>& excludedIds = std::vector<int>());
 };
 }
 
