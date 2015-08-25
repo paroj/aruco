@@ -15,12 +15,9 @@ bool generateResults = false;
 void compareBoardConfig(aruco::BoardConfiguration expectedBoard, aruco::BoardConfiguration currentBoard){
     ASSERT_EQ( expectedBoard.size(), currentBoard.size() );
 
-    if ( expectedBoard.size() != currentBoard.size() )
-        return ;
-
-    for (int i = 0; i < currentBoard.size(); i++){
+    for (size_t i = 0; i < currentBoard.size(); i++){
         EXPECT_EQ(expectedBoard[i].id, currentBoard[i].id);
-        for (auto j = 0; j < 4; j++){
+        for (int j = 0; j < 4; j++){
             EXPECT_FLOAT_EQ(expectedBoard[i].at(j).x, currentBoard[i].at(j).x);
             EXPECT_FLOAT_EQ(expectedBoard[i].at(j).y, currentBoard[i].at(j).y);
             EXPECT_FLOAT_EQ(expectedBoard[i].at(j).z, currentBoard[i].at(j).z);
