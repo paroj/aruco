@@ -35,6 +35,8 @@ using namespace cv;
 using namespace std;
 
 namespace {
+typedef Matx<bool, 5, 5> MarkerCode;
+
 vector<int> getListOfValidMarkersIds_random(size_t nMarkers, vector<int>* excluded) {
 
     if (excluded)
@@ -63,20 +65,19 @@ vector<int> getListOfValidMarkersIds_random(size_t nMarkers, vector<int>* exclud
     return retList;
 }
 
-Mat rotate(const Mat& in) {
-    Mat out;
-    in.copyTo(out);
+MarkerCode rotate(const MarkerCode& in) {
+    MarkerCode out = in;
 
     for (int i = 0; i < in.rows; i++) {
         for (int j = 0; j < in.cols; j++) {
-            out.at<uchar>(i, j) = in.at<uchar>(in.cols - j - 1, i);
+            out(i, j) = in(in.cols - j - 1, i);
         }
     }
     return out;
 }
 
-int hammDistMarker(Mat bits) {
-    int ids[4][5] = {{1, 0, 0, 0, 0}, {1, 0, 1, 1, 1}, {0, 1, 0, 0, 1}, {0, 1, 1, 1, 0}};
+int hammDistMarker(const MarkerCode& bits) {
+    bool ids[4][5] = {{1, 0, 0, 0, 0}, {1, 0, 1, 1, 1}, {0, 1, 0, 0, 1}, {0, 1, 1, 1, 0}};
     int dist = 0;
 
     for (int y = 0; y < 5; y++) {
@@ -86,7 +87,7 @@ int hammDistMarker(Mat bits) {
             int sum = 0;
             // now, count
             for (int x = 0; x < 5; x++)
-                sum += bits.at<uchar>(y, x) == ids[p][x] ? 0 : 1;
+                sum += bits(y, x) != ids[p][x];
             if (minSum > sum)
                 minSum = sum;
         }
@@ -120,8 +121,7 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
     }
 
     // now,
-    vector<int> markerInfo(5);
-    Mat _bits = Mat::zeros(5, 5, CV_8UC1);
+    MarkerCode _bits;
     // get information(for each inner square, determine if it is  black or white)
 
     for (int y = 0; y < 5; y++) {
@@ -132,14 +132,14 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
             Mat square = grey(Rect(Xstart, Ystart, swidth, swidth));
             int nZ = countNonZero(square);
             if (nZ > (swidth * swidth) / 2)
-                _bits.at<uchar>(y, x) = 1;
+                _bits(y, x) = 1;
         }
     }
     //      printMat<uchar>( _bits,"or mat");
 
     // checkl all possible rotations
     Mat _bitsFlip;
-    Mat Rotations[4];
+    MarkerCode Rotations[4];
     Rotations[0] = _bits;
     int dists[4];
     dists[0] = hammDistMarker(Rotations[0]);
@@ -162,20 +162,20 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
         return -1;
     else { // Get id of the marker
         int MatID = 0;
-        cv::Mat bits = Rotations[minDist.second];
+        MarkerCode bits = Rotations[minDist.second];
         for (int y = 0; y < 5; y++) {
             MatID <<= 1;
-            if (bits.at<uchar>(y, 1))
+            if (bits(y, 1))
                 MatID |= 1;
             MatID <<= 1;
-            if (bits.at<uchar>(y, 3))
+            if (bits(y, 3))
                 MatID |= 1;
         }
         return MatID;
     }
 }
 
-bool correctHammMarker(Mat& bits) {
+bool correctHammMarker(const MarkerCode& bits) {
     // detect this lines with errors
     bool errors[4];
     int ids[4][5] = {{0, 0, 0, 0, 0}, {0, 0, 1, 1, 1}, {1, 1, 0, 0, 1}, {1, 1, 1, 1, 0}};
@@ -187,14 +187,12 @@ bool correctHammMarker(Mat& bits) {
             int sum = 0;
             // now, count
             for (int x = 0; x < 5; x++)
-                sum += bits.at<uchar>(y, x) == ids[p][x] ? 0 : 1;
+                sum += bits(y, x) != ids[p][x];
             if (minSum > sum)
                 minSum = sum;
         }
-        if (minSum != 0)
-            errors[y] = true;
-        else
-            errors[y] = false;
+
+        errors[y] = minSum != 0;
     }
 
     return true;
