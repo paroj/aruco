@@ -53,7 +53,7 @@ vector<int> getListOfValidMarkersIds_random(size_t nMarkers, vector<int>* exclud
         for (size_t i = 0; i < excluded->size(); i++)
             listOfMarkers[excluded->at(i)] = -1;
     // random shuffle
-    random_shuffle(listOfMarkers.begin(), listOfMarkers.end());
+    random_shuffle(listOfMarkers.begin(), listOfMarkers.end(), theRNG());
     // now, take the first  nMarkers elements with value !=-1
     int i = 0;
     vector<int> retList;
