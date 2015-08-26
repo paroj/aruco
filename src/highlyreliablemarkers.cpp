@@ -496,4 +496,74 @@ bool HighlyReliableMarkers::BalancedBinaryTree::findId(unsigned int id, unsigned
     count++;
     return false; // if nothing found, return false
 }
+
+cv::Mat HighlyReliableMarkers::createBoardImage(cv::Size gridSize, const Dictionary& D, BoardConfiguration& BC,
+                                                 bool chromatic) {
+    unsigned int MarkerSize = (D[0].n() + 2) * 20;
+    unsigned int MarkerDistance = MarkerSize / 5;
+
+    int sizeY = gridSize.height * MarkerSize + (gridSize.height - 1) * MarkerDistance;
+    int sizeX = gridSize.width * MarkerSize + (gridSize.width - 1) * MarkerDistance;
+    // find the center so that the ref systeem is in it
+    float centerX = sizeX / 2.;
+    float centerY = sizeY / 2.;
+
+    BC.mInfoType = aruco::BoardConfiguration::PIX;
+
+    // indicate the data is expressed in pixels
+    cv::Mat tableImage(sizeY, sizeX, CV_8UC1);
+    tableImage.setTo(cv::Scalar(255));
+    int idp = 0;
+    for (int y = 0; y < gridSize.height; y++)
+        for (int x = 0; x < gridSize.width; x++, idp += 1) {
+            // create image
+            cv::Mat subrect(tableImage,
+                            cv::Rect(x * (MarkerDistance + MarkerSize), y * (MarkerDistance + MarkerSize),
+                                     MarkerSize, MarkerSize));
+            cv::Mat marker = D[idp].getImg(MarkerSize);
+            marker.copyTo(subrect);
+
+            // add to board configuration
+            aruco::MarkerInfo MI;
+            MI.resize(4);
+            MI.id = D[idp].getId();
+            for (unsigned int i = 0; i < 4; i++)
+                MI[i].z = 0;
+            MI[0].x = x * (MarkerDistance + MarkerSize) - centerX;
+            MI[0].y = y * (MarkerDistance + MarkerSize) - centerY;
+            MI[1].x = x * (MarkerDistance + MarkerSize) + MarkerSize - centerX;
+            MI[1].y = y * (MarkerDistance + MarkerSize) - centerY;
+            MI[2].x = x * (MarkerDistance + MarkerSize) + MarkerSize - centerX;
+            MI[2].y = y * (MarkerDistance + MarkerSize) + MarkerSize - centerY;
+            MI[3].x = x * (MarkerDistance + MarkerSize) - centerX;
+            MI[3].y = y * (MarkerDistance + MarkerSize) + MarkerSize - centerY;
+            // makes y negative so z axis is pointing up
+            MI[0].y *= -1;
+            MI[1].y *= -1;
+            MI[2].y *= -1;
+            MI[3].y *= -1;
+            BC.push_back(MI);
+        }
+
+    if (chromatic) {
+        cv::Scalar color1 = cv::Scalar(250, 134, 4);
+        //   cv::Scalar color2 = cv::Scalar(0,255,0);
+        cv::Vec3b color2Vec3b = cv::Vec3b(0, 255, 0); // store as a Vec3b to assign easily to the image
+
+        // create new image with border and with color 1
+        cv::Mat chromaticImg(tableImage.rows + 2 * MarkerDistance, tableImage.cols + 2 * MarkerDistance,
+                             CV_8UC3, color1);
+
+        // now use color2 in black pixels
+        for (int i = 0; i < tableImage.rows; i++) {
+            for (int j = 0; j < tableImage.cols; j++) {
+                if (tableImage.at<uchar>(i, j) == 0)
+                    chromaticImg.at<cv::Vec3b>(MarkerDistance + i, MarkerDistance + j) = color2Vec3b;
+            }
+        }
+        tableImage = chromaticImg;
+    }
+
+    return tableImage;
+}
 }

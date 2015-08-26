@@ -33,6 +33,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <string>
 #include <opencv2/core/core.hpp>
 #include <aruco_export.h>
+#include "board.h"
 
 namespace aruco {
 
@@ -236,6 +237,15 @@ public:
      */
     static int detect(const cv::Mat& in, int& nRotations);
 
+    /**Creates a printable image of a board
+     * @param gridSize grid layout (numer of sqaures in x and Y)
+     * @param D input dictionary from where markers are taken to create the board
+     * @param MarkerDistance distance between the markers
+     * @param BC output
+     * @param chromatic true for green&blue chromatic markers
+     */
+    static cv::Mat createBoardImage(cv::Size gridSize, const Dictionary& D, BoardConfiguration& BC,
+                                    bool chromatic = false);
 private:
     static Dictionary _D; // loaded dictionary
     static BalancedBinaryTree _binaryTree;
