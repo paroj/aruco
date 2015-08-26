@@ -98,31 +98,23 @@ public:
     }
 };
 
-int main(int argc, char** argv) {
-    if (argc < 4) {
-        cerr << "Invalid number of arguments" << endl;
-        cerr << "Usage: outputfile.yml dictSize n  \n \
-      outputfile.yml: output file for the dictionary \n \
-      dictSize: number of markers to add to the dictionary \n \
-      n: marker size." << endl;
-        exit(-1);
-    }
-
-    aruco::Dictionary D;
-    unsigned int dictSize = atoi(argv[2]);
-    unsigned int n = atoi(argv[3]);
-
+/**
+ * create marker dictionary
+ * @param dictSize number of markers to add to the dictionary
+ * @param n marker size
+ * @return marker Dictionary
+ */
+aruco::Dictionary createDicitionary(size_t dictSize, size_t n) {
     unsigned int tau = 2 * ((4 * ((n * n) / 4)) / 3);
-    std::cout << "Tau: " << tau << std::endl;
-
-    srand(time(NULL));
 
     MarkerGenerator MG(n);
 
-    const int MAX_UNPRODUCTIVE_ITERATIONS = 100000;
+    const size_t MAX_UNPRODUCTIVE_ITERATIONS = 100000;
     int currentMaxUnproductiveIterations = MAX_UNPRODUCTIVE_ITERATIONS;
 
     unsigned int countUnproductive = 0;
+
+    aruco::Dictionary D;
     while (D.size() < dictSize) {
 
         aruco::MarkerCode candidate;
@@ -137,12 +129,12 @@ int main(int argc, char** argv) {
             if (countUnproductive == currentMaxUnproductiveIterations) {
                 tau--;
                 countUnproductive = 0;
-                std::cout << "Reducing Tau to: " << tau << std::endl;
+                //std::cout << "Reducing Tau to: " << tau << std::endl;
+
                 if (tau == 0) {
-                    std::cerr << "Error: Tau=0. Small marker size for too high number of markers. Stop"
-                              << std::endl;
-                    break;
+                    CV_Error(CV_StsBadArg, "Error: Tau=0. Small marker size for too high number of markers. Stop");
                 }
+
                 if (D.size() >= 2)
                     currentMaxUnproductiveIterations = MAX_UNPRODUCTIVE_ITERATIONS;
                 else
@@ -152,5 +144,28 @@ int main(int argc, char** argv) {
     }
 
     D.tau0 = tau;
+
+    return D;
+}
+
+int main(int argc, char** argv) {
+    if (argc < 4) {
+        cerr << "Invalid number of arguments" << endl;
+        cerr << "Usage: outputfile.yml dictSize n  \n \
+      outputfile.yml: output file for the dictionary \n \
+      dictSize: number of markers to add to the dictionary \n \
+      n: marker size." << endl;
+        exit(-1);
+    }
+
+
+    unsigned int dictSize = atoi(argv[2]);
+    unsigned int n = atoi(argv[3]);
+
+    srand(time(NULL));
+    aruco::Dictionary D = createDicitionary(dictSize, n);
+
+    std::cout << "Tau: " << D.tau0 << std::endl;
+
     D.toFile(argv[1]);
 }
