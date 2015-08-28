@@ -474,7 +474,7 @@ void MarkerDetector::detectRectangles(const cv::Mat& thres, vector<std::vector<c
 
 void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerCandidate>& OutMarkerCanditates) {
     //         omp_set_num_threads ( 1 );
-    vector<vector<MarkerCandidate> > MarkerCanditatesV(omp_get_max_threads());
+    vector<vector<MarkerCandidate> > MarkerCanditatesV(thresImgv.size());
     // calcualte the min_max contour sizes
     int minSize = _minSize * std::max(thresImgv[0].cols, thresImgv[0].rows) * 4;
     int maxSize = _maxSize * std::max(thresImgv[0].cols, thresImgv[0].rows) * 4;
@@ -483,10 +483,10 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerC
 //         cv::cvtColor ( thresImgv[0],input,CV_GRAY2BGR );
 
 #pragma omp parallel for
-    for (int i = 0; i < int(thresImgv.size()); i++) {
+    for (int t = 0; t < int(thresImgv.size()); t++) {
         std::vector<std::vector<cv::Point> > contours2;
         cv::Mat thres2;
-        thresImgv[i].copyTo(thres2);
+        thresImgv[t].copyTo(thres2);
         cv::findContours(thres2, contours2, noArray(), CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
 
         vector<Point> approxCurve;
@@ -532,9 +532,9 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerC
 
             // add the points
             // 	      cout<<"ADDED"<<endl;
-            MarkerCanditatesV[omp_get_thread_num()].push_back(Marker(vector<Point2f>(approxCurve.begin(), approxCurve.end())));
-            MarkerCanditatesV[omp_get_thread_num()].back().idx = i;
-            MarkerCanditatesV[omp_get_thread_num()].back().contour = contours2[i];
+            MarkerCanditatesV[t].push_back(Marker(vector<Point2f>(approxCurve.begin(), approxCurve.end())));
+            MarkerCanditatesV[t].back().idx = i;
+            MarkerCanditatesV[t].back().contour = contours2[i];
         }
     }
     // join all candidates
