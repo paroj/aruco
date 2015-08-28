@@ -450,6 +450,7 @@ void MarkerDetector::detect(cv::InputArray input, vector<Marker>& detectedMarker
 
     /// detect the position of detected markers if desired
     if (camMatrix.rows != 0 && markerSizeMeters > 0) {
+#pragma omp parallel for
         for (unsigned int i = 0; i < detectedMarkers.size(); i++)
             detectedMarkers[i].calculateExtrinsics(markerSizeMeters, camMatrix, distCoeff,
                                                    setYPerpendicular);
