@@ -203,7 +203,7 @@ public:
         /**
         * Create the tree for dictionary D
         */
-        void loadDictionary(Dictionary* D);
+        void loadDictionary(Dictionary& D);
 
         /**
         * Search a id in the dictionary. Return true if found, false otherwise.

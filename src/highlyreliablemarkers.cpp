@@ -281,7 +281,7 @@ bool HighlyReliableMarkers::loadDictionary(Dictionary D, float correctionDistanc
     _ncellsBorder = (_D[0].n() + 2);
     _correctionDistance = correctionDistanceRate * ((D.tau0 - 1) / 2);
     cerr << "aruco :: _correctionDistance = " << _correctionDistance << endl;
-    _binaryTree.loadDictionary(&D);
+    _binaryTree.loadDictionary(D);
     return true;
 }
 
@@ -382,11 +382,11 @@ MarkerCode HighlyReliableMarkers::getMarkerCode(const cv::Mat& grey) {
 
 /**
  */
-void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary* D) {
+void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary& D) {
     // create _orderD wich is a sorted version of D
     _orderD.clear();
-    for (unsigned int i = 0; i < D->size(); i++) {
-        _orderD.push_back(std::pair<unsigned int, unsigned int>((*D)[i].getId(), i));
+    for (unsigned int i = 0; i < D.size(); i++) {
+        _orderD.push_back(std::pair<unsigned int, unsigned int>(D[i].getId(), i));
     }
     std::sort(_orderD.begin(), _orderD.end());
 
