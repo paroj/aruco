@@ -312,10 +312,15 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
     // work simultaneouly in a range of values of the first threshold
     int n_param1 = 2 * _thresParam1_range + 1;
     vector<cv::Mat> thres_images(n_param1);
+
+    if(n_param1 == 1) {
+        thresHold(_thresMethod, imgToBeThresHolded, thres_images[0], ThresParam1, ThresParam2);
+    } else {
 #pragma omp parallel for
-    for (int i = 0; i < n_param1; i++) {
-        double t1 = ThresParam1 - _thresParam1_range + _thresParam1_range * i;
-        thresHold(_thresMethod, imgToBeThresHolded, thres_images[i], t1, ThresParam2);
+        for (int i = 0; i < n_param1; i++) {
+            double t1 = ThresParam1 - _thresParam1_range + _thresParam1_range * i;
+            thresHold(_thresMethod, imgToBeThresHolded, thres_images[i], t1, ThresParam2);
+        }
     }
     thres = thres_images[n_param1 / 2];
     //
