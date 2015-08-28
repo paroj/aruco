@@ -136,38 +136,35 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
     Mat _bitsFlip;
     MarkerCode Rotations[4];
     Rotations[0] = _bits;
-    int dists[4];
-    dists[0] = hammDistMarker(Rotations[0]);
-    pair<int, int> minDist(dists[0], 0);
+    int minDist = hammDistMarker(Rotations[0]);
+
     for (int i = 1; i < 4; i++) {
         // rotate
         Rotations[i] = rotate(Rotations[i - 1]);
         // get the hamming distance to the nearest possible word
-        dists[i] = hammDistMarker(Rotations[i]);
-        if (dists[i] < minDist.first) {
-            minDist.first = dists[i];
-            minDist.second = i;
+        int dist = hammDistMarker(Rotations[i]);
+        if (dist < minDist) {
+            minDist = dist;
+            nRotations = i;
         }
     }
     //              printMat<uchar>( Rotations [ minDist.second]);
     //          cout<<"MinDist="<<minDist.first<<" "<<minDist.second<<endl;
-
-    nRotations = minDist.second;
-    if (minDist.first != 0) // FUTURE WORK: correct if any error
+    if (minDist != 0) // FUTURE WORK: correct if any error
         return -1;
-    else { // Get id of the marker
-        int MatID = 0;
-        MarkerCode bits = Rotations[minDist.second];
-        for (int y = 0; y < 5; y++) {
-            MatID <<= 1;
-            if (bits(y, 1))
-                MatID |= 1;
-            MatID <<= 1;
-            if (bits(y, 3))
-                MatID |= 1;
-        }
-        return MatID;
+
+    // Get id of the marker
+    int MatID = 0;
+    MarkerCode bits = Rotations[nRotations];
+    for (int y = 0; y < 5; y++) {
+        MatID <<= 1;
+        if (bits(y, 1))
+            MatID |= 1;
+        MatID <<= 1;
+        if (bits(y, 3))
+            MatID |= 1;
     }
+    return MatID;
 }
 
 bool correctHammMarker(const MarkerCode& bits) {
