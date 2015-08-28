@@ -32,6 +32,7 @@ or implied, of Rafael Muñoz Salinas.
 
 using namespace std;
 
+namespace aruco {
 namespace {
 // convert to string
 template <class T> static string to_string(T num) {
@@ -50,16 +51,52 @@ unsigned int hammingDistance(const vector<bool>& m1, const vector<bool>& m2) {
             res++;
     return res;
 }
+
+/**
+ * Check marker borders cell in the canonical image are black
+ */
+bool checkBorders(cv::Mat grey, int markerSize, int cellSize) {
+    for (int y = 0; y < markerSize; y++) {
+        int inc = markerSize - 1;
+        if (y == 0 || y == markerSize - 1)
+            inc = 1; // for first and last row, check the whole border
+        for (int x = 0; x < markerSize; x += inc) {
+            int Xstart = (x) * (cellSize);
+            int Ystart = (y) * (cellSize);
+            cv::Mat square = grey(cv::Rect(Xstart, Ystart, cellSize, cellSize));
+            int nZ = cv::countNonZero(square);
+            if (nZ > (cellSize * cellSize) / 2) {
+                return false; // can not be a marker because the border element is not black!
+            }
+        }
+    }
+    return true;
 }
 
-namespace aruco {
+/**
+ * Return binary MarkerCode from a canonical image, it ignores borders
+ */
+MarkerCode getMarkerCode(const cv::Mat& grey, int markerSize, int cellSize) {
+    MarkerCode candidate(markerSize);
+    for (int y = 0; y < markerSize; y++) {
+        for (int x = 0; x < markerSize; x++) {
+            int Xstart = (x + 1) * (cellSize);
+            int Ystart = (y + 1) * (cellSize);
+            cv::Mat square = grey(cv::Rect(Xstart, Ystart, cellSize, cellSize));
+            int nZ = countNonZero(square);
+            if (nZ > (cellSize * cellSize) / 2)
+                candidate.set(y * markerSize + x, 1);
+        }
+    }
+    return candidate;
+}
+}
 
 // static variables from HighlyReliableMarkers. Need to be here to avoid linking errors
 Dictionary HighlyReliableMarkers::_D;
 HighlyReliableMarkers::BalancedBinaryTree HighlyReliableMarkers::_binaryTree;
 unsigned int HighlyReliableMarkers::_n, HighlyReliableMarkers::_ncellsBorder,
     HighlyReliableMarkers::_correctionDistance;
-int HighlyReliableMarkers::_swidth;
 
 /**
 */
@@ -303,15 +340,17 @@ int HighlyReliableMarkers::detect(const cv::Mat& in, int& nRotations) {
         cv::cvtColor(in, grey, CV_BGR2GRAY);
     // threshold image
     cv::threshold(grey, grey, 125, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
-    _swidth = grey.rows / _ncellsBorder;
+    int cellSize = grey.rows / _ncellsBorder;
 
     // check borders, even not necesary for the highly reliable markers
-    // if(!checkBorders(grey)) return -1;
+    // if(!checkBorders(grey, _ncellsBorder, cellSize)) return -1;
 
     // obtain inner code
-    MarkerCode candidate = getMarkerCode(grey);
+    MarkerCode candidate = getMarkerCode(grey, _n, cellSize);
 
+#if 1
     // search each marker id in the balanced binary tree
+    // has no advantage for dictionary with 100 markers
     unsigned int orgPos;
     for (unsigned int i = 0; i < 4; i++) {
         if (_binaryTree.findId(candidate.getId(i), orgPos)) {
@@ -320,17 +359,17 @@ int HighlyReliableMarkers::detect(const cv::Mat& in, int& nRotations) {
             return orgPos;
         }
     }
-
-    // alternative version without using the balanced binary tree (less eficient)
-    //         for(uint i=0; i<_D.size(); i++) {
-    //           for(uint j=0; j<4; j++) {
-    //        if(_D[i].getId() == candidate.getId(j)) {
-    //          nRotations = j;
-    //          //return candidate.getId(j);
-    //          return i;
-    //        }
-    //           }
-    //         }
+#else
+    // alternative version without using the balanced binary tree (less efficient)
+    for(uint i=0; i<_D.size(); i++) {
+        for(uint j=0; j<4; j++) {
+            if(_D[i].getId() == candidate.getId(j)) {
+                nRotations = j;
+                return i;
+            }
+        }
+    }
+#endif
 
     // correct errors
     unsigned int minMarker, minRot;
@@ -341,43 +380,6 @@ int HighlyReliableMarkers::detect(const cv::Mat& in, int& nRotations) {
     }
 
     return -1;
-}
-
-/**
- */
-bool HighlyReliableMarkers::checkBorders(cv::Mat grey) {
-    for (int y = 0; y < _ncellsBorder; y++) {
-        int inc = _ncellsBorder - 1;
-        if (y == 0 || y == _ncellsBorder - 1)
-            inc = 1; // for first and last row, check the whole border
-        for (int x = 0; x < _ncellsBorder; x += inc) {
-            int Xstart = (x) * (_swidth);
-            int Ystart = (y) * (_swidth);
-            cv::Mat square = grey(cv::Rect(Xstart, Ystart, _swidth, _swidth));
-            int nZ = cv::countNonZero(square);
-            if (nZ > (_swidth * _swidth) / 2) {
-                return false; // can not be a marker because the border element is not black!
-            }
-        }
-    }
-    return true;
-}
-
-/**
- */
-MarkerCode HighlyReliableMarkers::getMarkerCode(const cv::Mat& grey) {
-    MarkerCode candidate(_n);
-    for (int y = 0; y < _n; y++) {
-        for (int x = 0; x < _n; x++) {
-            int Xstart = (x + 1) * (_swidth);
-            int Ystart = (y + 1) * (_swidth);
-            cv::Mat square = grey(cv::Rect(Xstart, Ystart, _swidth, _swidth));
-            int nZ = countNonZero(square);
-            if (nZ > (_swidth * _swidth) / 2)
-                candidate.set(y * _n + x, 1);
-        }
-    }
-    return candidate;
 }
 
 /**
@@ -476,9 +478,6 @@ void HighlyReliableMarkers::BalancedBinaryTree::loadDictionary(Dictionary& D) {
     //     std::cout << std::endl;
 }
 
-int count = 0;
-int idc = 11;
-
 /**
  */
 bool HighlyReliableMarkers::BalancedBinaryTree::findId(unsigned int id, unsigned int& orgPos) {
@@ -493,7 +492,6 @@ bool HighlyReliableMarkers::BalancedBinaryTree::findId(unsigned int id, unsigned
         else
             pos = _binaryTree[pos].first; // if it is lower, look in lower child
     }
-    count++;
     return false; // if nothing found, return false
 }
 

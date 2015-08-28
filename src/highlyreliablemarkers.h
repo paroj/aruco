@@ -194,6 +194,31 @@ public:
 class ARUCO_EXPORTS HighlyReliableMarkers {
 public:
     /**
+     * Load the dictionary that will be detected or read it directly from file
+     */
+    // correctionDistance [0,1] 0: totalmente restrictivo, 1 mas flexible
+    static bool loadDictionary(Dictionary D, float correctionDistance = 1);
+    static bool loadDictionary(std::string filename, float correctionDistance = 1);
+    static Dictionary& getDictionary() { return _D; }
+
+    /**
+     * Detect marker in a canonical image. Perform detection and error correction
+     * Return marker id in 0 rotation, or -1 if not found
+     * Assign the detected rotation of the marker to nRotation
+     */
+    static int detect(const cv::Mat& in, int& nRotations);
+
+    /**Creates a printable image of a board
+     * @param gridSize grid layout (numer of sqaures in x and Y)
+     * @param D input dictionary from where markers are taken to create the board
+     * @param MarkerDistance distance between the markers
+     * @param BC output
+     * @param chromatic true for green&blue chromatic markers
+     */
+    static cv::Mat createBoardImage(cv::Size gridSize, const Dictionary& D, BoardConfiguration& BC,
+                                    bool chromatic = false);
+private:
+    /**
     * Balanced Binary Tree for a marker dictionary
     *
     */
@@ -222,48 +247,12 @@ public:
         unsigned int _root; // position in _binaryTree of the root node of the tree
     };
 
-    /**
-     * Load the dictionary that will be detected or read it directly from file
-     */
-    // correctionDistance [0,1] 0: totalmente restrictivo, 1 mas flexible
-    static bool loadDictionary(Dictionary D, float correctionDistance = 1);
-    static bool loadDictionary(std::string filename, float correctionDistance = 1);
-    static Dictionary& getDictionary() { return _D; }
-
-    /**
-     * Detect marker in a canonical image. Perform detection and error correction
-     * Return marker id in 0 rotation, or -1 if not found
-     * Assign the detected rotation of the marker to nRotation
-     */
-    static int detect(const cv::Mat& in, int& nRotations);
-
-    /**Creates a printable image of a board
-     * @param gridSize grid layout (numer of sqaures in x and Y)
-     * @param D input dictionary from where markers are taken to create the board
-     * @param MarkerDistance distance between the markers
-     * @param BC output
-     * @param chromatic true for green&blue chromatic markers
-     */
-    static cv::Mat createBoardImage(cv::Size gridSize, const Dictionary& D, BoardConfiguration& BC,
-                                    bool chromatic = false);
-private:
     static Dictionary _D; // loaded dictionary
     static BalancedBinaryTree _binaryTree;
     // marker dimension, marker dimension with borders, maximunCorrectionDistance
     static unsigned int _n;
     static unsigned int _ncellsBorder;
     static unsigned int _correctionDistance;
-    static int _swidth; // cell size in the canonical image
-
-    /**
-     * Check marker borders cell in the canonical image are black
-     */
-    static bool checkBorders(cv::Mat grey);
-
-    /**
-     * Return binary MarkerCode from a canonical image, it ignores borders
-     */
-    static MarkerCode getMarkerCode(const cv::Mat& grey);
 };
 }
 

@@ -10,3 +10,4 @@
   - `MarkerDetector::pyrDown`: was noop
   - `BoardDetector::setYPerperdicular`: use `setYPerpendicular`
 6. removed `using namespace std;` from headers
+7. made `HighlyReliableMarkers::BalancedBinaryTree` private
