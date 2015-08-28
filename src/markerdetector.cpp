@@ -201,6 +201,18 @@ void findCornerMaxima(vector<cv::Point2f>& Corners, const cv::Mat& grey, int wsi
     }
 }
 
+template<typename T>
+void setPointIntoImage(cv::Point_<T>& p, cv::Size s) {
+    if (p.x < 0)
+        p.x = 0;
+    else if (p.x >= s.width)
+        p.x = s.width - 1;
+    if (p.y < 0)
+        p.y = 0;
+    else if (p.y >= s.height)
+        p.y = s.height - 1;
+}
+
 #if ARUCO_MARKER_DEBUG_DRAW
 void drawContour(Mat& in, vector<Point>& contour, Scalar color) {
     for (size_t i = 0; i < contour.size(); i++) {
@@ -754,27 +766,6 @@ int findDeformedSidesIdx(const vector<cv::Point>& contour, const vector<int>& id
         return 1;
 }
 
-void setPointIntoImage(cv::Point2f& p, cv::Size s) {
-    if (p.x < 0)
-        p.x = 0;
-    else if (p.x >= s.width)
-        p.x = s.width - 1;
-    if (p.y < 0)
-        p.y = 0;
-    else if (p.y >= s.height)
-        p.y = s.height - 1;
-}
-
-void setPointIntoImage(cv::Point& p, cv::Size s) {
-    if (p.x < 0)
-        p.x = 0;
-    else if (p.x >= s.width)
-        p.x = s.width - 1;
-    if (p.y < 0)
-        p.y = 0;
-    else if (p.y >= s.height)
-        p.y = s.height - 1;
-}
 /************************************
  *
  *
