@@ -403,8 +403,8 @@ void MarkerDetector::detect(const cv::Mat& input, vector<Marker>& detectedMarker
         if (_cornerMethod == HARRIS)
             findBestCornerInRegion_harris(grey, Corners, 7);
         else if (_cornerMethod == SUBPIX) {
-            cornerSubPix(grey, Corners, cvSize(_thresParam1, _thresParam1), cvSize(-1, -1),
-                         cvTermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 8, 0.005));
+            cornerSubPix(grey, Corners, Size(_thresParam1, _thresParam1), Size(-1, -1),
+                         TermCriteria(TermCriteria::MAX_ITER | TermCriteria::EPS , 8, 0.005));
         }
         // copy back
         for (unsigned int i = 0; i < detectedMarkers.size(); i++)
@@ -499,7 +499,7 @@ void MarkerDetector::detectRectangles(vector<cv::Mat>& thresImgv, vector<MarkerC
         std::vector<std::vector<cv::Point> > contours2;
         cv::Mat thres2;
         thresImgv[t].copyTo(thres2);
-        cv::findContours(thres2, contours2, noArray(), CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+        cv::findContours(thres2, contours2, RETR_LIST, CHAIN_APPROX_NONE);
 
         vector<Point> approxCurve;
         /// for each contour, analyze if it is a paralelepiped likely to be the marker
@@ -641,7 +641,7 @@ void MarkerDetector::thresHold(int method, const Mat& grey, Mat& out, double par
 
     switch (method) {
     case FIXED_THRES:
-        cv::threshold(grey, out, param1, 255, CV_THRESH_BINARY_INV);
+        cv::threshold(grey, out, param1, 255, THRESH_BINARY_INV);
         break;
     case ADPT_THRES: // currently, this is the best method
         // ensure that _thresParam1%2==1
