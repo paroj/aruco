@@ -220,13 +220,11 @@ void MarkerCode::fromString(std::string s) {
 /**
  */
 std::string MarkerCode::toString() const {
-    std::string s;
-    s.resize(size());
+    std::string s(size(), '0');
+
     for (unsigned int i = 0; i < size(); i++) {
         if (get(i))
             s[i] = '1';
-        else
-            s[i] = '0';
     }
     return s;
 }
