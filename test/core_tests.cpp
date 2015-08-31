@@ -277,7 +277,24 @@ TEST(Aruco, GL_Conversion) {
 }
 
 TEST(Aruco, HRM_CreateDictionary) {
-    // TODO
+    using namespace aruco;
+
+    srand(0);
+    Dictionary dict = HighlyReliableMarkers::createDicitionary(25, 4);
+
+    if (generateResults) {
+        dict.toFile(TESTDATA_PATH "hrm/dictionaries/expected.yml");
+        return;
+    }
+
+    Dictionary expectedDictionary;
+    expectedDictionary.fromFile(TESTDATA_PATH "hrm/dictionaries/expected.yml");
+
+    ASSERT_EQ(expectedDictionary.size(), dict.size());
+
+    for (size_t i = 0; i < dict.size(); i++) {
+        EXPECT_EQ(expectedDictionary[i].toString(), dict[i].toString());
+    }
 }
 
 TEST(Aruco, HRM_CreateBoard) {
