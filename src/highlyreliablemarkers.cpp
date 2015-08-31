@@ -55,8 +55,6 @@ unsigned int hammingDistance(const vector<bool>& m1, const vector<bool>& m2) {
     return res;
 }
 
-typedef std::vector<int> Word;
-
 class MarkerGenerator {
 
 private:
@@ -77,11 +75,12 @@ public:
         }
     }
 
-    aruco::MarkerCode generateMarker() {
-        aruco::MarkerCode emptyMarker(_n);
+    MarkerCode generateMarker() {
+        Mat_<uchar> code(_n, _n);
 
         for (int w = 0; w < _n; w++) {
-            Word currentWord(_n, 0);
+            Mat_<uchar> currentWord = code.row(w);
+
             int randomNum = rand() % _totalWeigth;
             int currentNTransitions = _nTransitions - 1;
             for (int k = 0; k < _nTransitions; k++) {
@@ -102,18 +101,17 @@ public:
             int currBit = rand() % 2;
             size_t currSelectedIndexesIdx = 0;
             for (int k = 0; k < _n; k++) {
-                currentWord[k] = currBit;
+                currentWord(k) = currBit;
                 if (currSelectedIndexesIdx < selectedIndexes.size() &&
                     k == selectedIndexes[currSelectedIndexesIdx]) {
                     currBit = 1 - currBit;
                     currSelectedIndexesIdx++;
                 }
             }
-
-            for (int k = 0; k < _n; k++)
-                emptyMarker.set(w * _n + k, bool(currentWord[k]), false);
         }
 
+        MarkerCode emptyMarker(_n);
+        emptyMarker.set(code);
         return emptyMarker;
     }
 };
@@ -183,41 +181,6 @@ void MarkerCode::set(const cv::Mat& _code) {
 
 /**
  */
-void MarkerCode::set(unsigned int pos, bool val, bool updateIds) {
-    if (get(pos) == val) {
-        return;
-    }
-
-    // if not the same value
-    for (unsigned int i = 0; i < 4; i++) {         // calculate bit coordinates for each rotation
-        unsigned int y = pos / n(), x = pos % n(); // if rotation 0, dont do anything
-                                                   // else calculate bit position in that rotation
-        if (i == 1) {
-            unsigned int aux = y;
-            y = x;
-            x = n() - aux - 1;
-        } else if (i == 2) {
-            y = n() - y - 1;
-            x = n() - x - 1;
-        } else if (i == 3) {
-            unsigned int aux = y;
-            y = n() - x - 1;
-            x = aux;
-        }
-        unsigned int rotPos = y * n() + x; // calculate position in the unidimensional string
-        _bits[i][rotPos] = val;            // modify value
-                                           // update identifier in that rotation
-        if (updateIds) {
-            if (val)
-                _ids[i] += 2 << rotPos; // if 1, add 2^pos
-            else
-                _ids[i] -= 2 << rotPos; // if 0, substract 2^pos
-        }
-    }
-}
-
-/**
- */
 unsigned int MarkerCode::selfDistance(unsigned int& minRot) const {
     unsigned int res = _bits[0].size();    // init to n*n (max value)
     for (unsigned int i = 1; i < 4; i++) { // self distance is not calculated for rotation 0
@@ -247,19 +210,11 @@ unsigned int MarkerCode::distance(const MarkerCode& m, unsigned int& minRot) con
 /**
  */
 void MarkerCode::fromString(std::string s) {
-    for (unsigned int i = 0; i < s.length(); i++) {
-        if (s[i] == '0')
-            set(i, false);
-        else
-            set(i, true);
-    }
-#if 0
     Mat_<char> code(_n, _n);
     for (unsigned int i = 0; i < s.length(); i++) {
-        code(i/_n, i % _n) = s[i] == '0';
+        code(i/_n, i % _n) = s[i] == '1';
     }
     set(code);
-#endif
 }
 
 /**

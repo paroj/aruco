@@ -11,3 +11,4 @@
   - `BoardDetector::setYPerperdicular`: use `setYPerpendicular`
 6. removed `using namespace std;` from headers
 7. made `HighlyReliableMarkers::BalancedBinaryTree` private
+8. `MarkerCode::set` now takes full 2d bitcode arrays instead of individual bits

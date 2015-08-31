@@ -71,15 +71,6 @@ public:
     const std::vector<bool>& getRotation(unsigned int rot) const { return _bits[rot]; }
 
     /**
-     * Set the value of a bit in a specific rotation
-     * The marker is refered as a unidimensional string of bits, i.e. pos=y*n+x
-     * This method assure consistency of the marker code:
-     * - The rest of rotations are updated automatically when performing a modification
-     * - The id values in all rotations are automatically updated too
-     */
-    void set(unsigned int pos, bool val, bool updateIds = true);
-
-    /**
      * Set the value of all bits from a 2d bit matrix
      * This method assure consistency of the marker code:
      * - The rest of rotations are updated automatically when performing a modification
