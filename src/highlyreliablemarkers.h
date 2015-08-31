@@ -208,6 +208,15 @@ public:
     static bool loadDictionary(std::string filename, float correctionDistance = 1);
     static Dictionary& getDictionary() { return _D; }
 
+
+    /**
+     * create marker dictionary
+     * @param dictSize number of markers to add to the dictionary
+     * @param n marker size
+     * @return marker Dictionary
+     */
+    static Dictionary createDicitionary(size_t dictSize, size_t n);
+
     /**
      * Detect marker in a canonical image. Perform detection and error correction
      * Return marker id in 0 rotation, or -1 if not found

@@ -29,124 +29,9 @@ or implied, of Rafael Muñoz Salinas.
 #include "highlyreliablemarkers.h"
 #include <iostream>
 #include <time.h>
-#include <opencv2/highgui/highgui.hpp>
 #include <iostream>
 
 using namespace std;
-
-typedef std::vector<int> Word;
-
-class MarkerGenerator {
-
-private:
-    int _nTransitions;
-    std::vector<int> _transitionsWeigth;
-    int _totalWeigth;
-    int _n;
-
-public:
-    MarkerGenerator(int n) {
-        _n = n;
-        _nTransitions = n - 1;
-        _transitionsWeigth.resize(_nTransitions);
-        _totalWeigth = 0;
-        for (int i = 0; i < _nTransitions; i++) {
-            _transitionsWeigth[i] = i;
-            _totalWeigth += i;
-        }
-    }
-
-    aruco::MarkerCode generateMarker() {
-
-        aruco::MarkerCode emptyMarker(_n);
-
-        for (int w = 0; w < _n; w++) {
-            Word currentWord(_n, 0);
-            int randomNum = rand() % _totalWeigth;
-            int currentNTransitions = _nTransitions - 1;
-            for (int k = 0; k < _nTransitions; k++) {
-                if (_transitionsWeigth[k] > randomNum) {
-                    currentNTransitions = k;
-                    break;
-                }
-            }
-            std::vector<int> transitionsIndexes(_nTransitions);
-            for (int i = 0; i < _nTransitions; i++)
-                transitionsIndexes[i] = i;
-            std::random_shuffle(transitionsIndexes.begin(), transitionsIndexes.end());
-
-            std::vector<int> selectedIndexes;
-            for (int k = 0; k < currentNTransitions; k++)
-                selectedIndexes.push_back(transitionsIndexes[k]);
-            std::sort(selectedIndexes.begin(), selectedIndexes.end());
-            int currBit = rand() % 2;
-            int currSelectedIndexesIdx = 0;
-            for (int k = 0; k < _n; k++) {
-                currentWord[k] = currBit;
-                if (currSelectedIndexesIdx < selectedIndexes.size() &&
-                    k == selectedIndexes[currSelectedIndexesIdx]) {
-                    currBit = 1 - currBit;
-                    currSelectedIndexesIdx++;
-                }
-            }
-
-            for (int k = 0; k < _n; k++)
-                emptyMarker.set(w * _n + k, bool(currentWord[k]), false);
-        }
-
-        return emptyMarker;
-    }
-};
-
-/**
- * create marker dictionary
- * @param dictSize number of markers to add to the dictionary
- * @param n marker size
- * @return marker Dictionary
- */
-aruco::Dictionary createDicitionary(size_t dictSize, size_t n) {
-    unsigned int tau = 2 * ((4 * ((n * n) / 4)) / 3);
-
-    MarkerGenerator MG(n);
-
-    const size_t MAX_UNPRODUCTIVE_ITERATIONS = 100000;
-    int currentMaxUnproductiveIterations = MAX_UNPRODUCTIVE_ITERATIONS;
-
-    unsigned int countUnproductive = 0;
-
-    aruco::Dictionary D;
-    while (D.size() < dictSize) {
-
-        aruco::MarkerCode candidate;
-        candidate = MG.generateMarker();
-
-        if (candidate.selfDistance() >= tau && D.distance(candidate) >= tau) {
-            D.push_back(candidate);
-            std::cout << "Accepted Marker " << D.size() << "/" << dictSize << std::endl;
-            countUnproductive = 0;
-        } else {
-            countUnproductive++;
-            if (countUnproductive == currentMaxUnproductiveIterations) {
-                tau--;
-                countUnproductive = 0;
-                //std::cout << "Reducing Tau to: " << tau << std::endl;
-
-                if (tau == 0) {
-                    CV_Error(CV_StsBadArg, "Error: Tau=0. Small marker size for too high number of markers. Stop");
-                }
-
-                if (D.size() >= 2)
-                    currentMaxUnproductiveIterations = MAX_UNPRODUCTIVE_ITERATIONS;
-                else
-                    currentMaxUnproductiveIterations = MAX_UNPRODUCTIVE_ITERATIONS / 15;
-            }
-        }
-    }
-
-    D.tau0 = tau;
-
-    return D;
-}
 
 int main(int argc, char** argv) {
     if (argc < 4) {
@@ -163,7 +48,7 @@ int main(int argc, char** argv) {
     unsigned int n = atoi(argv[3]);
 
     srand(time(NULL));
-    aruco::Dictionary D = createDicitionary(dictSize, n);
+    aruco::Dictionary D = aruco::HighlyReliableMarkers::createDicitionary(dictSize, n);
 
     std::cout << "Tau: " << D.tau0 << std::endl;
 
