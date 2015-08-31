@@ -35,6 +35,16 @@ or implied, of Rafael Muñoz Salinas.
 
 namespace aruco {
 
+/**
+ * Check marker borders cell in the canonical image are black
+ */
+ARUCO_EXPORTS bool checkBorders(const cv::Mat& grey, int markerSize, int cellSize);
+
+/**
+ * Return binary MarkerCode from a canonical image, it ignores borders
+ */
+ARUCO_EXPORTS cv::Mat getMarkerCode(const cv::Mat& grey, int markerSize, int cellSize);
+
 class ARUCO_EXPORTS FiducidalMarkers {
 public:
     /**

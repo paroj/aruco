@@ -30,7 +30,10 @@ or implied, of Rafael Muñoz Salinas.
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "arucofidmarkers.h"
+
 using namespace std;
+using namespace cv;
 
 namespace aruco {
 namespace {
@@ -50,45 +53,6 @@ unsigned int hammingDistance(const vector<bool>& m1, const vector<bool>& m2) {
         if (m1[i] != m2[i])
             res++;
     return res;
-}
-
-/**
- * Check marker borders cell in the canonical image are black
- */
-bool checkBorders(cv::Mat grey, int markerSize, int cellSize) {
-    for (int y = 0; y < markerSize; y++) {
-        int inc = markerSize - 1;
-        if (y == 0 || y == markerSize - 1)
-            inc = 1; // for first and last row, check the whole border
-        for (int x = 0; x < markerSize; x += inc) {
-            int Xstart = (x) * (cellSize);
-            int Ystart = (y) * (cellSize);
-            cv::Mat square = grey(cv::Rect(Xstart, Ystart, cellSize, cellSize));
-            int nZ = cv::countNonZero(square);
-            if (nZ > (cellSize * cellSize) / 2) {
-                return false; // can not be a marker because the border element is not black!
-            }
-        }
-    }
-    return true;
-}
-
-/**
- * Return binary MarkerCode from a canonical image, it ignores borders
- */
-MarkerCode getMarkerCode(const cv::Mat& grey, int markerSize, int cellSize) {
-    MarkerCode candidate(markerSize);
-    for (int y = 0; y < markerSize; y++) {
-        for (int x = 0; x < markerSize; x++) {
-            int Xstart = (x + 1) * (cellSize);
-            int Ystart = (y + 1) * (cellSize);
-            cv::Mat square = grey(cv::Rect(Xstart, Ystart, cellSize, cellSize));
-            int nZ = countNonZero(square);
-            if (nZ > (cellSize * cellSize) / 2)
-                candidate.set(y * markerSize + x, 1);
-        }
-    }
-    return candidate;
 }
 }
 
@@ -119,6 +83,39 @@ MarkerCode::MarkerCode(const MarkerCode& MC) {
         _ids[i] = MC._ids[i];
     }
     _n = MC._n;
+}
+
+void MarkerCode::set(const cv::Mat& _code) {
+    Mat_<uchar> code(_code);
+
+    for(size_t y = 0; y < _n; y++) {
+        for(size_t x = 0; x < _n; x++) {
+            for (size_t i = 0; i < 4; i++) {         // calculate bit coordinates for each rotation
+                size_t _x = x, _y = y;
+
+                // if rotation 0, dont do anything
+                // else calculate bit position in that rotation
+                if (i == 1) {
+                    _y = x;
+                    _x = n() - y - 1;
+                } else if (i == 2) {
+                    _y = n() - y - 1;
+                    _x = n() - x - 1;
+                } else if (i == 3) {
+                    _y = n() - x - 1;
+                    _x = y;
+                }
+
+                size_t rotPos = _y * n() + _x;     // calculate position in the unidimensional string
+
+                bool val = code(y, x);
+                _bits[i][rotPos] = val;            // modify value
+                                                   // update identifier in that rotation
+                if (val)
+                    _ids[i] |= 2 << rotPos; // if 1, add 2^pos
+            }
+        }
+    }
 }
 
 /**
@@ -193,6 +190,13 @@ void MarkerCode::fromString(std::string s) {
         else
             set(i, true);
     }
+#if 0
+    Mat_<char> code(_n, _n);
+    for (unsigned int i = 0; i < s.length(); i++) {
+        code(i/_n, i % _n) = s[i] == '0';
+    }
+    set(code);
+#endif
 }
 
 /**
@@ -348,7 +352,8 @@ int HighlyReliableMarkers::detect(const cv::Mat& in, int& nRotations) {
     // if(!checkBorders(grey, _ncellsBorder, cellSize)) return -1;
 
     // obtain inner code
-    MarkerCode candidate = getMarkerCode(grey, _n, cellSize);
+    MarkerCode candidate(_n);
+    candidate.set(getMarkerCode(grey, _n, cellSize));
 
 #if 1
     // search each marker id in the balanced binary tree

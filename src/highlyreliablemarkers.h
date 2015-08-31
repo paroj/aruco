@@ -76,9 +76,16 @@ public:
      * This method assure consistency of the marker code:
      * - The rest of rotations are updated automatically when performing a modification
      * - The id values in all rotations are automatically updated too
-     * This is the only method to modify a bit value
      */
     void set(unsigned int pos, bool val, bool updateIds = true);
+
+    /**
+     * Set the value of all bits from a 2d bit matrix
+     * This method assure consistency of the marker code:
+     * - The rest of rotations are updated automatically when performing a modification
+     * - The id values in all rotations are automatically updated too
+     */
+    void set(const cv::Mat& code);
 
     /**
      * Return the full size of the marker (n*n)
