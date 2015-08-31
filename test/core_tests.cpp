@@ -117,9 +117,9 @@ TEST(Aruco, Single) {
 TEST(Aruco, CreateBoard){
 
     const float interMarkerDistance = 0.2;
-    const int XSize = 5,
-              YSize = 5,
-              pixSize = 100;
+
+    cv::Size gridSize(5, 5);
+    const int pixSize = 100;
 
     cv::theRNG().state = 4711;
 
@@ -127,9 +127,9 @@ TEST(Aruco, CreateBoard){
 
         aruco::BoardConfiguration DefaultBoard, ChessBoard, FrameBord;
 
-        aruco::FiducidalMarkers::createBoardImage(cv::Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, DefaultBoard);
-        aruco::FiducidalMarkers::createBoardImage_ChessBoard(cv::Size(XSize, YSize), pixSize, ChessBoard);
-        aruco::FiducidalMarkers::createBoardImage_Frame(cv::Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, FrameBord);
+        aruco::FiducidalMarkers::createBoardImage(gridSize, pixSize, pixSize * interMarkerDistance, DefaultBoard);
+        aruco::FiducidalMarkers::createBoardImage_ChessBoard(gridSize, pixSize, ChessBoard);
+        aruco::FiducidalMarkers::createBoardImage_Frame(gridSize, pixSize, pixSize * interMarkerDistance, FrameBord);
 
         DefaultBoard.saveToFile(TESTDATA_PATH "board/defaultBoard-expected.yml");
         ChessBoard.saveToFile(TESTDATA_PATH "board/chessBoard-expected.yml");
@@ -140,17 +140,17 @@ TEST(Aruco, CreateBoard){
 
     aruco::BoardConfiguration ExpectedBoard, CurrentBoard;
     ExpectedBoard.readFromFile(TESTDATA_PATH "board/defaultBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage(cv::Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, CurrentBoard);
+    aruco::FiducidalMarkers::createBoardImage(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
     compareBoardConfig( ExpectedBoard, CurrentBoard );
 
     ExpectedBoard.clear(); CurrentBoard.clear();
     ExpectedBoard.readFromFile(TESTDATA_PATH "board/chessBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage_ChessBoard(cv::Size(XSize, YSize), pixSize, CurrentBoard);
+    aruco::FiducidalMarkers::createBoardImage_ChessBoard(gridSize, pixSize, CurrentBoard);
     compareBoardConfig( ExpectedBoard, CurrentBoard );
 
     ExpectedBoard.clear(); CurrentBoard.clear();
     ExpectedBoard.readFromFile(TESTDATA_PATH "board/frameBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage_Frame(cv::Size(XSize, YSize), pixSize, pixSize * interMarkerDistance, CurrentBoard);
+    aruco::FiducidalMarkers::createBoardImage_Frame(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
     compareBoardConfig( ExpectedBoard, CurrentBoard );
 
 }
