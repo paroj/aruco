@@ -124,32 +124,34 @@ MarkerCode::MarkerCode(const MarkerCode& MC) {
 /**
  */
 void MarkerCode::set(unsigned int pos, bool val, bool updateIds) {
+    if (get(pos) == val) {
+        return;
+    }
+
     // if not the same value
-    if (get(pos) != val) {
-        for (unsigned int i = 0; i < 4; i++) {         // calculate bit coordinates for each rotation
-            unsigned int y = pos / n(), x = pos % n(); // if rotation 0, dont do anything
-                                                       // else calculate bit position in that rotation
-            if (i == 1) {
-                unsigned int aux = y;
-                y = x;
-                x = n() - aux - 1;
-            } else if (i == 2) {
-                y = n() - y - 1;
-                x = n() - x - 1;
-            } else if (i == 3) {
-                unsigned int aux = y;
-                y = n() - x - 1;
-                x = aux;
-            }
-            unsigned int rotPos = y * n() + x; // calculate position in the unidimensional string
-            _bits[i][rotPos] = val;            // modify value
-                                               // update identifier in that rotation
-            if (updateIds) {
-                if (val == true)
-                    _ids[i] += (unsigned int)pow(float(2), float(rotPos)); // if 1, add 2^pos
-                else
-                    _ids[i] -= (unsigned int)pow(float(2), float(rotPos)); // if 0, substract 2^pos
-            }
+    for (unsigned int i = 0; i < 4; i++) {         // calculate bit coordinates for each rotation
+        unsigned int y = pos / n(), x = pos % n(); // if rotation 0, dont do anything
+                                                   // else calculate bit position in that rotation
+        if (i == 1) {
+            unsigned int aux = y;
+            y = x;
+            x = n() - aux - 1;
+        } else if (i == 2) {
+            y = n() - y - 1;
+            x = n() - x - 1;
+        } else if (i == 3) {
+            unsigned int aux = y;
+            y = n() - x - 1;
+            x = aux;
+        }
+        unsigned int rotPos = y * n() + x; // calculate position in the unidimensional string
+        _bits[i][rotPos] = val;            // modify value
+                                           // update identifier in that rotation
+        if (updateIds) {
+            if (val)
+                _ids[i] += 2 << rotPos; // if 1, add 2^pos
+            else
+                _ids[i] -= 2 << rotPos; // if 0, substract 2^pos
         }
     }
 }
