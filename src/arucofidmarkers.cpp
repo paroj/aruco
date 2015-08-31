@@ -93,47 +93,59 @@ int hammDistMarker(const MarkerCode& bits) {
     return dist;
 }
 
-int analyzeMarkerImage(Mat& grey, int& nRotations) {
-
-    // Markers  are divided in 7x7 regions, of which the inner 5x5 belongs to marker info
-    // the external border shoould be entirely black
-
-    int swidth = grey.rows / 7;
-    for (int y = 0; y < 7; y++) {
-        int inc = 6;
-        if (y == 0 || y == 6)
+/**
+ * Check marker borders cell in the canonical image are black
+ */
+bool checkBorders(cv::Mat grey, int markerSize, int cellSize) {
+    for (int y = 0; y < markerSize; y++) {
+        int inc = markerSize - 1;
+        if (y == 0 || y == markerSize - 1)
             inc = 1; // for first and last row, check the whole border
-        for (int x = 0; x < 7; x += inc) {
-            int Xstart = (x) * (swidth);
-            int Ystart = (y) * (swidth);
-            Mat square = grey(Rect(Xstart, Ystart, swidth, swidth));
-            int nZ = countNonZero(square);
-            if (nZ > (swidth * swidth) / 2) {
-                //      cout<<"neb"<<endl;
-                return -1; // can not be a marker because the border element is not black!
+        for (int x = 0; x < markerSize; x += inc) {
+            int Xstart = (x) * (cellSize);
+            int Ystart = (y) * (cellSize);
+            cv::Mat square = grey(cv::Rect(Xstart, Ystart, cellSize, cellSize));
+            int nZ = cv::countNonZero(square);
+            if (nZ > (cellSize * cellSize) / 2) {
+                return false; // can not be a marker because the border element is not black!
             }
         }
     }
+    return true;
+}
 
-    // now,
-    MarkerCode _bits;
+/**
+ * Return binary MarkerCode from a canonical image, it ignores borders
+ */
+Mat getMarkerCode(const Mat& grey, int markerSize, int cellSize) {
+    Mat_<uchar> candidate(markerSize, markerSize, uchar(0));
+
     // get information(for each inner square, determine if it is  black or white)
-
-    for (int y = 0; y < 5; y++) {
-
-        for (int x = 0; x < 5; x++) {
-            int Xstart = (x + 1) * (swidth);
-            int Ystart = (y + 1) * (swidth);
-            Mat square = grey(Rect(Xstart, Ystart, swidth, swidth));
+    for (int y = 0; y < markerSize; y++) {
+        for (int x = 0; x < markerSize; x++) {
+            int Xstart = (x + 1) * (cellSize);
+            int Ystart = (y + 1) * (cellSize);
+            Mat square = grey(Rect(Xstart, Ystart, cellSize, cellSize));
             int nZ = countNonZero(square);
-            if (nZ > (swidth * swidth) / 2)
-                _bits(y, x) = 1;
+            if (nZ > (cellSize * cellSize) / 2)
+                candidate(y, x) = 1;
         }
     }
-    //      printMat<uchar>( _bits,"or mat");
+    return candidate;
+}
+
+int analyzeMarkerImage(Mat& grey, int& nRotations) {
+    // Markers  are divided in 7x7 regions, of which the inner 5x5 belongs to marker info
+    // the external border shoould be entirely black
+    int swidth = grey.rows / 7;
+
+    if(!checkBorders(grey, 7, swidth))
+        return -1;
+
+    // now,
+    MarkerCode _bits = getMarkerCode(grey, 5, swidth);
 
     // checkl all possible rotations
-    Mat _bitsFlip;
     MarkerCode Rotations[4];
     Rotations[0] = _bits;
     int minDist = hammDistMarker(Rotations[0]);
@@ -148,8 +160,7 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
             nRotations = i;
         }
     }
-    //              printMat<uchar>( Rotations [ minDist.second]);
-    //          cout<<"MinDist="<<minDist.first<<" "<<minDist.second<<endl;
+
     if (minDist != 0) // FUTURE WORK: correct if any error
         return -1;
 
