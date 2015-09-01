@@ -30,15 +30,7 @@ void rotateXAxis(Mat& rotation) {
 }
 
 void GetGLModelViewMatrix(const Mat_<double>& Rvec, const Mat_<double>& Tvec, double modelview_matrix[16]) {
-    // check if paremeters are valid
-    bool invalid = false;
-    for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec(i) != -999999)
-            invalid |= false;
-        if (Rvec(i) != -999999)
-            invalid |= false;
-    }
-    CV_Assert(!invalid && "extrinsic parameters are not set");
+    CV_Assert(!Rvec.empty() && !Tvec.empty() && "extrinsic parameters are not set");
 
     Matx33d Rot;
     Rodrigues(Rvec, Rot);
@@ -81,15 +73,7 @@ void GetGLModelViewMatrix(const Mat_<double>& Rvec, const Mat_<double>& Tvec, do
 }
 
 void GetOgrePoseParameters(const Mat_<double>& Rvec, const Mat_<double>& Tvec, double position[3], double orientation[4]) {
-    // check if paremeters are valid
-    bool invalid = false;
-    for (int i = 0; i < 3 && !invalid; i++) {
-        if (Tvec(i) != -999999)
-            invalid |= false;
-        if (Rvec(i) != -999999)
-            invalid |= false;
-    }
-    CV_Assert(!invalid && "extrinsic parameters are not set");
+    CV_Assert(!Rvec.empty() && !Tvec.empty() && "extrinsic parameters are not set");
 
     // calculate position vector
     position[0] = -Tvec(0);

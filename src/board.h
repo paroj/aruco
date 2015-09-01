@@ -135,12 +135,6 @@ public:
     BoardConfiguration conf;
     // matrices of rotation and translation respect to the camera
     cv::Mat_<double> Rvec, Tvec;
-    /**
-    */
-    Board() {
-        Tvec = cv::Mat_<double>(3, 1, -999999);
-        Rvec = cv::Mat_<double>(3, 1, -999999);
-    }
 
     /**Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
     * Setting this matrix, the reference corrdinate system will be set in this board

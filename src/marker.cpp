@@ -41,8 +41,6 @@ namespace aruco {
 Marker::Marker() {
     id = -1;
     ssize = -1;
-    Tvec = cv::Mat_<double>(3, 1, -999999);
-    Rvec = cv::Mat_<double>(3, 1, -999999);
 }
 
 /**
@@ -51,8 +49,6 @@ Marker::Marker() {
 Marker::Marker(const std::vector<cv::Point2f>& corners, int _id) : std::vector<cv::Point2f>(corners) {
     id = _id;
     ssize = -1;
-    Tvec = cv::Mat_<double>(3, 1, -999999);
-    Rvec = cv::Mat_<double>(3, 1, -999999);
 }
 
 void Marker::draw(Mat& in, Scalar color, int lineWidth, bool writeId) const {

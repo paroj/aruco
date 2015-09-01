@@ -130,12 +130,15 @@ public:
         str << M.id << "=";
         for (int i = 0; i < 4; i++)
             str << "(" << M[i].x << "," << M[i].y << ") ";
-        str << "Txyz=";
-        for (int i = 0; i < 3; i++)
-            str << M.Tvec[i] << " ";
-        str << "Rxyz=";
-        for (int i = 0; i < 3; i++)
-            str << M.Rvec[i] << " ";
+
+        if(!M.Tvec.empty() && !M.Rvec.empty()) {
+            str << "Txyz=";
+            for (int i = 0; i < 3; i++)
+                str << M.Tvec[i] << " ";
+            str << "Rxyz=";
+            for (int i = 0; i < 3; i++)
+                str << M.Rvec[i] << " ";
+        }
 
         return str;
     }
