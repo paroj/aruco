@@ -75,7 +75,7 @@ void SubPixelCorner::RefineCorner(InputArray image, std::vector<cv::Point2f>& co
 
     generateMask();
 
-    Size sz = image.getSz();
+    Size sz = image.size();
 
     // loop over all the corner points
     for (int k = 0; k < corners.size(); k++) {
