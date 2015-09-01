@@ -129,15 +129,11 @@ public:
     friend std::ostream& operator<<(std::ostream& str, const Marker& M) {
         str << M.id << "=";
         for (int i = 0; i < 4; i++)
-            str << "(" << M[i].x << "," << M[i].y << ") ";
+            str << M[i];
 
         if(!M.Tvec.empty() && !M.Rvec.empty()) {
-            str << "Txyz=";
-            for (int i = 0; i < 3; i++)
-                str << M.Tvec[i] << " ";
-            str << "Rxyz=";
-            for (int i = 0; i < 3; i++)
-                str << M.Rvec[i] << " ";
+            str << "Txyz=" << M.Tvec.t() << " ";
+            str << "Rxyz=" << M.Rvec.t() << " ";
         }
 
         return str;
