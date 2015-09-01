@@ -27,10 +27,6 @@ or implied, of Rafael Muñoz Salinas.
 ********************************/
 #include "boarddetector.h"
 
-#include <cstdlib>
-#include <ctime>
-#include <cassert>
-#include <fstream>
 #include <opencv2/calib3d/calib3d.hpp>
 
 using namespace std;
@@ -118,96 +114,96 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
     Bdetected.conf = BConf;
     //
 
+    if(Bdetected.empty() || camMatrix.empty())
+        return 0;
+
     bool hasEnoughInfoForRTvecCalculation = false;
-    if (Bdetected.size() >= 1) {
-        if (camMatrix.rows != 0) {
-            if (markerSizeMeters > 0 && BConf.mInfoType == BoardConfiguration::PIX)
-                hasEnoughInfoForRTvecCalculation = true;
-            else if (BConf.mInfoType == BoardConfiguration::METERS)
-                hasEnoughInfoForRTvecCalculation = true;
-        }
-    }
+
+    if (markerSizeMeters > 0 && BConf.mInfoType == BoardConfiguration::PIX)
+        hasEnoughInfoForRTvecCalculation = true;
+    else if (BConf.mInfoType == BoardConfiguration::METERS)
+        hasEnoughInfoForRTvecCalculation = true;
 
     // calculate extrinsic if there is information for that
-    if (hasEnoughInfoForRTvecCalculation) {
-
-        // calculate the size of the markers in meters if expressed in pixels
-        double marker_meter_per_pix = 0;
-        if (BConf.mInfoType == BoardConfiguration::PIX)
-            marker_meter_per_pix = markerSizeMeters / cv::norm(BConf[0][0] - BConf[0][1]);
-        else
-            marker_meter_per_pix = 1; // to avoind interferring the process below
-
-        // now, create the matrices for finding the extrinsics
-        vector<cv::Point3f> objPoints;
-        vector<cv::Point2f> imagePoints;
-        for (size_t i = 0; i < Bdetected.size(); i++) {
-            int idx = Bdetected.conf.getIndexOfMarkerId(Bdetected[i].id);
-            assert(idx != -1);
-            for (int p = 0; p < 4; p++) {
-                imagePoints.push_back(Bdetected[i][p]);
-                const aruco::MarkerInfo& Minfo = Bdetected.conf.getMarkerInfo(Bdetected[i].id);
-                objPoints.push_back(Minfo[p] * marker_meter_per_pix);
-                //  		cout<<objPoints.back()<<endl;
-            }
-        }
-        if (distCoeff.total() == 0)
-            distCoeff = cv::Mat::zeros(1, 4, CV_32FC1);
-
-        // 	    for(size_t i=0;i< imagePoints.size();i++){
-        // 		cout<<objPoints[i]<<" "<<imagePoints[i]<<endl;
-        // 	    }
-        // 	    cout<<"cam="<<camMatrix<<" "<<distCoeff<<endl;
-        cv::solvePnP(objPoints, imagePoints, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
-        //             cout<<rvec<< " "<<tvec<<" _setYPerpendicular="<<_setYPerpendicular<<endl;
-
-        {
-            vector<cv::Point2f> reprojected;
-            cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
-            double errSum = 0;
-            // check now the reprojection error and
-            for (size_t i = 0; i < reprojected.size(); i++) {
-                errSum += cv::norm(reprojected[i] - imagePoints[i]);
-            }
-            //                  cout<<"AAA RE="<<errSum/double ( reprojected.size() ) <<endl;
-        }
-        // now, do a refinement and remove points whose reprojection error is above a threshold, then repeat
-        // calculation with the rest
-        if (repj_err_thres > 0) {
-            vector<cv::Point2f> reprojected;
-            cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
-
-            vector<int> pointsThatPassTest; // indices
-            // check now the reprojection error and
-            for (size_t i = 0; i < reprojected.size(); i++) {
-                float err = cv::norm(reprojected[i] - imagePoints[i]);
-                if (err < repj_err_thres)
-                    pointsThatPassTest.push_back(i);
-            }
-            // cerr<<"Number of points after reprjection test "<<pointsThatPassTest.size()
-            // <<"/"<<objPoints.size() <<endl;
-            // copy these data to another vectors and repeat
-            vector<cv::Point3f> objPoints_filtered;
-            vector<cv::Point2f> imagePoints_filtered;
-            for (size_t i = 0; i < pointsThatPassTest.size(); i++) {
-                objPoints_filtered.push_back(objPoints[pointsThatPassTest[i]]);
-                imagePoints_filtered.push_back(imagePoints[pointsThatPassTest[i]]);
-            }
-
-            cv::solvePnP(objPoints_filtered, imagePoints_filtered, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
-        }
-
-        // now, rotate 90 deg in X so that Y axis points up
-        if (_setYPerpendicular)
-            rotateXAxis(Bdetected.Rvec);
-        //         cout<<Bdetected.Rvec.at<float>(0,0)<<" "<<Bdetected.Rvec.at<float>(1,0)<<"
-        //         "<<Bdetected.Rvec.at<float>(2,0)<<endl;
-        //         cout<<Bdetected.Tvec.at<float>(0,0)<<" "<<Bdetected.Tvec.at<float>(1,0)<<"
-        //         "<<Bdetected.Tvec.at<float>(2,0)<<endl;
+    if (! hasEnoughInfoForRTvecCalculation) {
+        return 0;
     }
 
-    float prob = float(Bdetected.size()) / double(Bdetected.conf.size());
-    return prob;
+    // calculate the size of the markers in meters if expressed in pixels
+    double marker_meter_per_pix = 0;
+    if (BConf.mInfoType == BoardConfiguration::PIX)
+        marker_meter_per_pix = markerSizeMeters / cv::norm(BConf[0][0] - BConf[0][1]);
+    else
+        marker_meter_per_pix = 1; // to avoind interferring the process below
+
+    // now, create the matrices for finding the extrinsics
+    vector<cv::Point3f> objPoints;
+    vector<cv::Point2f> imagePoints;
+    for (size_t i = 0; i < Bdetected.size(); i++) {
+        int idx = Bdetected.conf.getIndexOfMarkerId(Bdetected[i].id);
+        assert(idx != -1);
+        for (int p = 0; p < 4; p++) {
+            imagePoints.push_back(Bdetected[i][p]);
+            const aruco::MarkerInfo& Minfo = Bdetected.conf.getMarkerInfo(Bdetected[i].id);
+            objPoints.push_back(Minfo[p] * marker_meter_per_pix);
+            //  		cout<<objPoints.back()<<endl;
+        }
+    }
+    if (distCoeff.empty())
+        distCoeff = cv::Mat::zeros(1, 4, CV_32FC1);
+
+    // 	    for(size_t i=0;i< imagePoints.size();i++){
+    // 		cout<<objPoints[i]<<" "<<imagePoints[i]<<endl;
+    // 	    }
+    // 	    cout<<"cam="<<camMatrix<<" "<<distCoeff<<endl;
+    cv::solvePnP(objPoints, imagePoints, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
+    //             cout<<rvec<< " "<<tvec<<" _setYPerpendicular="<<_setYPerpendicular<<endl;
+
+    {
+        vector<cv::Point2f> reprojected;
+        cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
+        double errSum = 0;
+        // check now the reprojection error and
+        for (size_t i = 0; i < reprojected.size(); i++) {
+            errSum += cv::norm(reprojected[i] - imagePoints[i]);
+        }
+        //                  cout<<"AAA RE="<<errSum/double ( reprojected.size() ) <<endl;
+    }
+    // now, do a refinement and remove points whose reprojection error is above a threshold, then repeat
+    // calculation with the rest
+    if (repj_err_thres > 0) {
+        vector<cv::Point2f> reprojected;
+        cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
+
+        vector<int> pointsThatPassTest; // indices
+        // check now the reprojection error and
+        for (size_t i = 0; i < reprojected.size(); i++) {
+            float err = cv::norm(reprojected[i] - imagePoints[i]);
+            if (err < repj_err_thres)
+                pointsThatPassTest.push_back(i);
+        }
+        // cerr<<"Number of points after reprjection test "<<pointsThatPassTest.size()
+        // <<"/"<<objPoints.size() <<endl;
+        // copy these data to another vectors and repeat
+        vector<cv::Point3f> objPoints_filtered;
+        vector<cv::Point2f> imagePoints_filtered;
+        for (size_t i = 0; i < pointsThatPassTest.size(); i++) {
+            objPoints_filtered.push_back(objPoints[pointsThatPassTest[i]]);
+            imagePoints_filtered.push_back(imagePoints[pointsThatPassTest[i]]);
+        }
+
+        cv::solvePnP(objPoints_filtered, imagePoints_filtered, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
+    }
+
+    // now, rotate 90 deg in X so that Y axis points up
+    if (_setYPerpendicular)
+        rotateXAxis(Bdetected.Rvec);
+    //         cout<<Bdetected.Rvec.at<float>(0,0)<<" "<<Bdetected.Rvec.at<float>(1,0)<<"
+    //         "<<Bdetected.Rvec.at<float>(2,0)<<endl;
+    //         cout<<Bdetected.Tvec.at<float>(0,0)<<" "<<Bdetected.Tvec.at<float>(1,0)<<"
+    //         "<<Bdetected.Tvec.at<float>(2,0)<<endl;
+
+    return float(Bdetected.size()) / Bdetected.conf.size();
 }
 
 /**Static version (all in one)
