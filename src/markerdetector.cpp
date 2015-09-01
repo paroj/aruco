@@ -448,10 +448,16 @@ void MarkerDetector::detect(cv::InputArray input, vector<Marker>& detectedMarker
 
     /// detect the position of detected markers if desired
     if (camMatrix.rows != 0 && markerSizeMeters > 0) {
+        cv::Matx<float, 4, 3> ObjPoints = getObjectPoints(markerSizeMeters);
+
 #pragma omp parallel for
-        for (unsigned int i = 0; i < detectedMarkers.size(); i++)
-            detectedMarkers[i].calculateExtrinsics(markerSizeMeters, camMatrix, distCoeff,
-                                                   setYPerpendicular);
+        for (unsigned int i = 0; i < detectedMarkers.size(); i++) {
+            cv::solvePnP(ObjPoints, detectedMarkers[i], camMatrix, distCoeff, detectedMarkers[i].Rvec, detectedMarkers[i].Tvec);
+            // rotate the X axis so that Y is perpendicular to the marker plane
+            if (setYPerpendicular)
+                rotateXAxis(detectedMarkers[i].Rvec);
+            detectedMarkers[i].ssize = markerSizeMeters;
+        }
     }
 
 #if ARUCO_MARKER_BENCHMARK
