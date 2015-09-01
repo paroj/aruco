@@ -13,8 +13,12 @@ namespace cv {
 inline FileStorage& operator<<(FileStorage& fs, const aruco::Marker& m) {
     fs << "{";
     fs << "id" << m.id;
-    fs << "Tvec" << Vec3f(m.Tvec);
-    fs << "Rvec" << Vec3f(m.Rvec);
+
+    if(!m.Tvec.empty() && !m.Rvec.empty()) {
+        fs << "Tvec" << Vec3d(m.Tvec);
+        fs << "Rvec" << Vec3d(m.Rvec);
+    }
+
     fs << "corners" << "[:";
 
     for(auto& c : m) {
@@ -39,8 +43,8 @@ inline FileStorage& operator<<(FileStorage& fs, const std::vector<aruco::Marker>
 
 inline FileStorage& operator<<(FileStorage& fs, const aruco::Board& b) {
     fs << "{";
-    fs << "Tvec" << Vec3f(b.Tvec);
-    fs << "Rvec" << Vec3f(b.Rvec);
+    fs << "Tvec" << Vec3d(b.Tvec);
+    fs << "Rvec" << Vec3d(b.Rvec);
     fs << "Markers" << "[";
 
     for(auto& m : b) {
@@ -59,10 +63,11 @@ inline void read(const FileNode& ms, aruco::Marker& m, const aruco::Marker& defa
         return;
     }
 
-    Vec3f Tvec;
-    Vec3f Rvec;
+    Vec3d Tvec;
+    Vec3d Rvec;
 
     ms["id"] >> m.id;
+
     ms["Tvec"] >> Tvec;
     ms["Rvec"] >> Rvec;
 
@@ -83,8 +88,8 @@ inline void read(const FileNode& bs, aruco::Board& b, const aruco::Board& defaul
         return;
     }
 
-    Vec3f Tvec;
-    Vec3f Rvec;
+    Vec3d Tvec;
+    Vec3d Rvec;
 
     bs["Tvec"] >> Tvec;
     bs["Rvec"] >> Rvec;
