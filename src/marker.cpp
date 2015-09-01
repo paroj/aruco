@@ -92,15 +92,8 @@ void Marker::calculateExtrinsics(float markerSize, const CameraParameters& CP, b
     calculateExtrinsics(markerSize, CP.CameraMatrix, CP.Distorsion, setYPerpendicular);
 }
 
-void print(cv::Point3f p, string cad) { cout << cad << " " << p.x << " " << p.y << " " << p.z << endl; }
-/**
- */
-void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::Mat distCoeff, bool setYPerpendicular) {
-
-    CV_Assert( markerSizeMeters > 0 && isValid() && "invalid marker. It is not possible to calculate extrinsics");
-    CV_Assert( camMatrix.rows != 0 || camMatrix.cols != 0 && "CameraMatrix is empty" );
-
-    double halfSize = markerSizeMeters / 2.;
+cv::Matx<float, 4, 3> getObjectPoints(float markerSizeMeters) {
+    float halfSize = markerSizeMeters / 2.;
     cv::Matx<float, 4, 3> ObjPoints;
     ObjPoints(1, 0) = -halfSize;
     ObjPoints(1, 1) = halfSize;
@@ -115,16 +108,20 @@ void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::
     ObjPoints(0, 1) = -halfSize;
     ObjPoints(0, 2) = 0;
 
-    cv::Matx<float, 4, 2> ImagePoints;
+    return ObjPoints;
+}
 
-    // Set image points from the marker
-    for (int c = 0; c < 4; c++) {
-        ImagePoints(c, 0) = ((*this)[c].x);
-        ImagePoints(c, 1) = ((*this)[c].y);
-    }
+/**
+ */
+void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::Mat distCoeff, bool setYPerpendicular) {
+
+    CV_Assert( markerSizeMeters > 0 && isValid() && "invalid marker. It is not possible to calculate extrinsics");
+    CV_Assert( !camMatrix.empty() && "CameraMatrix is empty" );
+
+    cv::Matx<float, 4, 3> ObjPoints = getObjectPoints(markerSizeMeters);
 
     cv::Vec3d raux, taux;
-    cv::solvePnP(ObjPoints, ImagePoints, camMatrix, distCoeff, raux, taux);
+    cv::solvePnP(ObjPoints, *this, camMatrix, distCoeff, raux, taux);
     Rvec = raux;
     Tvec = taux;
     // rotate the X axis so that Y is perpendicular to the marker plane
