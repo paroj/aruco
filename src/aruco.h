@@ -180,3 +180,4 @@ information on how to run the examples.
 #include "markerdetector.h"
 #include "boarddetector.h"
 #include "cvdrawingutils.h"
+#include "highlyreliablemarkers.h"

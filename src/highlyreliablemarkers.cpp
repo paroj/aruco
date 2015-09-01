@@ -27,10 +27,10 @@ or implied, of Rafael Muñoz Salinas.
 ********************************/
 
 #include "highlyreliablemarkers.h"
-#include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include "arucofidmarkers.h"
+#include "serialization.h"
 
 using namespace std;
 using namespace cv;
@@ -259,22 +259,7 @@ cv::Mat MarkerCode::getImg(unsigned int pixSize) const {
 */
 bool Dictionary::fromFile(std::string filename) {
     cv::FileStorage fs(filename, cv::FileStorage::READ);
-    int nmarkers, markersize;
-
-    // read number of markers
-    fs["nmarkers"] >> nmarkers;     // cardinal of D
-    fs["markersize"] >> markersize; // n
-    fs["tau0"] >> tau0;
-
-    // read each marker info
-    for (int i = 0; i < nmarkers; i++) {
-        std::string s;
-        fs["marker_" + to_string(i)] >> s;
-        MarkerCode m(markersize);
-        m.fromString(s);
-        push_back(m);
-    }
-    fs.release();
+    fs.root() >> *this;
     return true;
 };
 
@@ -283,15 +268,7 @@ bool Dictionary::fromFile(std::string filename) {
 bool Dictionary::toFile(std::string filename) {
     cv::FileStorage fs(filename, cv::FileStorage::WRITE);
     // save number of markers
-    fs << "nmarkers" << (int)size();             // cardinal of D
-    fs << "markersize" << (int)((*this)[0].n()); // n
-    fs << "tau0" << (int)(this->tau0);           // n
-    // save each marker code
-    for (unsigned int i = 0; i < size(); i++) {
-        std::string s = ((*this)[i]).toString();
-        fs << "marker_" + to_string(i) << s;
-    }
-    fs.release();
+    fs << *this;
     return true;
 };
 

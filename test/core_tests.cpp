@@ -3,6 +3,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 
 #include <aruco.h>
+#include "serialization.h"
 #include "arucofidmarkers.h"
 #include "filestorage_adapter.h"
 #include "highlyreliablemarkers.h"

@@ -117,14 +117,6 @@ public:
     /**Set in the list passed the set of the ids
      */
     void getIdList(std::vector<int>& ids, bool append = true) const;
-
-private:
-    /**Saves the board info to a file
-    */
-    void saveToFile(cv::FileStorage& fs) throw(cv::Exception);
-    /**Reads board info from a file
-    */
-    void readFromFile(cv::FileStorage& fs) throw(cv::Exception);
 };
 
 /**

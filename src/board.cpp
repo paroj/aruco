@@ -26,7 +26,7 @@ authors and should not be interpreted as representing official policies, either 
 or implied, of Rafael Muñoz Salinas.
 ********************************/
 #include "board.h"
-#include <fstream>
+#include "serialization.h"
 
 using namespace std;
 using namespace cv;
@@ -65,76 +65,20 @@ BoardConfiguration& BoardConfiguration::operator=(const BoardConfiguration& T) {
     mInfoType = T.mInfoType;
     return *this;
 }
-/**
-*
-*
+
+/**Saves the board info to a file
 */
 void BoardConfiguration::saveToFile(string sfile) throw(cv::Exception) {
 
     cv::FileStorage fs(sfile, cv::FileStorage::WRITE);
-    saveToFile(fs);
-}
-/**Saves the board info to a file
-*/
-void BoardConfiguration::saveToFile(cv::FileStorage& fs) throw(cv::Exception) {
-    fs << "aruco_bc_nmarkers" << (int)size();
-    fs << "aruco_bc_mInfoType" << (int)mInfoType;
-    fs << "aruco_bc_markers"
-       << "[";
-    for (size_t i = 0; i < size(); i++) {
-        fs << "{:"
-           << "id" << at(i).id;
-
-        fs << "corners"
-           << "[:";
-        for (int c = 0; c < at(i).size(); c++)
-            fs << at(i)[c];
-        fs << "]";
-        fs << "}";
-    }
-    fs << "]";
-}
-
-/**
-*
-*
-*/
-void BoardConfiguration::readFromFile(string sfile) throw(cv::Exception) {
-    try {
-        cv::FileStorage fs(sfile, cv::FileStorage::READ);
-        readFromFile(fs);
-    } catch (std::exception& ex) {
-        throw cv::Exception(81818, "BoardConfiguration::readFromFile",
-                            ex.what() + string(" file=)") + sfile, __FILE__, __LINE__);
-    }
+    fs << *this;
 }
 
 /**Reads board info from a file
 */
-void BoardConfiguration::readFromFile(cv::FileStorage& fs) throw(cv::Exception) {
-    int aux = 0;
-    // look for the nmarkers
-    if (fs["aruco_bc_nmarkers"].name() != "aruco_bc_nmarkers")
-        throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type", __FILE__,
-                            __LINE__);
-    fs["aruco_bc_nmarkers"] >> aux;
-    resize(aux);
-    fs["aruco_bc_mInfoType"] >> mInfoType;
-    cv::FileNode markers = fs["aruco_bc_markers"];
-    int i = 0;
-    for (FileNodeIterator it = markers.begin(); it != markers.end(); ++it, i++) {
-        at(i).id = (*it)["id"];
-        FileNode FnCorners = (*it)["corners"];
-        for (FileNodeIterator itc = FnCorners.begin(); itc != FnCorners.end(); ++itc) {
-            vector<float> coordinates3d;
-            (*itc) >> coordinates3d;
-            if (coordinates3d.size() != 3)
-                throw cv::Exception(81818, "BoardConfiguration::readFromFile", "invalid file type 3",
-                                    __FILE__, __LINE__);
-            cv::Point3f point(coordinates3d[0], coordinates3d[1], coordinates3d[2]);
-            at(i).push_back(point);
-        }
-    }
+void BoardConfiguration::readFromFile(string sfile) throw(cv::Exception) {
+    cv::FileStorage fs(sfile, cv::FileStorage::READ);
+    fs.root() >> *this;
 }
 
 /**
@@ -188,9 +132,8 @@ void Board::saveToFile(string filePath) throw(cv::Exception) {
     }
     fs << "]";
     // save configuration file
-    conf.saveToFile(fs);
 
-    //  readFromFile(fs);
+    fs << conf;
 }
 /**Read  this from a file
  */
@@ -227,7 +170,7 @@ void Board::readFromFile(string filePath) throw(cv::Exception) {
         }
     }
 
-    conf.readFromFile(fs);
+    fs.root() >> conf;
 }
 
 /**
