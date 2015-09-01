@@ -448,15 +448,21 @@ void MarkerDetector::detect(cv::InputArray input, vector<Marker>& detectedMarker
 
     /// detect the position of detected markers if desired
     if (camMatrix.rows != 0 && markerSizeMeters > 0) {
-        cv::Matx<float, 4, 3> ObjPoints = getObjectPoints(markerSizeMeters);
+        Matx<float, 4, 3> ObjPoints = getObjectPoints(markerSizeMeters);
 
-#pragma omp parallel for
+        Mat_<double> Rvecs(3, detectedMarkers.size());
+        Mat_<double> Tvecs(3, detectedMarkers.size());
+
+        #pragma omp parallel for
         for (unsigned int i = 0; i < detectedMarkers.size(); i++) {
-            cv::solvePnP(ObjPoints, detectedMarkers[i], camMatrix, distCoeff, detectedMarkers[i].Rvec, detectedMarkers[i].Tvec);
+            cv::solvePnP(ObjPoints, detectedMarkers[i], camMatrix, distCoeff, Rvecs.col(i), Tvecs.col(i));
+            detectedMarkers[i].Rvec = Rvecs.col(i);
+            detectedMarkers[i].Tvec = Tvecs.col(i);
+            detectedMarkers[i].ssize = markerSizeMeters;
+
             // rotate the X axis so that Y is perpendicular to the marker plane
             if (setYPerpendicular)
                 rotateXAxis(detectedMarkers[i].Rvec);
-            detectedMarkers[i].ssize = markerSizeMeters;
         }
     }
 
