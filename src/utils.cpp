@@ -13,7 +13,7 @@ using namespace cv;
 
 namespace aruco {
 
-void rotateXAxis(Vec3f& rotation) {
+void rotateXAxis(Mat& rotation) {
     cv::Matx33f R;
     Rodrigues(rotation, R);
     // create a rotation matrix for x axis
@@ -29,7 +29,7 @@ void rotateXAxis(Vec3f& rotation) {
     Rodrigues(R, rotation);
 }
 
-void GetGLModelViewMatrix(const Vec3f& Rvec, const Vec3f& Tvec, double modelview_matrix[16]) {
+void GetGLModelViewMatrix(const Mat_<double>& Rvec, const Mat_<double>& Tvec, double modelview_matrix[16]) {
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
@@ -40,7 +40,7 @@ void GetGLModelViewMatrix(const Vec3f& Rvec, const Vec3f& Tvec, double modelview
     }
     CV_Assert(!invalid && "extrinsic parameters are not set");
 
-    Matx33f Rot;
+    Matx33d Rot;
     Rodrigues(Rvec, Rot);
 
     double para[3][4];
@@ -80,7 +80,7 @@ void GetGLModelViewMatrix(const Vec3f& Rvec, const Vec3f& Tvec, double modelview
     } */
 }
 
-void GetOgrePoseParameters(const Vec3f& Rvec, const Vec3f& Tvec, double position[3], double orientation[4]) {
+void GetOgrePoseParameters(const Mat_<double>& Rvec, const Mat_<double>& Tvec, double position[3], double orientation[4]) {
     // check if paremeters are valid
     bool invalid = false;
     for (int i = 0; i < 3 && !invalid; i++) {
@@ -92,12 +92,12 @@ void GetOgrePoseParameters(const Vec3f& Rvec, const Vec3f& Tvec, double position
     CV_Assert(!invalid && "extrinsic parameters are not set");
 
     // calculate position vector
-    position[0] = -Tvec[0];
-    position[1] = -Tvec[1];
-    position[2] = +Tvec[2];
+    position[0] = -Tvec(0);
+    position[1] = -Tvec(1);
+    position[2] = +Tvec(2);
 
     // now calculare orientation quaternion
-    cv::Matx33f Rot;
+    cv::Matx33d Rot;
     cv::Rodrigues(Rvec, Rot);
 
     // calculate axes for quaternion

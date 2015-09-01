@@ -36,6 +36,9 @@ or implied, of Rafael Muñoz Salinas.
 #include "utils.h"
 
 namespace aruco {
+
+cv::Matx<float, 4, 3> getObjectPoints(float markerSizeMeters);
+
 /**\brief This class represents a marker. It is a vector of the fours corners ot the marker
  *
  */
@@ -47,7 +50,7 @@ public:
     // size of the markers sides in meters
     float ssize;
     // matrices of rotation and translation respect to the camera
-    cv::Vec3f Rvec, Tvec;
+    cv::Mat_<double> Rvec, Tvec;
 
     /**
      */

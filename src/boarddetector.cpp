@@ -158,15 +158,12 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
         // 		cout<<objPoints[i]<<" "<<imagePoints[i]<<endl;
         // 	    }
         // 	    cout<<"cam="<<camMatrix<<" "<<distCoeff<<endl;
-        cv::Vec3d rvec, tvec;
-        cv::solvePnP(objPoints, imagePoints, camMatrix, distCoeff, rvec, tvec);
-        Bdetected.Rvec = rvec;
-        Bdetected.Tvec = tvec;
+        cv::solvePnP(objPoints, imagePoints, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
         //             cout<<rvec<< " "<<tvec<<" _setYPerpendicular="<<_setYPerpendicular<<endl;
 
         {
             vector<cv::Point2f> reprojected;
-            cv::projectPoints(objPoints, rvec, tvec, camMatrix, distCoeff, reprojected);
+            cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
             double errSum = 0;
             // check now the reprojection error and
             for (size_t i = 0; i < reprojected.size(); i++) {
@@ -178,7 +175,7 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
         // calculation with the rest
         if (repj_err_thres > 0) {
             vector<cv::Point2f> reprojected;
-            cv::projectPoints(objPoints, rvec, tvec, camMatrix, distCoeff, reprojected);
+            cv::projectPoints(objPoints, Bdetected.Rvec, Bdetected.Tvec, camMatrix, distCoeff, reprojected);
 
             vector<int> pointsThatPassTest; // indices
             // check now the reprojection error and
@@ -197,9 +194,7 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
                 imagePoints_filtered.push_back(imagePoints[pointsThatPassTest[i]]);
             }
 
-            cv::solvePnP(objPoints_filtered, imagePoints_filtered, camMatrix, distCoeff, rvec, tvec);
-            Bdetected.Rvec = rvec;
-            Bdetected.Tvec = tvec;
+            cv::solvePnP(objPoints_filtered, imagePoints_filtered, camMatrix, distCoeff, Bdetected.Rvec, Bdetected.Tvec);
         }
 
         // now, rotate 90 deg in X so that Y axis points up

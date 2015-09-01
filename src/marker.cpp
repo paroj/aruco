@@ -41,8 +41,8 @@ namespace aruco {
 Marker::Marker() {
     id = -1;
     ssize = -1;
-    for (int i = 0; i < 3; i++)
-        Tvec(i) = Rvec(i) = -999999;
+    Tvec = cv::Mat_<double>(3, 1, -999999);
+    Rvec = cv::Mat_<double>(3, 1, -999999);
 }
 
 /**
@@ -51,8 +51,8 @@ Marker::Marker() {
 Marker::Marker(const std::vector<cv::Point2f>& corners, int _id) : std::vector<cv::Point2f>(corners) {
     id = _id;
     ssize = -1;
-    for (int i = 0; i < 3; i++)
-        Tvec(i) = Rvec(i) = -999999;
+    Tvec = cv::Mat_<double>(3, 1, -999999);
+    Rvec = cv::Mat_<double>(3, 1, -999999);
 }
 
 void Marker::draw(Mat& in, Scalar color, int lineWidth, bool writeId) const {
@@ -119,11 +119,7 @@ void Marker::calculateExtrinsics(float markerSizeMeters, cv::Mat camMatrix, cv::
     CV_Assert( !camMatrix.empty() && "CameraMatrix is empty" );
 
     cv::Matx<float, 4, 3> ObjPoints = getObjectPoints(markerSizeMeters);
-
-    cv::Vec3d raux, taux;
-    cv::solvePnP(ObjPoints, *this, camMatrix, distCoeff, raux, taux);
-    Rvec = raux;
-    Tvec = taux;
+    cv::solvePnP(ObjPoints, *this, camMatrix, distCoeff, Rvec, Tvec);
     // rotate the X axis so that Y is perpendicular to the marker plane
     if (setYPerpendicular)
         rotateXAxis(Rvec);

@@ -16,13 +16,13 @@ namespace aruco {
 /**
  * Change rotation such that Y axis points up
  */
-ARUCO_EXPORTS void rotateXAxis(cv::Vec3f& rotation);
+ARUCO_EXPORTS void rotateXAxis(cv::Mat& rotation);
 
 /**
  * Given the extrinsic camera parameters returns the GL_MODELVIEW matrix for opengl.
  * Setting this matrix, the reference coordinate system will be set in this marker
  */
-ARUCO_EXPORTS void GetGLModelViewMatrix(const cv::Vec3f& Rvec, const cv::Vec3f& Tvec, double modelview_matrix[16]);
+ARUCO_EXPORTS void GetGLModelViewMatrix(const cv::Mat_<double>& Rvec, const cv::Mat_<double>& Tvec, double modelview_matrix[16]);
 
 /**
  * Returns position vector and orientation quaternion for an Ogre scene node or entity.
@@ -34,7 +34,7 @@ ARUCO_EXPORTS void GetGLModelViewMatrix(const cv::Vec3f& Rvec, const cv::Vec3f& 
  * mySceneNode->setOrientation( ogreOrient  );
  * ...
  */
-ARUCO_EXPORTS void GetOgrePoseParameters(const cv::Vec3f& Rvec, const cv::Vec3f& Tvec, double position[3], double orientation[4]);
+ARUCO_EXPORTS void GetOgrePoseParameters(const cv::Mat_<double>& Rvec, const cv::Mat_<double>& Tvec, double position[3], double orientation[4]);
 
 static inline float perimeter(const std::vector<cv::Point2f>& a) {
     float sum = 0;
