@@ -130,7 +130,7 @@ void processKey(char k) {
         if (!chromatic)
             return;
         float prob = (float)TheBoardDetector.getDetectedBoard().size() /
-                     (float)TheBoardDetector.getDetectedBoard().conf.size();
+                     (float)TheBoardDetector.getDetectedBoard().conf.ids.size();
         // TheChromaticMask.detectBoard( TheInputImageH );
         if (prob > 0.2)
             TheChromaticMask.train(TheInputImageH, TheBoardDetector.getDetectedBoard());

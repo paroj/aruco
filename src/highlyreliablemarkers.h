@@ -218,7 +218,6 @@ public:
     /**Creates a printable image of a board
      * @param gridSize grid layout (numer of sqaures in x and Y)
      * @param D input dictionary from where markers are taken to create the board
-     * @param MarkerDistance distance between the markers
      * @param BC output
      * @param chromatic true for green&blue chromatic markers
      */

@@ -71,18 +71,18 @@ void read(const FileNode& ms, aruco::Marker& m, const aruco::Marker& default_val
 
 // BoardConfiguration
 FileStorage& operator<<(FileStorage& fs, const aruco::BoardConfiguration& m) {
-    fs << "aruco_bc_nmarkers" << (int)m.size();
+    fs << "aruco_bc_nmarkers" << (int)m.objPoints.size();
     fs << "aruco_bc_mInfoType" << (int)m.mInfoType;
     fs << "aruco_bc_markers"
        << "[";
-    for (size_t i = 0; i < m.size(); i++) {
+    for (size_t i = 0; i < m.objPoints.size(); i++) {
         fs << "{:"
-           << "id" << m[i].id;
+           << "id" << m.ids[i];
 
         fs << "corners"
            << "[:";
         for (int c = 0; c < 4; c++)
-            fs << m[i][c];
+            fs << m.objPoints[i][c];
         fs << "]";
         fs << "}";
     }
@@ -104,16 +104,17 @@ void read(const FileNode& fn, aruco::BoardConfiguration& bc,
 
     CV_Assert(bc_nmarkers == int(markers.size()));
 
-    bc.resize(markers.size());
+    bc.objPoints.resize(markers.size());
+    bc.ids.resize(markers.size());
     int i = 0;
     for (FileNodeIterator it = markers.begin(); it != markers.end(); ++it, i++) {
-        bc[i].id = (*it)["id"];
+        bc.ids[i] = (*it)["id"];
         const FileNode& FnCorners = (*it)["corners"];
         CV_Assert(FnCorners.size() == 4);
 
-        bc[i].resize(4);
+        bc.objPoints[i].resize(4);
         for (size_t c = 0; c < 4; c++) {
-            FnCorners[c] >> bc[i][c];
+            FnCorners[c] >> bc.objPoints[i][c];
         }
     }
 }

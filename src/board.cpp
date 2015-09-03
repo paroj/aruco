@@ -33,42 +33,16 @@ using namespace cv;
 
 namespace aruco {
 
-/**
-*
-*
-*/
-BoardConfiguration::BoardConfiguration() { mInfoType = NONE; }
-/**
-*
-*
-*/
-BoardConfiguration::BoardConfiguration(string filePath) throw(cv::Exception) {
-    mInfoType = NONE;
-    readFromFile(filePath);
-}
-/**
-*
-*
-*/
-BoardConfiguration::BoardConfiguration(const BoardConfiguration& T) : vector<MarkerInfo>(T) {
-    //     MarkersInfo=T.MarkersInfo;
-    mInfoType = T.mInfoType;
-}
 
-/**
-*
-*
-*/
-BoardConfiguration& BoardConfiguration::operator=(const BoardConfiguration& T) {
-    //     MarkersInfo=T.MarkersInfo;
-    vector<MarkerInfo>::operator=(T);
-    mInfoType = T.mInfoType;
-    return *this;
+BoardConfiguration::BoardConfiguration() { mInfoType = NONE; }
+
+BoardConfiguration::BoardConfiguration(const std::string& filePath) {
+    readFromFile(filePath);
 }
 
 /**Saves the board info to a file
 */
-void BoardConfiguration::saveToFile(string sfile) throw(cv::Exception) {
+void BoardConfiguration::saveToFile(const std::string& sfile) {
 
     cv::FileStorage fs(sfile, cv::FileStorage::WRITE);
     fs << *this;
@@ -76,29 +50,19 @@ void BoardConfiguration::saveToFile(string sfile) throw(cv::Exception) {
 
 /**Reads board info from a file
 */
-void BoardConfiguration::readFromFile(string sfile) throw(cv::Exception) {
+void BoardConfiguration::readFromFile(const std::string& sfile) {
     cv::FileStorage fs(sfile, cv::FileStorage::READ);
     fs.root() >> *this;
 }
 
 /**
  */
-int BoardConfiguration::getIndexOfMarkerId(int id) const {
+const vector<Point3f>& BoardConfiguration::getMarkerInfo(int id) const {
+    for (size_t i = 0; i < objPoints.size(); i++)
+        if (ids[i] == id)
+            return objPoints[i];
 
-    for (size_t i = 0; i < size(); i++)
-        if (at(i).id == id)
-            return i;
-    return -1;
-}
-
-/**
- */
-const MarkerInfo& BoardConfiguration::getMarkerInfo(int id) const throw(cv::Exception) {
-    for (size_t i = 0; i < size(); i++)
-        if (at(i).id == id)
-            return at(i);
-
-    throw cv::Exception(111, "BoardConfiguration::getMarkerInfo", "Marker with the id given is not found",__FILE__, __LINE__);
+    CV_Error(cv::Error::StsBadArg, "Marker with the id given is not found");
 }
 
 /**
@@ -171,14 +135,5 @@ void Board::readFromFile(string filePath) throw(cv::Exception) {
     }
 
     fs.root() >> conf;
-}
-
-/**
-*/
-void BoardConfiguration::getIdList(std::vector<int>& ids, bool append) const {
-    if (!append)
-        ids.clear();
-    for (size_t i = 0; i < size(); i++)
-        ids.push_back(at(i).id);
 }
 }

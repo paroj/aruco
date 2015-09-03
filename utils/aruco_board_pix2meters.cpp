@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
         }
         aruco::BoardConfiguration BInfo;
         BInfo.readFromFile(argv[1]);
-        if (BInfo.size() == 0) {
+        if (BInfo.objPoints.size() == 0) {
             cerr << "Invalid bord with no markers" << endl;
             return -1;
         }
@@ -51,15 +51,15 @@ int main(int argc, char** argv) {
         }
         // first, we are assuming all markers are equally sized. So, lets get the size in pixels
 
-        int markerSizePix = cv::norm(BInfo[0][0] - BInfo[0][1]);
+        int markerSizePix = cv::norm(BInfo.objPoints[0][0] - BInfo.objPoints[0][1]);
         BInfo.mInfoType = BoardConfiguration::METERS;
         // now, get the size of a pixel, and change scale
         float markerSize_meters = atof(argv[2]);
         float pixSize = markerSize_meters / float(markerSizePix);
         cout << markerSize_meters << " " << float(markerSizePix) << " " << pixSize << endl;
-        for (size_t i = 0; i < BInfo.size(); i++)
+        for (size_t i = 0; i < BInfo.objPoints.size(); i++)
             for (int c = 0; c < 4; c++) {
-                BInfo[i][c] *= pixSize;
+                BInfo.objPoints[i][c] *= pixSize;
             }
         // save to file
         BInfo.saveToFile(argv[3]);

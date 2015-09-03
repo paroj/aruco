@@ -506,7 +506,7 @@ cv::Mat HighlyReliableMarkers::createBoardImage(cv::Size gridSize, const Diction
     float centerX = sizeX / 2.;
     float centerY = sizeY / 2.;
 
-    BC.mInfoType = aruco::BoardConfiguration::PIX;
+    BC.mInfoType = BoardConfiguration::PIX;
 
     // indicate the data is expressed in pixels
     cv::Mat tableImage(sizeY, sizeX, CV_8UC1);
@@ -522,9 +522,8 @@ cv::Mat HighlyReliableMarkers::createBoardImage(cv::Size gridSize, const Diction
             marker.copyTo(subrect);
 
             // add to board configuration
-            aruco::MarkerInfo MI;
-            MI.resize(4);
-            MI.id = D[idp].getId();
+            vector<Point3f> MI(4);
+            BC.ids.push_back(D[idp].getId());
             for (unsigned int i = 0; i < 4; i++)
                 MI[i].z = 0;
             MI[0].x = x * (MarkerDistance + MarkerSize) - centerX;
@@ -540,7 +539,7 @@ cv::Mat HighlyReliableMarkers::createBoardImage(cv::Size gridSize, const Diction
             MI[1].y *= -1;
             MI[2].y *= -1;
             MI[3].y *= -1;
-            BC.push_back(MI);
+            BC.objPoints.push_back(MI);
         }
 
     if (chromatic) {

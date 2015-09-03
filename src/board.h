@@ -34,21 +34,6 @@ or implied, of Rafael Muñoz Salinas.
 #include "marker.h"
 
 namespace aruco {
-/**
- * 3d representation of a marker
- */
-struct ARUCO_EXPORTS MarkerInfo : public std::vector<cv::Point3f> {
-    MarkerInfo() {}
-    MarkerInfo(int _id) { id = _id; }
-    MarkerInfo(const MarkerInfo& MI) : vector<cv::Point3f>(MI) { id = MI.id; }
-    MarkerInfo& operator=(const MarkerInfo& MI) {
-        vector<cv::Point3f>::operator=(MI);
-        id = MI.id;
-        return *this;
-    }
-    int id; // maker id
-};
-
 /**\brief This class defines a board with several markers.
  * A Board contains several markers so that they are more robustly detected.
  *
@@ -68,10 +53,11 @@ struct ARUCO_EXPORTS MarkerInfo : public std::vector<cv::Point3f> {
  *
 */
 
-class ARUCO_EXPORTS BoardConfiguration : public std::vector<MarkerInfo> {
-    friend class Board;
-
+class ARUCO_EXPORTS BoardConfiguration {
 public:
+    std::vector<int> ids;
+    std::vector<std::vector<cv::Point3f> > objPoints;
+
     enum MarkerInfoType {
         NONE = -1,
         PIX = 0,
@@ -84,39 +70,28 @@ public:
     /**
      */
     BoardConfiguration();
+
     /**Loads from file
      * @param filePath to the config file
      */
-    BoardConfiguration(std::string filePath) throw(cv::Exception);
+    explicit BoardConfiguration(const std::string& filePath);
 
-    /**
-    */
-    BoardConfiguration(const BoardConfiguration& T);
-
-    /**
-    */
-    BoardConfiguration& operator=(const BoardConfiguration& T);
     /**Saves the board info to a file
     */
-    void saveToFile(std::string sfile) throw(cv::Exception);
+    void saveToFile(const std::string& sfile);
     /**Reads board info from a file
     */
-    void readFromFile(std::string sfile) throw(cv::Exception);
+    void readFromFile(const std::string& sfile);
     /**Indicates if the corners are expressed in meters
      */
     bool isExpressedInMeters() const { return mInfoType == METERS; }
     /**Indicates if the corners are expressed in meters
      */
     bool isExpressedInPixels() const { return mInfoType == PIX; }
-    /**Returns the index of the marker with id indicated, if is in the list
-     */
-    int getIndexOfMarkerId(int id) const;
+
     /**Returns the Info of the marker with id specified. If not in the set, throws exception
      */
-    const MarkerInfo& getMarkerInfo(int id) const throw(cv::Exception);
-    /**Set in the list passed the set of the ids
-     */
-    void getIdList(std::vector<int>& ids, bool append = true) const;
+    const std::vector<cv::Point3f>& getMarkerInfo(int id) const;
 };
 
 /**

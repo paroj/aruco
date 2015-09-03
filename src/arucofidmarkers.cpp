@@ -291,10 +291,8 @@ cv::Mat FiducidalMarkers::getMarkerMat(int id){
 cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int MarkerDistance, BoardConfiguration& TInfo,
                                            const vector<int>& excludedIds) {
     int nMarkers = gridSize.height * gridSize.width;
-    TInfo.resize(nMarkers);
-    vector<int> ids = getListOfValidMarkersIds_random(nMarkers, excludedIds);
-    for (int i = 0; i < nMarkers; i++)
-        TInfo[i].id = ids[i];
+    TInfo.objPoints.resize(nMarkers);
+    TInfo.ids = getListOfValidMarkersIds_random(nMarkers, excludedIds);
 
     int sizeY = gridSize.height * MarkerSize + (gridSize.height - 1) * MarkerDistance;
     int sizeX = gridSize.width * MarkerSize + (gridSize.width - 1) * MarkerDistance;
@@ -311,19 +309,19 @@ cv::Mat FiducidalMarkers::createBoardImage(Size gridSize, int MarkerSize, int Ma
         for (int x = 0; x < gridSize.width; x++, idp++) {
             Mat subrect(tableImage, Rect(x * (MarkerDistance + MarkerSize),
                                          y * (MarkerDistance + MarkerSize), MarkerSize, MarkerSize));
-            Mat marker = createMarkerImage(TInfo[idp].id, MarkerSize);
+            Mat marker = createMarkerImage(TInfo.ids[idp], MarkerSize);
             // set the location of the corners
-            TInfo[idp].resize(4);
-            TInfo[idp][0] =
+            TInfo.objPoints[idp].resize(4);
+            TInfo.objPoints[idp][0] =
                     cv::Point3f(x * (MarkerDistance + MarkerSize), y * (MarkerDistance + MarkerSize), 0);
-            TInfo[idp][1] = cv::Point3f(x * (MarkerDistance + MarkerSize) + MarkerSize,
+            TInfo.objPoints[idp][1] = cv::Point3f(x * (MarkerDistance + MarkerSize) + MarkerSize,
                                         y * (MarkerDistance + MarkerSize), 0);
-            TInfo[idp][2] = cv::Point3f(x * (MarkerDistance + MarkerSize) + MarkerSize,
+            TInfo.objPoints[idp][2] = cv::Point3f(x * (MarkerDistance + MarkerSize) + MarkerSize,
                                         y * (MarkerDistance + MarkerSize) + MarkerSize, 0);
-            TInfo[idp][3] = cv::Point3f(x * (MarkerDistance + MarkerSize),
+            TInfo.objPoints[idp][3] = cv::Point3f(x * (MarkerDistance + MarkerSize),
                                         y * (MarkerDistance + MarkerSize) + MarkerSize, 0);
             for (int i = 0; i < 4; i++)
-                TInfo[idp][i] -= cv::Point3f(centerX, centerY, 0);
+                TInfo.objPoints[idp][i] -= cv::Point3f(centerX, centerY, 0);
             marker.copyTo(subrect);
         }
 
@@ -363,20 +361,20 @@ cv::Mat FiducidalMarkers::createBoardImage_ChessBoard(Size gridSize, int MarkerS
             toWrite = !toWrite;
             if (toWrite) {
                 CV_Assert(CurMarkerIdx < idsVector.size() && "INTERNAL ERROR. REWRITE THIS!!");
-                TInfo.push_back(MarkerInfo(idsVector[CurMarkerIdx++]));
+                TInfo.ids.push_back(idsVector[CurMarkerIdx++]);
 
                 Mat subrect(tableImage, Rect(x * MarkerSize, y * MarkerSize, MarkerSize, MarkerSize));
-                Mat marker = createMarkerImage(TInfo.back().id, MarkerSize);
+                Mat marker = createMarkerImage(TInfo.ids.back(), MarkerSize);
+                TInfo.objPoints.push_back(vector<Point3f>(4));
                 // set the location of the corners
-                TInfo.back().resize(4);
-                TInfo.back()[0] = cv::Point3f(x * (MarkerSize), y * (MarkerSize), 0);
-                TInfo.back()[1] = cv::Point3f(x * (MarkerSize) + MarkerSize, y * (MarkerSize), 0);
-                TInfo.back()[2] =
+                TInfo.objPoints.back()[0] = cv::Point3f(x * (MarkerSize), y * (MarkerSize), 0);
+                TInfo.objPoints.back()[1] = cv::Point3f(x * (MarkerSize) + MarkerSize, y * (MarkerSize), 0);
+                TInfo.objPoints.back()[2] =
                         cv::Point3f(x * (MarkerSize) + MarkerSize, y * (MarkerSize) + MarkerSize, 0);
-                TInfo.back()[3] = cv::Point3f(x * (MarkerSize), y * (MarkerSize) + MarkerSize, 0);
+                TInfo.objPoints.back()[3] = cv::Point3f(x * (MarkerSize), y * (MarkerSize) + MarkerSize, 0);
                 if (centerData) {
                     for (int i = 0; i < 4; i++)
-                        TInfo.back()[i] -= cv::Point3f(centerX, centerY, 0);
+                        TInfo.objPoints.back()[i] -= cv::Point3f(centerX, centerY, 0);
                 }
                 marker.copyTo(subrect);
             }
@@ -411,19 +409,19 @@ cv::Mat FiducidalMarkers::createBoardImage_Frame(Size gridSize, int MarkerSize, 
     for (int y = 0; y < gridSize.height; y++) {
         for (int x = 0; x < gridSize.width; x++) {
             if (y == 0 || y == gridSize.height - 1 || x == 0 || x == gridSize.width - 1) {
-                TInfo.push_back(MarkerInfo(idsVector[CurMarkerIdx++]));
+                TInfo.ids.push_back(idsVector[CurMarkerIdx++]);
                 Mat subrect(tableImage, Rect(x * mSize, y * mSize, MarkerSize, MarkerSize));
-                Mat marker = createMarkerImage(TInfo.back().id, MarkerSize);
+                Mat marker = createMarkerImage(TInfo.ids.back(), MarkerSize);
                 marker.copyTo(subrect);
                 // set the location of the corners
-                TInfo.back().resize(4);
-                TInfo.back()[0] = cv::Point3f(x * (mSize), y * (mSize), 0);
-                TInfo.back()[1] = cv::Point3f(x * (mSize) + MarkerSize, y * (mSize), 0);
-                TInfo.back()[2] = cv::Point3f(x * (mSize) + MarkerSize, y * (mSize) + MarkerSize, 0);
-                TInfo.back()[3] = cv::Point3f(x * (mSize), y * (mSize) + MarkerSize, 0);
+                TInfo.objPoints.push_back(vector<Point3f>(4));
+                TInfo.objPoints.back()[0] = cv::Point3f(x * (mSize), y * (mSize), 0);
+                TInfo.objPoints.back()[1] = cv::Point3f(x * (mSize) + MarkerSize, y * (mSize), 0);
+                TInfo.objPoints.back()[2] = cv::Point3f(x * (mSize) + MarkerSize, y * (mSize) + MarkerSize, 0);
+                TInfo.objPoints.back()[3] = cv::Point3f(x * (mSize), y * (mSize) + MarkerSize, 0);
                 if (centerData) {
                     for (int i = 0; i < 4; i++)
-                        TInfo.back()[i] -= cv::Point3f(centerX, centerY, 0);
+                        TInfo.objPoints.back()[i] -= cv::Point3f(centerX, centerY, 0);
                 }
             }
         }

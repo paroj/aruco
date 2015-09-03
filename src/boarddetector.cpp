@@ -90,22 +90,21 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
 float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardConfiguration& BConf,
                             Board& Bdetected, Mat camMatrix, Mat distCoeff,
                             float markerSizeMeters){
-    CV_Assert( BConf.size() != 0 && BConf[0].size() >= 2 && "Invalid BoardConfig that is empty" );
+    CV_Assert( BConf.objPoints.size() != 0 && BConf.objPoints[0].size() >= 2 && "Invalid BoardConfig that is empty" );
 
     // compute the size of the markers in meters, which is used for some routines(mostly drawing)
     float ssize;
     if (BConf.mInfoType == BoardConfiguration::PIX && markerSizeMeters > 0)
         ssize = markerSizeMeters;
     else if (BConf.mInfoType == BoardConfiguration::METERS) {
-        ssize = cv::norm(BConf[0][0] - BConf[0][1]);
+        ssize = cv::norm(BConf.objPoints[0][0] - BConf.objPoints[0][1]);
     }
 
     // cout<<"markerSizeMeters="<<markerSizeMeters<<endl;
     Bdetected.clear();
     /// find among detected markers these that belong to the board configuration
     for (unsigned int i = 0; i < detectedMarkers.size(); i++) {
-        int idx = BConf.getIndexOfMarkerId(detectedMarkers[i].id);
-        if (idx != -1) {
+        if (find(BConf.ids.begin(), BConf.ids.end(), detectedMarkers[i].id) != BConf.ids.end()) {
             Bdetected.push_back(detectedMarkers[i]);
             Bdetected.back().ssize = ssize;
         }
@@ -132,7 +131,7 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
     // calculate the size of the markers in meters if expressed in pixels
     double marker_meter_per_pix = 0;
     if (BConf.mInfoType == BoardConfiguration::PIX)
-        marker_meter_per_pix = markerSizeMeters / cv::norm(BConf[0][0] - BConf[0][1]);
+        marker_meter_per_pix = markerSizeMeters / cv::norm(BConf.objPoints[0][0] - BConf.objPoints[0][1]);
     else
         marker_meter_per_pix = 1; // to avoind interferring the process below
 
@@ -140,11 +139,10 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
     vector<cv::Point3f> objPoints;
     vector<cv::Point2f> imagePoints;
     for (size_t i = 0; i < Bdetected.size(); i++) {
-        int idx = Bdetected.conf.getIndexOfMarkerId(Bdetected[i].id);
-        assert(idx != -1);
+        assert(find(BConf.ids.begin(), BConf.ids.end(), detectedMarkers[i].id) != BConf.ids.end());
+        const std::vector<cv::Point3f>& Minfo = Bdetected.conf.getMarkerInfo(Bdetected[i].id);
         for (int p = 0; p < 4; p++) {
             imagePoints.push_back(Bdetected[i][p]);
-            const aruco::MarkerInfo& Minfo = Bdetected.conf.getMarkerInfo(Bdetected[i].id);
             objPoints.push_back(Minfo[p] * marker_meter_per_pix);
             //  		cout<<objPoints.back()<<endl;
         }
@@ -203,7 +201,7 @@ float BoardDetector::detect(const vector<Marker>& detectedMarkers, const BoardCo
     //         cout<<Bdetected.Tvec.at<float>(0,0)<<" "<<Bdetected.Tvec.at<float>(1,0)<<"
     //         "<<Bdetected.Tvec.at<float>(2,0)<<endl;
 
-    return float(Bdetected.size()) / Bdetected.conf.size();
+    return float(Bdetected.size()) / Bdetected.conf.ids.size();
 }
 
 /**Static version (all in one)

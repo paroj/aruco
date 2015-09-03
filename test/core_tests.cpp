@@ -14,15 +14,15 @@
 namespace {
 bool generateResults = false;
 
-void compareBoardConfig(aruco::BoardConfiguration expectedBoard, aruco::BoardConfiguration currentBoard){
-    ASSERT_EQ( expectedBoard.size(), currentBoard.size() );
+void compareBoardConfig(const aruco::BoardConfiguration& lhs, const aruco::BoardConfiguration& rhs){
+    ASSERT_EQ( lhs.ids, rhs.ids );
+    ASSERT_EQ( lhs.objPoints.size(), rhs.objPoints.size() );
 
-    for (size_t i = 0; i < currentBoard.size(); i++){
-        EXPECT_EQ(expectedBoard[i].id, currentBoard[i].id);
+    for (size_t i = 0; i < rhs.objPoints.size(); i++){
         for (int j = 0; j < 4; j++){
-            EXPECT_FLOAT_EQ(expectedBoard[i].at(j).x, currentBoard[i].at(j).x);
-            EXPECT_FLOAT_EQ(expectedBoard[i].at(j).y, currentBoard[i].at(j).y);
-            EXPECT_FLOAT_EQ(expectedBoard[i].at(j).z, currentBoard[i].at(j).z);
+            EXPECT_FLOAT_EQ(lhs.objPoints[i].at(j).x, rhs.objPoints[i].at(j).x);
+            EXPECT_FLOAT_EQ(lhs.objPoints[i].at(j).y, rhs.objPoints[i].at(j).y);
+            EXPECT_FLOAT_EQ(lhs.objPoints[i].at(j).z, rhs.objPoints[i].at(j).z);
         }
     }
 }
@@ -139,21 +139,26 @@ TEST(Aruco, CreateBoard){
         return ;
     }
 
-    aruco::BoardConfiguration ExpectedBoard, CurrentBoard;
-    ExpectedBoard.readFromFile(TESTDATA_PATH "board/defaultBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
-    compareBoardConfig( ExpectedBoard, CurrentBoard );
+    {
+        aruco::BoardConfiguration ExpectedBoard, CurrentBoard;
+        ExpectedBoard.readFromFile(TESTDATA_PATH "board/defaultBoard-expected.yml");
+        aruco::FiducidalMarkers::createBoardImage(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
+        compareBoardConfig( ExpectedBoard, CurrentBoard );
+    }
 
-    ExpectedBoard.clear(); CurrentBoard.clear();
-    ExpectedBoard.readFromFile(TESTDATA_PATH "board/chessBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage_ChessBoard(gridSize, pixSize, CurrentBoard);
-    compareBoardConfig( ExpectedBoard, CurrentBoard );
+    {
+        aruco::BoardConfiguration ExpectedBoard, CurrentBoard;
+        ExpectedBoard.readFromFile(TESTDATA_PATH "board/chessBoard-expected.yml");
+        aruco::FiducidalMarkers::createBoardImage_ChessBoard(gridSize, pixSize, CurrentBoard);
+        compareBoardConfig( ExpectedBoard, CurrentBoard );
+    }
 
-    ExpectedBoard.clear(); CurrentBoard.clear();
-    ExpectedBoard.readFromFile(TESTDATA_PATH "board/frameBoard-expected.yml");
-    aruco::FiducidalMarkers::createBoardImage_Frame(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
-    compareBoardConfig( ExpectedBoard, CurrentBoard );
-
+    {
+        aruco::BoardConfiguration ExpectedBoard, CurrentBoard;
+        ExpectedBoard.readFromFile(TESTDATA_PATH "board/frameBoard-expected.yml");
+        aruco::FiducidalMarkers::createBoardImage_Frame(gridSize, pixSize, pixSize * interMarkerDistance, CurrentBoard);
+        compareBoardConfig( ExpectedBoard, CurrentBoard );
+    }
 }
 
 TEST(Aruco, Board) {

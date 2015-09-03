@@ -101,7 +101,7 @@ void getObjectAndImagePoints(aruco::Board& B, vector<cv::Point3f>& objPoints,
 
     int cIdx = 0;
     for (size_t i = 0; i < B.size(); i++) {
-        const aruco::MarkerInfo& mInfo = B.conf.getMarkerInfo(B[i].id);
+        const vector<cv::Point3f>& mInfo = B.conf.getMarkerInfo(B[i].id);
         for (int j = 0; j < 4; j++, cIdx++) {
             imagePoints.push_back(B[i][j]);
             objPoints.push_back(mInfo[j]);

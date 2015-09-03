@@ -126,27 +126,27 @@ void ChromaticMask::setParams(unsigned int mc, unsigned int nc, double threshPro
         return;
     }
 
-    if (BC.size() == 0) {
+    if (BC.objPoints.size() == 0) {
         std::cerr << "Invalid BoardConfiguration size in ChromaticMask::setParams" << std::endl;
         return;
     }
 
     if (BC.mInfoType == aruco::BoardConfiguration::METERS) {
-        markersize = cv::norm(BC[0][0] - BC[0][1]);
+        markersize = cv::norm(BC.objPoints[0][0] - BC.objPoints[0][1]);
     }
 
     // calculate corners from min and max in BC
     cv::Point3f min, max;
-    min = max = BC[0][0];
-    for (unsigned int i = 0; i < BC.size(); i++) {
+    min = max = BC.objPoints[0][0];
+    for (unsigned int i = 0; i < BC.objPoints.size(); i++) {
         for (unsigned int j = 0; j < 4; j++) {
-            if (BC[i][j].x <= min.x && BC[i][j].y <= min.y)
-                min = BC[i][j];
-            if (BC[i][j].x >= max.x && BC[i][j].y >= max.y)
-                max = BC[i][j];
+            if (BC.objPoints[i][j].x <= min.x && BC.objPoints[i][j].y <= min.y)
+                min = BC.objPoints[i][j];
+            if (BC.objPoints[i][j].x >= max.x && BC.objPoints[i][j].y >= max.y)
+                max = BC.objPoints[i][j];
         }
     }
-    double pixSize = fabs(markersize / (BC[0][1].x - BC[0][0].x));
+    double pixSize = fabs(markersize / (BC.objPoints[0][1].x - BC.objPoints[0][0].x));
     min.x *= pixSize;
     min.y *= pixSize;
     max.x *= pixSize;

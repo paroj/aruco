@@ -11,3 +11,8 @@
 6. removed `using namespace std;` from headers
 7. made `HighlyReliableMarkers::BalancedBinaryTree` private
 8. `MarkerCode::set` now takes full 2d bitcode arrays instead of individual bits
+9. `MarkerInfo` class is gone
+10. `BoardConfiguration` is no longer inherits of vector
+   - use either `BoardConfiguration::objPoints`
+   - or `BoardConfiguration::ids` (also replaces `BoardConfiguration::getIdList`)
+11. `BoardConfiguration::getIndexOfMarkerId` is gone. use `std::find` and `BoardConfiguration::ids`
