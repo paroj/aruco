@@ -72,7 +72,11 @@ MarkerCode rotate(const MarkerCode& in) {
 }
 
 int hammDistMarker(const MarkerCode& bits) {
-    bool ids[4][5] = {{1, 0, 0, 0, 0}, {1, 0, 1, 1, 1}, {0, 1, 0, 0, 1}, {0, 1, 1, 1, 0}};
+    // each marker row represents a HammingCode(5,3)
+    // i.e. 2 bits of data per row are used (bit 1 and 3)
+    // bit 0 (parity) is inverted to prevent all black markers
+    // below are the 4 possible words for each row
+    static bool ids[4][5] = {{1, 0, 0, 0, 0}, {1, 0, 1, 1, 1}, {0, 1, 0, 0, 1}, {0, 1, 1, 1, 0}};
     int dist = 0;
 
     for (int y = 0; y < 5; y++) {
@@ -125,14 +129,9 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
 
     // Get id of the marker
     int MatID = 0;
-    MarkerCode bits = Rotations[nRotations];
+    const MarkerCode& bits = Rotations[nRotations];
     for (int y = 0; y < 5; y++) {
-        MatID <<= 1;
-        if (bits(y, 1))
-            MatID |= 1;
-        MatID <<= 1;
-        if (bits(y, 3))
-            MatID |= 1;
+        MatID |= (bits(y, 1) << 1 | bits(y, 3)) << 2*(4-y);
     }
     return MatID;
 }
@@ -140,7 +139,7 @@ int analyzeMarkerImage(Mat& grey, int& nRotations) {
 bool correctHammMarker(const MarkerCode& bits) {
     // detect this lines with errors
     bool errors[4];
-    int ids[4][5] = {{0, 0, 0, 0, 0}, {0, 0, 1, 1, 1}, {1, 1, 0, 0, 1}, {1, 1, 1, 1, 0}};
+    static int ids[4][5] = {{0, 0, 0, 0, 0}, {0, 0, 1, 1, 1}, {1, 1, 0, 0, 1}, {1, 1, 1, 1, 0}};
 
     for (int y = 0; y < 5; y++) {
         int minSum = 1e5;
