@@ -28,7 +28,7 @@ or implied, of Rafael Muñoz Salinas.
 #ifndef _Aruco_BoardDetector_H
 #define _Aruco_BoardDetector_H
 #include <opencv2/core/core.hpp>
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include "board.h"
 #include "cameraparameters.h"
 #include "markerdetector.h"

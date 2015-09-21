@@ -32,7 +32,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <vector>
 #include <string>
 #include <opencv2/core/core.hpp>
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include "board.h"
 
 namespace aruco {

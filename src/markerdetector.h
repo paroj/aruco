@@ -31,7 +31,7 @@ or implied, of Rafael Muñoz Salinas.
 
 #include <opencv2/core/core.hpp>
 
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include "cameraparameters.h"
 #include "marker.h"
 

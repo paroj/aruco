@@ -33,7 +33,7 @@ or implied, of Rafael Muñoz Salinas.
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/ml/ml.hpp>
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include "board.h"
 #include "boarddetector.h"
 #include "cvdrawingutils.h"

@@ -8,7 +8,7 @@
 #ifndef aruco_UTILS_HPP
 #define aruco_UTILS_HPP
 
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include <opencv2/core/core.hpp>
 
 namespace aruco {

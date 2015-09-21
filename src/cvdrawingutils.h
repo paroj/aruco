@@ -27,7 +27,7 @@ or implied, of Rafael Muñoz Salinas.
 ********************************/
 #ifndef _ArUco_DrawUtils_H_
 #define _ArUco_DrawUtils_H_
-#include <aruco_export.h>
+#include "aruco_export.h"
 #include "aruco.h"
 
 namespace aruco {
